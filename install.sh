@@ -764,6 +764,127 @@ _add_agent_tags() {
   done
 }
 
+_gather_project_context() {
+  local ctx=""
+
+  # package.json (first 100 lines)
+  if [[ -f "package.json" ]]; then
+    ctx+="=== package.json ===
+$(head -100 package.json)
+"
+  fi
+
+  # tsconfig.json
+  if [[ -f "tsconfig.json" ]]; then
+    ctx+="=== tsconfig.json ===
+$(head -60 tsconfig.json)
+"
+  fi
+
+  # Go
+  if [[ -f "go.mod" ]]; then
+    ctx+="=== go.mod ===
+$(head -40 go.mod)
+"
+  fi
+
+  # Rust
+  if [[ -f "Cargo.toml" ]]; then
+    ctx+="=== Cargo.toml ===
+$(head -60 Cargo.toml)
+"
+  fi
+
+  # Ruby
+  if [[ -f "Gemfile" ]]; then
+    ctx+="=== Gemfile ===
+$(head -40 Gemfile)
+"
+  fi
+
+  # Java / Kotlin
+  if [[ -f "pom.xml" ]]; then
+    ctx+="=== pom.xml (first 60 lines) ===
+$(head -60 pom.xml)
+"
+  fi
+  if [[ -f "build.gradle" ]]; then
+    ctx+="=== build.gradle (first 60 lines) ===
+$(head -60 build.gradle)
+"
+  fi
+  if [[ -f "build.gradle.kts" ]]; then
+    ctx+="=== build.gradle.kts (first 60 lines) ===
+$(head -60 build.gradle.kts)
+"
+  fi
+
+  # Flutter / Dart
+  if [[ -f "pubspec.yaml" ]]; then
+    ctx+="=== pubspec.yaml ===
+$(head -40 pubspec.yaml)
+"
+  fi
+
+  # Python
+  for pyfile in requirements.txt setup.py setup.cfg pyproject.toml Pipfile; do
+    if [[ -f "$pyfile" ]]; then
+      ctx+="=== $pyfile (first 40 lines) ===
+$(head -40 "$pyfile")
+"
+    fi
+  done
+
+  # C# / .NET
+  local csproj
+  csproj=$(ls *.csproj 2>/dev/null | head -1)
+  if [[ -n "$csproj" ]]; then
+    ctx+="=== $csproj (first 40 lines) ===
+$(head -40 "$csproj")
+"
+  fi
+
+  # PHP
+  if [[ -f "composer.json" ]]; then
+    ctx+="=== composer.json (first 60 lines) ===
+$(head -60 composer.json)
+"
+  fi
+
+  # Existence checks for infra / config files
+  local infra_signals=""
+  for f in Dockerfile docker-compose.yml docker-compose.yaml \
+           .github/workflows .gitlab-ci.yml Jenkinsfile \
+           terraform.tf main.tf .terraform \
+           k8s kubernetes Chart.yaml helmfile.yaml \
+           .eslintrc .eslintrc.js .eslintrc.json eslint.config.js eslint.config.mjs \
+           .prettierrc prettier.config.js \
+           .env.example .env.local; do
+    if [[ -e "$f" ]]; then
+      infra_signals+="  [exists] $f
+"
+    fi
+  done
+  if [[ -n "$infra_signals" ]]; then
+    ctx+="=== Infrastructure / config signals ===
+${infra_signals}"
+  fi
+
+  # README first 30 lines
+  if [[ -f "README.md" ]]; then
+    ctx+="=== README.md (first 30 lines) ===
+$(head -30 README.md)
+"
+  fi
+
+  # Top-level directory listing
+  ctx+="=== Directory listing ===
+$(ls -1 2>/dev/null | head -40)
+"
+
+  echo "$ctx"
+}
+
 detect_project() {
   # Skip if already run
   $DETECTION_DONE && return 0
@@ -1017,8 +1138,212 @@ detect_project() {
   DETECTION_DONE=true
 }
 
-cmd_scan() {
+detect_project_ai() {
+  local project_context
+  project_context=$(_gather_project_context)
+
+  if [[ -z "$project_context" || "$project_context" =~ ^[[:space:]]*$ ]]; then
+    return 1
+  fi
+
+  local prompt
+  prompt="Analyze the following project files and detect the technology stack.
+Return ONLY a JSON object with these exact keys:
+{
+  \"techs\": [...],
+  \"skill_cats\": [...],
+  \"agent_cats\": [...],
+  \"skill_tags\": [...],
+  \"agent_tags\": [...]
+}
+
+- techs: Human-readable technology names detected (e.g. \"React\", \"TypeScript\", \"Docker\")
+- skill_cats / agent_cats: Categories from the valid lists below
+- skill_tags / agent_tags: Tags from the valid lists below
+
+VALID SKILL CATEGORIES: core, workflow, git, web, mobile, backend, languages, devops, security, design, documents, meta
+VALID AGENT CATEGORIES: core-dev, languages, infrastructure, quality-security, data-ai, dev-experience, specialized, business, orchestration, research, marketing
+VALID SKILL TAGS: universal, web, react, nextjs, vue, angular, mobile, react-native, expo, flutter, ios, swift, android, kotlin, backend, nodejs, python, php, ruby, java, cpp, csharp, go, rust, typescript, devops, creative, documents, web3
+VALID AGENT TAGS: backend, frontend, fullstack, mobile, api, design, typescript, python, rust, go, java, csharp, swift, php, ruby, react, vue, angular, nextjs, django, spring, laravel, flutter, kotlin, elixir, cloud, docker, kubernetes, terraform, azure, devops, sre, testing, security, review, debugging, ai, ml, data, tooling, cli, docs, git, refactoring, blockchain, embedded, fintech, gamedev, iot, payments, seo, product, marketing, meta, orchestration, workflow, research, analytics
+
+RULES:
+- Always include \"core\" and \"workflow\" in skill_cats, and \"core-dev\" in agent_cats
+- Only include categories/tags relevant to detected technologies
+- Return ONLY the JSON object, no other text
+
+PROJECT FILES:
+${project_context}"
+
+  echo -e "  ${CYAN}Analyzing project with AI...${NC}"
+
+  local ai_output=""
+  local exit_code=0
+  ai_output=$(CLAUDECODE= claude -p \
+    --model haiku \
+    --output-format text \
+    --max-budget-usd 0.01 \
+    "$prompt" 2>/dev/null) || exit_code=$?
+
+  if [[ $exit_code -ne 0 || -z "$ai_output" ]]; then
+    echo -e "  ${YELLOW}AI detection failed, using pattern-based fallback.${NC}"
+    return 1
+  fi
+
+  # Strip markdown code fences if present (```json ... ```)
+  ai_output=$(echo "$ai_output" | sed '/^```/d')
+
+  # Parse and populate arrays
+  if ! _parse_ai_detection_json "$ai_output"; then
+    echo -e "  ${YELLOW}AI response parsing failed, using pattern-based fallback.${NC}"
+    return 1
+  fi
+
+  return 0
+}
+
+_parse_ai_detection_json() {
+  local json_input="$1"
+
+  # Valid values for validation
+  local valid_skill_cats=" core workflow git web mobile backend languages devops security design documents meta "
+  local valid_agent_cats=" core-dev languages infrastructure quality-security data-ai dev-experience specialized business orchestration research marketing "
+  local valid_skill_tags=" universal web react nextjs vue angular mobile react-native expo flutter ios swift android kotlin backend nodejs python php ruby java cpp csharp go rust typescript devops creative documents web3 "
+  local valid_agent_tags=" backend frontend fullstack mobile api design typescript python rust go java csharp swift php ruby react vue angular nextjs django spring laravel flutter kotlin elixir cloud docker kubernetes terraform azure devops sre testing security review debugging ai ml data tooling cli docs git refactoring blockchain embedded fintech gamedev iot payments seo product marketing meta orchestration workflow research analytics "
+
+  local -a techs=() skill_cats=() agent_cats=() skill_tags=() agent_tags=()
+
+  # Try jq first
+  if command -v jq &>/dev/null; then
+    if ! echo "$json_input" | jq empty 2>/dev/null; then
+      # Invalid JSON, try python fallback
+      :
+    else
+      while IFS= read -r val; do
+        [[ -n "$val" ]] && techs+=("$val")
+      done < <(echo "$json_input" | jq -r '.techs[]? // empty' 2>/dev/null)
+
+      while IFS= read -r val; do
+        [[ -n "$val" && "$valid_skill_cats" == *" $val "* ]] && skill_cats+=("$val")
+      done < <(echo "$json_input" | jq -r '.skill_cats[]? // empty' 2>/dev/null)
+
+      while IFS= read -r val; do
+        [[ -n "$val" && "$valid_agent_cats" == *" $val "* ]] && agent_cats+=("$val")
+      done < <(echo "$json_input" | jq -r '.agent_cats[]? // empty' 2>/dev/null)
+
+      while IFS= read -r val; do
+        [[ -n "$val" && "$valid_skill_tags" == *" $val "* ]] && skill_tags+=("$val")
+      done < <(echo "$json_input" | jq -r '.skill_tags[]? // empty' 2>/dev/null)
+
+      while IFS= read -r val; do
+        [[ -n "$val" && "$valid_agent_tags" == *" $val "* ]] && agent_tags+=("$val")
+      done < <(echo "$json_input" | jq -r '.agent_tags[]? // empty' 2>/dev/null)
+
+      if [[ ${#techs[@]} -eq 0 ]]; then
+        return 1
+      fi
+
+      for t in "${techs[@]}"; do _add_tech "$t"; done
+      for c in "${skill_cats[@]}"; do _add_skill_cats "$c"; done
+      for c in "${agent_cats[@]}"; do _add_agent_cats "$c"; done
+      for t in "${skill_tags[@]}"; do _add_skill_tags "$t"; done
+      for t in "${agent_tags[@]}"; do _add_agent_tags "$t"; done
+      return 0
+    fi
+  fi
+
+  # Fallback: python3
+  if command -v python3 &>/dev/null; then
+    local parsed
+    parsed=$(python3 -c "
+import json, sys
+try:
+    data = json.loads(sys.stdin.read())
+    for key in ['techs', 'skill_cats', 'agent_cats', 'skill_tags', 'agent_tags']:
+        vals = data.get(key, [])
+        if isinstance(vals, list):
+            print(key + ':' + ','.join(str(v) for v in vals))
+except Exception:
+    sys.exit(1)
+" <<< "$json_input" 2>/dev/null) || return 1
+
+    local line key vals
+    while IFS= read -r line; do
+      key="${line%%:*}"
+      vals="${line#*:}"
+      IFS=',' read -ra items <<< "$vals"
+      case "$key" in
+        techs)
+          for v in "${items[@]}"; do
+            [[ -n "$v" ]] && techs+=("$v")
+          done
+          ;;
+        skill_cats)
+          for v in "${items[@]}"; do
+            [[ -n "$v" && "$valid_skill_cats" == *" $v "* ]] && skill_cats+=("$v")
+          done
+          ;;
+        agent_cats)
+          for v in "${items[@]}"; do
+            [[ -n "$v" && "$valid_agent_cats" == *" $v "* ]] && agent_cats+=("$v")
+          done
+          ;;
+        skill_tags)
+          for v in "${items[@]}"; do
+            [[ -n "$v" && "$valid_skill_tags" == *" $v "* ]] && skill_tags+=("$v")
+          done
+          ;;
+        agent_tags)
+          for v in "${items[@]}"; do
+            [[ -n "$v" && "$valid_agent_tags" == *" $v "* ]] && agent_tags+=("$v")
+          done
+          ;;
+      esac
+    done <<< "$parsed"
+
+    if [[ ${#techs[@]} -eq 0 ]]; then
+      return 1
+    fi
+
+    for t in "${techs[@]}"; do _add_tech "$t"; done
+    for c in "${skill_cats[@]}"; do _add_skill_cats "$c"; done
+    for c in "${agent_cats[@]}"; do _add_agent_cats "$c"; done
+    for t in "${skill_tags[@]}"; do _add_skill_tags "$t"; done
+    for t in "${agent_tags[@]}"; do _add_agent_tags "$t"; done
+    return 0
+  fi
+
+  # No JSON parser available
+  return 1
+}
+
+detect_project_smart() {
+  $DETECTION_DONE && return 0
+
+  # Reset arrays
+  DETECTED_TECHS=()
+  DETECTED_SKILL_CATS=()
+  DETECTED_AGENT_CATS=()
+  DETECTED_SKILL_TAGS=()
+  DETECTED_AGENT_TAGS=()
+
+  # Check if claude CLI is available
+  if command -v claude &>/dev/null; then
+    local ai_confirm
+    read -rp "  Scan project with AI? (better detection) [Y/n] " ai_confirm
+    if [[ "${ai_confirm:-y}" =~ ^[Yy] ]]; then
+      if detect_project_ai; then
+        DETECTION_DONE=true
+        return 0
+      fi
+    fi
+  fi
+
+  # Fallback: original pattern-based detection
   detect_project
+}
+
+cmd_scan() {
+  detect_project_smart
 
   if [[ ${#DETECTED_TECHS[@]} -eq 0 ]]; then
     echo ""
@@ -1738,7 +2063,7 @@ cmd_interactive() {
       ;;
     3)
       # Scan, show results, then install both with detection pre-selections
-      detect_project
+      detect_project_smart
       if [[ ${#DETECTED_TECHS[@]} -gt 0 ]]; then
         local tech_list=""
         for t in "${DETECTED_TECHS[@]}"; do
@@ -1773,7 +2098,7 @@ _run_skill_wizard() {
   local -a skill_names=()
 
   # Try auto-detection first
-  detect_project
+  detect_project_smart
   if [[ ${#DETECTED_SKILL_CATS[@]} -gt 0 ]]; then
     use_detection=true
     step=3
@@ -2350,7 +2675,7 @@ cmd_agents_interactive() {
   print_banner
 
   # Try auto-detection
-  detect_project
+  detect_project_smart
   local use_agent_detection=false
   if [[ ${#DETECTED_AGENT_CATS[@]} -gt 0 ]]; then
     use_agent_detection=true
