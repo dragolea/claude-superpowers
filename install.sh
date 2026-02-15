@@ -462,6 +462,24 @@ for s in data['skills']:
   fi
 }
 
+# Get skill tags by name (newline-separated)
+get_skill_tags() {
+  local skill_name="$1"
+  if command -v jq &>/dev/null; then
+    echo "$SKILLS_JSON" | jq -r ".skills[] | select(.name == \"${skill_name}\") | .tags[]"
+  else
+    echo "$SKILLS_JSON" | python3 -c "
+import sys, json
+data = json.load(sys.stdin)
+for s in data['skills']:
+    if s['name'] == '${skill_name}':
+        for t in s.get('tags', []):
+            print(t)
+        break
+"
+  fi
+}
+
 # Get all unique categories
 get_all_categories() {
   if command -v jq &>/dev/null; then
@@ -581,6 +599,24 @@ for p in data['plugins']:
   fi
 }
 
+# Get plugin tags by name (newline-separated)
+get_plugin_tags() {
+  local plugin_name="$1"
+  if command -v jq &>/dev/null; then
+    echo "$AGENTS_JSON" | jq -r ".plugins[] | select(.name == \"${plugin_name}\") | .tags[]"
+  else
+    echo "$AGENTS_JSON" | python3 -c "
+import sys, json
+data = json.load(sys.stdin)
+for p in data['plugins']:
+    if p['name'] == '${plugin_name}':
+        for t in p.get('tags', []):
+            print(t)
+        break
+"
+  fi
+}
+
 # Get all unique plugin categories
 get_all_plugin_categories() {
   if command -v jq &>/dev/null; then
@@ -676,6 +712,8 @@ DETECTION_BANNER_SHOWN=false
 DETECTED_TECHS=()
 DETECTED_SKILL_CATS=()
 DETECTED_AGENT_CATS=()
+DETECTED_SKILL_TAGS=()
+DETECTED_AGENT_TAGS=()
 
 _add_tech() {
   local tech="$1"
@@ -706,6 +744,26 @@ _add_agent_cats() {
   done
 }
 
+_add_skill_tags() {
+  for tag in "$@"; do
+    local found=false
+    for t in "${DETECTED_SKILL_TAGS[@]+"${DETECTED_SKILL_TAGS[@]}"}"; do
+      if [[ "$t" == "$tag" ]]; then found=true; break; fi
+    done
+    $found || DETECTED_SKILL_TAGS+=("$tag")
+  done
+}
+
+_add_agent_tags() {
+  for tag in "$@"; do
+    local found=false
+    for t in "${DETECTED_AGENT_TAGS[@]+"${DETECTED_AGENT_TAGS[@]}"}"; do
+      if [[ "$t" == "$tag" ]]; then found=true; break; fi
+    done
+    $found || DETECTED_AGENT_TAGS+=("$tag")
+  done
+}
+
 detect_project() {
   # Skip if already run
   $DETECTION_DONE && return 0
@@ -713,6 +771,8 @@ detect_project() {
   DETECTED_TECHS=()
   DETECTED_SKILL_CATS=()
   DETECTED_AGENT_CATS=()
+  DETECTED_SKILL_TAGS=()
+  DETECTED_AGENT_TAGS=()
 
   # ---- Node.js / package.json based detection ----
   if [[ -f "package.json" ]]; then
@@ -727,64 +787,86 @@ detect_project() {
       _add_tech "React Native"
       _add_skill_cats "mobile" "languages"
       _add_agent_cats "core-dev" "languages"
+      _add_skill_tags "react-native" "mobile" "typescript"
+      _add_agent_tags "react-native" "mobile" "typescript"
     elif echo "$pkg" | grep -q '"react"'; then
       _add_tech "React"
       _add_skill_cats "web" "languages"
       _add_agent_cats "core-dev" "languages"
+      _add_skill_tags "react" "web" "typescript"
+      _add_agent_tags "react" "web" "typescript"
     fi
 
     if echo "$pkg" | grep -q '"vue"'; then
       _add_tech "Vue"
       _add_skill_cats "web" "languages"
       _add_agent_cats "core-dev" "languages"
+      _add_skill_tags "vue" "web" "typescript"
+      _add_agent_tags "vue" "web" "typescript"
     fi
 
     if echo "$pkg" | grep -q '"@angular/core"'; then
       _add_tech "Angular"
       _add_skill_cats "web" "languages"
       _add_agent_cats "core-dev" "languages"
+      _add_skill_tags "angular" "web" "typescript"
+      _add_agent_tags "angular" "web" "typescript"
     fi
 
     if echo "$pkg" | grep -q '"next"'; then
       _add_tech "Next.js"
       _add_skill_cats "web" "backend" "languages"
       _add_agent_cats "core-dev" "languages"
+      _add_skill_tags "nextjs" "react" "web" "typescript"
+      _add_agent_tags "nextjs" "react" "web" "typescript"
     fi
 
     if echo "$pkg" | grep -q '"nuxt"'; then
       _add_tech "Nuxt"
       _add_skill_cats "web" "backend" "languages"
       _add_agent_cats "core-dev" "languages"
+      _add_skill_tags "vue" "web" "typescript"
+      _add_agent_tags "vue" "web" "typescript"
     fi
 
     if echo "$pkg" | grep -q '"express"'; then
       _add_tech "Express"
       _add_skill_cats "backend" "languages"
       _add_agent_cats "core-dev" "languages"
+      _add_skill_tags "nodejs" "backend" "typescript"
+      _add_agent_tags "nodejs" "backend" "typescript"
     fi
 
     if echo "$pkg" | grep -q '"@nestjs/core"'; then
       _add_tech "NestJS"
       _add_skill_cats "backend" "languages"
       _add_agent_cats "core-dev" "languages"
+      _add_skill_tags "nodejs" "backend" "typescript"
+      _add_agent_tags "nodejs" "backend" "typescript"
     fi
 
     if echo "$pkg" | grep -q '"fastify"'; then
       _add_tech "Fastify"
       _add_skill_cats "backend" "languages"
       _add_agent_cats "core-dev" "languages"
+      _add_skill_tags "nodejs" "backend" "typescript"
+      _add_agent_tags "nodejs" "backend" "typescript"
     fi
 
     if echo "$pkg" | grep -q '"expo"'; then
       _add_tech "Expo"
       _add_skill_cats "mobile" "languages"
       _add_agent_cats "core-dev" "languages"
+      _add_skill_tags "expo" "mobile" "react-native" "typescript"
+      _add_agent_tags "expo" "mobile" "react-native" "typescript"
     fi
 
     if echo "$pkg" | grep -qE '"(jest|vitest|mocha|cypress|playwright)"'; then
       _add_tech "Testing"
       _add_skill_cats "core"
       _add_agent_cats "quality-security"
+      _add_skill_tags "universal"
+      _add_agent_tags "testing"
     fi
   fi
 
@@ -793,6 +875,8 @@ detect_project() {
     _add_tech "TypeScript"
     _add_skill_cats "languages"
     _add_agent_cats "languages"
+    _add_skill_tags "typescript"
+    _add_agent_tags "typescript"
   fi
 
   # ---- Python ----
@@ -800,6 +884,8 @@ detect_project() {
     _add_tech "Python"
     _add_skill_cats "backend" "languages"
     _add_agent_cats "core-dev" "languages"
+    _add_skill_tags "python" "backend"
+    _add_agent_tags "python" "backend"
 
     local pydeps=""
     [[ -f "requirements.txt" ]] && pydeps+=$(cat requirements.txt 2>/dev/null || true)
@@ -808,12 +894,18 @@ detect_project() {
 
     if echo "$pydeps" | grep -qi "django"; then
       _add_tech "Django"
+      _add_skill_tags "python" "backend"
+      _add_agent_tags "python" "backend"
     fi
     if echo "$pydeps" | grep -qi "fastapi"; then
       _add_tech "FastAPI"
+      _add_skill_tags "python" "backend"
+      _add_agent_tags "python" "backend"
     fi
     if echo "$pydeps" | grep -qi "flask"; then
       _add_tech "Flask"
+      _add_skill_tags "python" "backend"
+      _add_agent_tags "python" "backend"
     fi
   fi
 
@@ -822,6 +914,8 @@ detect_project() {
     _add_tech "Go"
     _add_skill_cats "backend" "languages"
     _add_agent_cats "core-dev" "languages"
+    _add_skill_tags "go" "backend"
+    _add_agent_tags "go" "backend"
   fi
 
   # ---- Rust ----
@@ -829,6 +923,8 @@ detect_project() {
     _add_tech "Rust"
     _add_skill_cats "backend" "languages"
     _add_agent_cats "core-dev" "languages"
+    _add_skill_tags "rust"
+    _add_agent_tags "rust"
   fi
 
   # ---- Ruby ----
@@ -836,9 +932,13 @@ detect_project() {
     _add_tech "Ruby"
     _add_skill_cats "backend" "languages"
     _add_agent_cats "core-dev" "languages"
+    _add_skill_tags "ruby" "backend"
+    _add_agent_tags "ruby" "backend"
 
     if grep -qi "rails" Gemfile 2>/dev/null; then
       _add_tech "Rails"
+      _add_skill_tags "ruby" "backend"
+      _add_agent_tags "ruby" "backend"
     fi
   fi
 
@@ -847,6 +947,8 @@ detect_project() {
     _add_tech "Java/Kotlin"
     _add_skill_cats "backend" "languages"
     _add_agent_cats "core-dev" "languages"
+    _add_skill_tags "java" "kotlin"
+    _add_agent_tags "java" "kotlin"
   fi
 
   # ---- iOS ----
@@ -854,6 +956,8 @@ detect_project() {
     _add_tech "iOS"
     _add_skill_cats "mobile"
     _add_agent_cats "core-dev" "languages"
+    _add_skill_tags "ios" "swift" "mobile"
+    _add_agent_tags "ios" "swift" "mobile"
   fi
 
   # ---- Flutter ----
@@ -861,6 +965,8 @@ detect_project() {
     _add_tech "Flutter"
     _add_skill_cats "mobile"
     _add_agent_cats "core-dev" "languages"
+    _add_skill_tags "flutter" "mobile"
+    _add_agent_tags "flutter" "mobile"
   fi
 
   # ---- Docker ----
@@ -868,6 +974,8 @@ detect_project() {
     _add_tech "Docker"
     _add_skill_cats "devops"
     _add_agent_cats "infrastructure"
+    _add_skill_tags "devops"
+    _add_agent_tags "docker" "devops"
   fi
 
   # ---- Kubernetes ----
@@ -875,6 +983,8 @@ detect_project() {
     _add_tech "Kubernetes"
     _add_skill_cats "devops"
     _add_agent_cats "infrastructure"
+    _add_skill_tags "devops"
+    _add_agent_tags "kubernetes" "devops"
   fi
 
   # ---- Terraform ----
@@ -882,6 +992,8 @@ detect_project() {
     _add_tech "Terraform"
     _add_skill_cats "devops"
     _add_agent_cats "infrastructure"
+    _add_skill_tags "devops"
+    _add_agent_tags "terraform" "devops"
   fi
 
   # ---- CI/CD ----
@@ -889,6 +1001,8 @@ detect_project() {
     _add_tech "CI/CD"
     _add_skill_cats "devops"
     _add_agent_cats "infrastructure"
+    _add_skill_tags "devops"
+    _add_agent_tags "cicd" "devops"
   fi
 
   # ---- Linting / Formatting ----
@@ -896,6 +1010,8 @@ detect_project() {
     _add_tech "Linting"
     _add_skill_cats "core"
     _add_agent_cats "dev-experience"
+    _add_skill_tags "universal"
+    _add_agent_tags "tooling" "dx"
   fi
 
   DETECTION_DONE=true
@@ -983,6 +1099,17 @@ checkbox_menu() {
   local count=${#options[@]}
   local max_index=$((count - 1))
   $show_back && max_index=$count
+
+  # Truncate descriptions to prevent line wrapping (which breaks cursor-up redraw)
+  local _term_w
+  _term_w=$(tput cols 2>/dev/null || echo 80)
+  for i in $(seq 0 $((count - 1))); do
+    local _prefix_len=$(( 8 + ${#options[$i]} + 2 ))  # "    [x] name  "
+    local _max_desc=$(( _term_w - _prefix_len ))
+    if (( _max_desc > 3 && ${#descriptions[$i]} > _max_desc )); then
+      descriptions[$i]="${descriptions[$i]:0:$((_max_desc - 3))}..."
+    fi
+  done
 
   # Hide cursor
   tput civis 2>/dev/null || true
@@ -1642,6 +1769,8 @@ _run_skill_wizard() {
   local step=1
   local project_label stack_label
   local use_detection=false
+  local -a selected_categories=()
+  local -a skill_names=()
 
   # Try auto-detection first
   detect_project
@@ -1751,6 +1880,36 @@ _run_skill_wizard() {
           echo ""
         fi
 
+        # Derive tags from stack selection for per-skill pre-selection
+        case "${stack_label:-}" in
+          expo)          _add_skill_tags "typescript" "expo" "react-native"
+                         _add_agent_tags "typescript" "expo" "react-native" ;;
+          react-native)  _add_skill_tags "typescript" "react-native"
+                         _add_agent_tags "typescript" "react-native" ;;
+          flutter)       _add_skill_tags "flutter"
+                         _add_agent_tags "flutter" ;;
+          ios)           _add_skill_tags "swift" "ios"
+                         _add_agent_tags "swift" "ios" ;;
+          android)       _add_skill_tags "kotlin" "java" "android"
+                         _add_agent_tags "kotlin" "java" "android" ;;
+          react)         _add_skill_tags "typescript" "react"
+                         _add_agent_tags "typescript" "react" ;;
+          nextjs)        _add_skill_tags "typescript" "nextjs" "react"
+                         _add_agent_tags "typescript" "nextjs" "react" ;;
+          vue)           _add_skill_tags "typescript" "vue"
+                         _add_agent_tags "typescript" "vue" ;;
+          angular)       _add_skill_tags "typescript" "angular"
+                         _add_agent_tags "typescript" "angular" ;;
+          nodejs)        _add_skill_tags "typescript" "nodejs"
+                         _add_agent_tags "typescript" "nodejs" ;;
+          python)        _add_skill_tags "python"
+                         _add_agent_tags "python" ;;
+          go)            _add_skill_tags "go"
+                         _add_agent_tags "go" ;;
+          rust)          _add_skill_tags "rust"
+                         _add_agent_tags "rust" ;;
+        esac
+
         step=3
         ;;
 
@@ -1806,7 +1965,7 @@ _run_skill_wizard() {
         fi
 
         # Gather selected categories
-        local -a selected_categories=()
+        selected_categories=()
         for i in "${SELECTED_INDICES[@]}"; do
           selected_categories+=("${cat_ids[$i]}")
         done
@@ -1816,17 +1975,98 @@ _run_skill_wizard() {
           exit 0
         fi
 
-        # Resolve skills
-        local -a skill_names=()
+        step=4
+        ;;
+
+      4)
+        # Step 4: Per-skill picker with tag-based pre-selection
+        local -a all_skill_names=()
+        local -a skill_options=()
+        local -a skill_preselected=()
+        local sidx=0
+
+        # Resolve all skills from selected categories (deduplicated)
+        local -a seen_skills=()
         for cat in "${selected_categories[@]}"; do
           local skills
           skills=$(get_skills_by_categories "$cat")
-          while IFS= read -r name; do
-            [[ -n "$name" ]] && skill_names+=("$name")
+          while IFS= read -r sname; do
+            [[ -z "$sname" ]] && continue
+            local already=false
+            for s in "${seen_skills[@]+"${seen_skills[@]}"}"; do
+              if [[ "$s" == "$sname" ]]; then already=true; break; fi
+            done
+            if ! $already; then
+              seen_skills+=("$sname")
+              all_skill_names+=("$sname")
+              local sdesc
+              sdesc=$(get_skill_info "$sname" "description")
+              skill_options+=("${sname}|${sdesc}")
+
+              # Pre-selection logic
+              if [[ ${#DETECTED_SKILL_TAGS[@]} -eq 0 ]]; then
+                # No tags detected — pre-select all (preserve current behavior)
+                skill_preselected+=("$sidx")
+              else
+                # Get skill's tags and check overlap
+                local -a stags=()
+                local -a specific_tags=()
+                while IFS= read -r stag; do
+                  [[ -n "$stag" ]] && stags+=("$stag")
+                  [[ -n "$stag" && "$stag" != "universal" ]] && specific_tags+=("$stag")
+                done < <(get_skill_tags "$sname")
+
+                if [[ ${#specific_tags[@]} -eq 0 ]]; then
+                  # Pure universal skill — always pre-select
+                  skill_preselected+=("$sidx")
+                else
+                  # Check if any specific tag matches detected tags
+                  local tag_match=false
+                  for st in "${specific_tags[@]}"; do
+                    for dt in "${DETECTED_SKILL_TAGS[@]}"; do
+                      if [[ "$st" == "$dt" ]]; then
+                        tag_match=true
+                        break 2
+                      fi
+                    done
+                  done
+                  $tag_match && skill_preselected+=("$sidx")
+                fi
+              fi
+
+              ((sidx++))
+            fi
           done <<< "$skills"
         done
 
-        # Step 4: Scope selection + summary + confirm
+        if [[ ${#all_skill_names[@]} -eq 0 ]]; then
+          echo -e "${YELLOW}No skills found in selected categories. Exiting.${NC}"
+          exit 0
+        fi
+
+        if ! checkbox_menu --back "Select skills to install" \
+          "${skill_options[@]}" \
+          "__SEP__" \
+          "${skill_preselected[@]}"; then
+          step=3; continue
+        fi
+
+        # Gather selected skills
+        skill_names=()
+        for i in "${SELECTED_INDICES[@]}"; do
+          skill_names+=("${all_skill_names[$i]}")
+        done
+
+        if [[ ${#skill_names[@]} -eq 0 ]]; then
+          echo -e "${YELLOW}No skills selected. Exiting.${NC}"
+          exit 0
+        fi
+
+        step=5
+        ;;
+
+      5)
+        # Step 5: Scope selection + summary + confirm
         if ! $SCOPE_SET_BY_FLAG; then
           echo ""
           select_scope
@@ -1850,7 +2090,7 @@ _run_skill_wizard() {
             break
             ;;
           [Bb]*)
-            step=3
+            step=4
             continue
             ;;
           *)
@@ -2128,111 +2368,195 @@ cmd_agents_interactive() {
     echo -e "  ${DIM}Pre-selecting relevant plugin categories.${NC}"
   fi
 
-  # Step 1: Category selection
-  local -a cat_ids=()
-  local -a cat_options=()
-  local -a preselected=()
-  local idx=0
-
-  while IFS= read -r cat_id; do
-    [[ -z "$cat_id" ]] && continue
-    cat_ids+=("$cat_id")
-    local name
-    name=$(get_plugin_category_name "$cat_id")
-    local desc
-    desc=$(get_plugin_category_desc "$cat_id")
-    cat_options+=("${name}|${desc}")
-
-    if $use_agent_detection; then
-      for dcat in "${DETECTED_AGENT_CATS[@]}"; do
-        if [[ "$dcat" == "$cat_id" ]]; then
-          preselected+=("$idx")
-          break
-        fi
-      done
-    else
-      local rec
-      rec=$(is_plugin_category_recommended "$cat_id")
-      if [[ "$rec" == "true" ]]; then
-        preselected+=("$idx")
-      fi
-    fi
-    ((idx++))
-  done < <(get_all_plugin_categories)
-
-  echo ""
-  if ! checkbox_menu "Which plugin categories do you want?" \
-    "${cat_options[@]}" \
-    "__SEP__" \
-    "${preselected[@]}"; then
-    echo -e "${YELLOW}Cancelled.${NC}"
-    exit 0
-  fi
-
-  # Gather selected categories
-  local -a selected_categories=()
-  for i in "${SELECTED_INDICES[@]}"; do
-    selected_categories+=("${cat_ids[$i]}")
-  done
-
-  if [[ ${#selected_categories[@]} -eq 0 ]]; then
-    echo -e "${YELLOW}No categories selected. Exiting.${NC}"
-    exit 0
-  fi
-
-  # Resolve categories to plugins (deduplicated)
+  local agent_step=1
+  local -a selected_agent_categories=()
   local -a plugin_names=()
-  local -a seen=()
-  for cat in "${selected_categories[@]}"; do
-    local plugins
-    plugins=$(get_plugins_by_categories "$cat")
-    while IFS= read -r name; do
-      [[ -z "$name" ]] && continue
-      local already=false
-      for s in "${seen[@]+"${seen[@]}"}"; do
-        if [[ "$s" == "$name" ]]; then
-          already=true
-          break
+
+  while true; do
+    case $agent_step in
+      1)
+        # Step 1: Category selection
+        local -a cat_ids=()
+        local -a cat_options=()
+        local -a preselected=()
+        local idx=0
+
+        while IFS= read -r cat_id; do
+          [[ -z "$cat_id" ]] && continue
+          cat_ids+=("$cat_id")
+          local name
+          name=$(get_plugin_category_name "$cat_id")
+          local desc
+          desc=$(get_plugin_category_desc "$cat_id")
+          cat_options+=("${name}|${desc}")
+
+          if $use_agent_detection; then
+            for dcat in "${DETECTED_AGENT_CATS[@]}"; do
+              if [[ "$dcat" == "$cat_id" ]]; then
+                preselected+=("$idx")
+                break
+              fi
+            done
+          else
+            local rec
+            rec=$(is_plugin_category_recommended "$cat_id")
+            if [[ "$rec" == "true" ]]; then
+              preselected+=("$idx")
+            fi
+          fi
+          ((idx++))
+        done < <(get_all_plugin_categories)
+
+        echo ""
+        if ! checkbox_menu "Which plugin categories do you want?" \
+          "${cat_options[@]}" \
+          "__SEP__" \
+          "${preselected[@]}"; then
+          echo -e "${YELLOW}Cancelled.${NC}"
+          exit 0
         fi
-      done
-      if ! $already; then
-        plugin_names+=("$name")
-        seen+=("$name")
-      fi
-    done <<< "$plugins"
+
+        # Gather selected categories
+        selected_agent_categories=()
+        for i in "${SELECTED_INDICES[@]}"; do
+          selected_agent_categories+=("${cat_ids[$i]}")
+        done
+
+        if [[ ${#selected_agent_categories[@]} -eq 0 ]]; then
+          echo -e "${YELLOW}No categories selected. Exiting.${NC}"
+          exit 0
+        fi
+
+        agent_step=2
+        ;;
+
+      2)
+        # Step 2: Per-plugin picker with tag-based pre-selection
+        local -a all_plugin_names=()
+        local -a plugin_options=()
+        local -a plugin_preselected=()
+        local pidx=0
+
+        # Resolve all plugins from selected categories (deduplicated)
+        local -a seen_plugins=()
+        for cat in "${selected_agent_categories[@]}"; do
+          local plugins
+          plugins=$(get_plugins_by_categories "$cat")
+          while IFS= read -r pname; do
+            [[ -z "$pname" ]] && continue
+            local already=false
+            for s in "${seen_plugins[@]+"${seen_plugins[@]}"}"; do
+              if [[ "$s" == "$pname" ]]; then already=true; break; fi
+            done
+            if ! $already; then
+              seen_plugins+=("$pname")
+              all_plugin_names+=("$pname")
+              local pdesc
+              pdesc=$(get_plugin_info "$pname" "description")
+              local agent_count
+              agent_count=$(get_plugin_info "$pname" "agent_count")
+              plugin_options+=("${pname}|${pdesc} (${agent_count} agents)")
+
+              # Pre-selection logic
+              if [[ ${#DETECTED_AGENT_TAGS[@]} -eq 0 ]]; then
+                # No tags detected — pre-select all
+                plugin_preselected+=("$pidx")
+              else
+                # Get plugin's tags and check overlap
+                local -a ptags=()
+                while IFS= read -r ptag; do
+                  [[ -n "$ptag" ]] && ptags+=("$ptag")
+                done < <(get_plugin_tags "$pname")
+
+                if [[ ${#ptags[@]} -eq 0 ]]; then
+                  # No tags — pre-select by default
+                  plugin_preselected+=("$pidx")
+                else
+                  # Check if any tag matches detected tags
+                  local ptag_match=false
+                  for pt in "${ptags[@]}"; do
+                    for dt in "${DETECTED_AGENT_TAGS[@]}"; do
+                      if [[ "$pt" == "$dt" ]]; then
+                        ptag_match=true
+                        break 2
+                      fi
+                    done
+                  done
+                  $ptag_match && plugin_preselected+=("$pidx")
+                fi
+              fi
+
+              ((pidx++))
+            fi
+          done <<< "$plugins"
+        done
+
+        if [[ ${#all_plugin_names[@]} -eq 0 ]]; then
+          echo -e "${YELLOW}No plugins found in selected categories. Exiting.${NC}"
+          exit 0
+        fi
+
+        if ! checkbox_menu --back "Select plugins to install" \
+          "${plugin_options[@]}" \
+          "__SEP__" \
+          "${plugin_preselected[@]}"; then
+          agent_step=1; continue
+        fi
+
+        # Gather selected plugins
+        plugin_names=()
+        for i in "${SELECTED_INDICES[@]}"; do
+          plugin_names+=("${all_plugin_names[$i]}")
+        done
+
+        if [[ ${#plugin_names[@]} -eq 0 ]]; then
+          echo -e "${YELLOW}No plugins selected. Exiting.${NC}"
+          exit 0
+        fi
+
+        agent_step=3
+        ;;
+
+      3)
+        # Step 3: Scope selection + summary + confirm
+        if ! $SCOPE_SET_BY_FLAG; then
+          echo ""
+          select_agent_scope
+        fi
+
+        echo ""
+        echo -e "${BOLD}Plugins to install (${#plugin_names[@]}):${NC}"
+        echo -e "${DIM}  Scope: ${INSTALL_SCOPE}${NC}"
+        echo ""
+        for plugin in "${plugin_names[@]}"; do
+          local desc
+          desc=$(get_plugin_info "$plugin" "description")
+          local marketplace
+          marketplace=$(get_plugin_info "$plugin" "marketplace")
+          local agent_count
+          agent_count=$(get_plugin_info "$plugin" "agent_count")
+          echo -e "  ${GREEN}+${NC} ${BOLD}${plugin}${NC}@${marketplace} ${DIM}(${agent_count} agents) ${desc}${NC}"
+        done
+        echo ""
+
+        read -rp "$(echo -e "${BOLD}Install these plugins? ${NC}[Y/n/b] ")" confirm < /dev/tty
+        case "${confirm:-y}" in
+          [Yy]*|"")
+            install_plugins "${plugin_names[@]}"
+            break
+            ;;
+          [Bb]*)
+            agent_step=2
+            continue
+            ;;
+          *)
+            echo -e "${YELLOW}Installation cancelled.${NC}"
+            exit 0
+            ;;
+        esac
+        ;;
+    esac
   done
-
-  # Scope selection + summary + confirm
-  if ! $SCOPE_SET_BY_FLAG; then
-    echo ""
-    select_agent_scope
-  fi
-
-  echo ""
-  echo -e "${BOLD}Plugins to install (${#plugin_names[@]}):${NC}"
-  echo -e "${DIM}  Scope: ${INSTALL_SCOPE}${NC}"
-  echo ""
-  for plugin in "${plugin_names[@]}"; do
-    local desc
-    desc=$(get_plugin_info "$plugin" "description")
-    local marketplace
-    marketplace=$(get_plugin_info "$plugin" "marketplace")
-    local agent_count
-    agent_count=$(get_plugin_info "$plugin" "agent_count")
-    echo -e "  ${GREEN}+${NC} ${BOLD}${plugin}${NC}@${marketplace} ${DIM}(${agent_count} agents) ${desc}${NC}"
-  done
-  echo ""
-
-  read -rp "$(echo -e "${BOLD}Install these plugins? ${NC}[Y/n] ")" confirm < /dev/tty
-  case "${confirm:-y}" in
-    [Yy]*|"")
-      install_plugins "${plugin_names[@]}"
-      ;;
-    *)
-      echo -e "${YELLOW}Installation cancelled.${NC}"
-      exit 0
-      ;;
-  esac
 }
 
 # ============================================================================
