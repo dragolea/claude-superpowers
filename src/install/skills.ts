@@ -3,7 +3,7 @@ import { join } from "node:path";
 import * as p from "@clack/prompts";
 import { theme, formatInstallSummary } from "../ui/format.js";
 import { getSkillByName, getSourceUrl } from "../registry/skills.js";
-import { ensureGitignored, resolveSkillsDir } from "./scope.js";
+import { resolveSkillsDir } from "./scope.js";
 import type {
   SkillsRegistry,
   SourcesRegistry,
@@ -15,7 +15,6 @@ export async function downloadSkill(
   skillsRegistry: SkillsRegistry,
   sourcesRegistry: SourcesRegistry,
   skillsDir: string,
-  scope: InstallScope,
 ): Promise<boolean> {
   const skill = getSkillByName(skillsRegistry, skillName);
   if (!skill) {
@@ -37,7 +36,6 @@ export async function downloadSkill(
 
     const content = await res.text();
     await writeFile(join(targetDir, "SKILL.md"), content);
-    await ensureGitignored(`${skillsDir}/${skillName}/`, scope);
 
     console.log(`  ${theme.success("+")} ${skillName}`);
     return true;
@@ -74,7 +72,6 @@ export async function installSkills(
       skillsRegistry,
       sourcesRegistry,
       skillsDir,
-      scope,
     );
     if (ok) success++;
     else failed++;

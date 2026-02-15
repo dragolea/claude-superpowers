@@ -11,396 +11,75 @@
     }
   },
   "categories": {
-    "core-dev": {
-      "name": "Core Development",
-      "description": "API design, frontend/backend/fullstack development, mobile, UI, microservices",
-      "recommended": true
-    },
-    "languages": {
-      "name": "Language Specialists",
-      "description": "Framework and language experts — TypeScript, Python, Rust, Go, Java, C#, Swift, PHP",
-      "recommended": false
-    },
-    "infrastructure": {
-      "name": "Infrastructure",
-      "description": "Cloud, DevOps, Docker, Kubernetes, Terraform, CI/CD, networking, monitoring",
-      "recommended": false
-    },
-    "quality-security": {
-      "name": "Quality & Security",
-      "description": "Code review, testing, security auditing, debugging, compliance, penetration testing",
+    "design": {
+      "name": "Design & Accessibility",
+      "description": "UI/UX design systems, accessibility auditing, responsive patterns",
       "recommended": false
     },
     "data-ai": {
       "name": "Data & AI",
-      "description": "Data science, ML/AI engineering, MLOps, NLP, LLM architecture, database optimization",
-      "recommended": false
-    },
-    "dev-experience": {
-      "name": "Developer Experience",
-      "description": "Build tooling, CLI, dependencies, documentation, DX, git workflows, refactoring",
+      "description": "LLM applications, data pipelines, ML/AI, database management",
       "recommended": false
     },
     "specialized": {
       "name": "Specialized Domains",
-      "description": "Blockchain, embedded systems, fintech, gaming, IoT, payments, architecture modeling",
+      "description": "Blockchain, gaming, fintech, payments, architecture modeling, migrations",
       "recommended": false
     },
     "business": {
       "name": "Business & Product",
-      "description": "Product/project management, business analysis, UX research, technical writing, HR/legal",
+      "description": "Business analysis, analytics, HR/legal, sales, team collaboration",
       "recommended": false
     },
-    "orchestration": {
-      "name": "Meta & Orchestration",
-      "description": "Agent coordination, task distribution, workflow orchestration, context management",
+    "operations": {
+      "name": "Operations",
+      "description": "Incident response, performance optimization, dependency management, reverse engineering",
       "recommended": false
     },
     "research": {
       "name": "Research & Analysis",
-      "description": "Competitive analysis, market research, data research, trend analysis",
+      "description": "Competitive analysis, market research, trend analysis",
       "recommended": false
     },
     "marketing": {
       "name": "Marketing & SEO",
-      "description": "Content marketing, SEO optimization, technical SEO, analytics and monitoring",
+      "description": "Content marketing, SEO optimization, analytics and monitoring",
       "recommended": false
     }
   },
   "presets": {
-    "core-dev": {
-      "name": "Core Development",
-      "description": "Essential development plugins — frontend, backend, fullstack, API, mobile",
-      "categories": ["core-dev"]
+    "data-ai": {
+      "name": "Data & AI",
+      "description": "LLM apps, data pipelines, MLOps, database management",
+      "categories": ["data-ai"]
     },
-    "web": {
-      "name": "Web Development",
-      "description": "Core + language specialists for web frameworks",
-      "categories": ["core-dev", "languages"]
+    "business": {
+      "name": "Business & Marketing",
+      "description": "Analytics, product, HR/legal, marketing, SEO",
+      "categories": ["business", "marketing"]
     },
-    "mobile": {
-      "name": "Mobile Development",
-      "description": "Core + language specialists for mobile platforms",
-      "categories": ["core-dev", "languages"]
-    },
-    "backend": {
-      "name": "Backend / API",
-      "description": "Core + languages + infrastructure for server-side work",
-      "categories": ["core-dev", "languages", "infrastructure"]
-    },
-    "fullstack": {
-      "name": "Fullstack",
-      "description": "Core + languages + quality + developer experience",
-      "categories": ["core-dev", "languages", "quality-security", "dev-experience"]
-    },
-    "devops": {
-      "name": "DevOps",
-      "description": "Infrastructure + quality/security + orchestration",
-      "categories": ["infrastructure", "quality-security", "orchestration"]
-    },
-    "security": {
-      "name": "Security",
-      "description": "Quality/security + infrastructure security plugins",
-      "categories": ["quality-security", "infrastructure"]
+    "specialized": {
+      "name": "Specialized Domains",
+      "description": "Blockchain, gaming, fintech, payments, migrations",
+      "categories": ["specialized"]
     },
     "full": {
       "name": "Everything",
       "description": "Install all available plugins",
       "categories": [
-        "core-dev", "languages", "infrastructure", "quality-security",
-        "data-ai", "dev-experience", "specialized", "business",
-        "orchestration", "research", "marketing"
+        "design", "data-ai", "specialized", "business",
+        "operations", "research", "marketing"
       ]
     }
   },
   "plugins": [
-    {
-      "name": "voltagent-core-dev",
-      "marketplace": "voltagent-subagents",
-      "description": "Core dev agents: API designer, backend/frontend/fullstack developer, mobile, UI, GraphQL, microservices, Electron, WebSocket",
-      "agent_count": 10,
-      "tags": ["backend", "frontend", "fullstack", "mobile", "api", "design"],
-      "category": "core-dev"
-    },
-    {
-      "name": "voltagent-lang",
-      "marketplace": "voltagent-subagents",
-      "description": "Language specialists: TypeScript, Python, Rust, Go, Java, C#, Swift, PHP, Ruby, React, Vue, Angular, Next.js, Django, Spring Boot, Laravel, Flutter, Kotlin, Elixir, PowerShell, C++, SQL",
-      "agent_count": 26,
-      "tags": ["typescript", "python", "rust", "go", "java", "csharp", "swift", "php", "ruby", "react", "vue", "angular", "nextjs", "django", "spring", "laravel", "flutter", "kotlin", "elixir", "powershell", "cpp", "sql"],
-      "category": "languages"
-    },
-    {
-      "name": "voltagent-infra",
-      "marketplace": "voltagent-subagents",
-      "description": "Infrastructure agents: cloud architect, Docker, Kubernetes, Terraform, Terragrunt, Azure, SRE, DevOps, networking, platform engineering",
-      "agent_count": 16,
-      "tags": ["cloud", "docker", "kubernetes", "terraform", "azure", "devops", "sre", "networking"],
-      "category": "infrastructure"
-    },
-    {
-      "name": "voltagent-qa-sec",
-      "marketplace": "voltagent-subagents",
-      "description": "Quality & security agents: code review, testing, debugging, security auditing, penetration testing, compliance, chaos engineering",
-      "agent_count": 14,
-      "tags": ["testing", "security", "review", "debugging", "compliance", "qa"],
-      "category": "quality-security"
-    },
-    {
-      "name": "voltagent-data-ai",
-      "marketplace": "voltagent-subagents",
-      "description": "Data & AI agents: ML/AI engineering, data science, NLP, LLM architecture, MLOps, PostgreSQL, database optimization",
-      "agent_count": 12,
-      "tags": ["ai", "ml", "data", "nlp", "llm", "database", "postgresql"],
-      "category": "data-ai"
-    },
-    {
-      "name": "voltagent-dev-exp",
-      "marketplace": "voltagent-subagents",
-      "description": "DX agents: build tooling, CLI dev, documentation, git workflows, refactoring, MCP development, dependencies, Slack",
-      "agent_count": 13,
-      "tags": ["tooling", "cli", "docs", "git", "refactoring", "mcp", "dx"],
-      "category": "dev-experience"
-    },
-    {
-      "name": "voltagent-domains",
-      "marketplace": "voltagent-subagents",
-      "description": "Domain agents: blockchain, embedded systems, fintech, gaming, IoT, payments, SEO, mobile apps",
-      "agent_count": 12,
-      "tags": ["blockchain", "embedded", "fintech", "gamedev", "iot", "payments", "seo"],
-      "category": "specialized"
-    },
-    {
-      "name": "voltagent-biz",
-      "marketplace": "voltagent-subagents",
-      "description": "Business agents: product/project management, business analysis, UX research, technical writing, marketing, legal, WordPress",
-      "agent_count": 11,
-      "tags": ["product", "project-management", "business", "ux", "marketing", "legal"],
-      "category": "business"
-    },
-    {
-      "name": "voltagent-meta",
-      "marketplace": "voltagent-subagents",
-      "description": "Orchestration agents: multi-agent coordination, task distribution, workflow orchestration, context management, error coordination",
-      "agent_count": 10,
-      "tags": ["meta", "orchestration", "workflow", "coordination"],
-      "category": "orchestration"
-    },
-    {
-      "name": "voltagent-research",
-      "marketplace": "voltagent-subagents",
-      "description": "Research agents: competitive analysis, market research, data research, trend analysis, search optimization",
-      "agent_count": 6,
-      "tags": ["research", "analytics", "trends", "search"],
-      "category": "research"
-    },
-    {
-      "name": "backend-development",
-      "marketplace": "claude-code-workflows",
-      "description": "Backend API design, GraphQL architecture, workflow orchestration, event sourcing, CQRS",
-      "agent_count": 9,
-      "tags": ["backend", "api", "graphql", "microservices", "event-sourcing"],
-      "category": "core-dev"
-    },
-    {
-      "name": "frontend-mobile-development",
-      "marketplace": "claude-code-workflows",
-      "description": "React state management, Next.js App Router, Tailwind design systems, React Native",
-      "agent_count": 4,
-      "tags": ["frontend", "react", "nextjs", "tailwind", "react-native"],
-      "category": "core-dev"
-    },
-    {
-      "name": "multi-platform-apps",
-      "marketplace": "claude-code-workflows",
-      "description": "Cross-platform application development strategies and patterns",
-      "agent_count": 1,
-      "tags": ["cross-platform", "mobile", "desktop"],
-      "category": "core-dev"
-    },
-    {
-      "name": "full-stack-orchestration",
-      "marketplace": "claude-code-workflows",
-      "description": "End-to-end feature development orchestration across all layers",
-      "agent_count": 1,
-      "tags": ["fullstack", "orchestration"],
-      "category": "core-dev"
-    },
-    {
-      "name": "dotnet-contribution",
-      "marketplace": "claude-code-workflows",
-      "description": ".NET framework and C# development patterns and contributions",
-      "agent_count": 1,
-      "tags": ["dotnet", "csharp"],
-      "category": "core-dev"
-    },
     {
       "name": "ui-design",
       "marketplace": "claude-code-workflows",
       "description": "UI/UX design systems, accessibility, responsive, iOS/Android/web components, visual design",
       "agent_count": 9,
       "tags": ["design", "ui", "ux", "accessibility", "responsive"],
-      "category": "core-dev"
-    },
-    {
-      "name": "developer-essentials",
-      "marketplace": "claude-code-workflows",
-      "description": "Git workflows, SQL optimization, error handling, code review, E2E testing, auth, debugging",
-      "agent_count": 11,
-      "tags": ["git", "sql", "testing", "auth", "debugging"],
-      "category": "core-dev"
-    },
-    {
-      "name": "python-development",
-      "marketplace": "claude-code-workflows",
-      "description": "Modern Python 3.12+ with async patterns, testing, packaging, UV package manager",
-      "agent_count": 5,
-      "tags": ["python", "async", "testing", "packaging"],
-      "category": "languages"
-    },
-    {
-      "name": "javascript-typescript",
-      "marketplace": "claude-code-workflows",
-      "description": "Advanced TypeScript types, Node.js patterns, testing, modern JavaScript",
-      "agent_count": 4,
-      "tags": ["javascript", "typescript", "nodejs"],
-      "category": "languages"
-    },
-    {
-      "name": "systems-programming",
-      "marketplace": "claude-code-workflows",
-      "description": "Rust async, Go concurrency, memory safety patterns, systems-level development",
-      "agent_count": 3,
-      "tags": ["rust", "go", "systems"],
-      "category": "languages"
-    },
-    {
-      "name": "jvm-languages",
-      "marketplace": "claude-code-workflows",
-      "description": "Java, Scala, Kotlin, and JVM ecosystem development patterns",
-      "agent_count": 2,
-      "tags": ["java", "scala", "kotlin", "jvm"],
-      "category": "languages"
-    },
-    {
-      "name": "web-scripting",
-      "marketplace": "claude-code-workflows",
-      "description": "PHP, Ruby, and web scripting language development patterns",
-      "agent_count": 2,
-      "tags": ["php", "ruby"],
-      "category": "languages"
-    },
-    {
-      "name": "functional-programming",
-      "marketplace": "claude-code-workflows",
-      "description": "Haskell, Clojure, and functional programming paradigms",
-      "agent_count": 1,
-      "tags": ["haskell", "clojure", "functional"],
-      "category": "languages"
-    },
-    {
-      "name": "julia-development",
-      "marketplace": "claude-code-workflows",
-      "description": "Julia programming for scientific computing and data analysis",
-      "agent_count": 1,
-      "tags": ["julia", "scientific"],
-      "category": "languages"
-    },
-    {
-      "name": "shell-scripting",
-      "marketplace": "claude-code-workflows",
-      "description": "Bash and shell script development, automation, and best practices",
-      "agent_count": 1,
-      "tags": ["bash", "shell"],
-      "category": "languages"
-    },
-    {
-      "name": "arm-cortex-microcontrollers",
-      "marketplace": "claude-code-workflows",
-      "description": "ARM embedded systems and microcontroller development",
-      "agent_count": 1,
-      "tags": ["arm", "embedded", "microcontroller"],
-      "category": "languages"
-    },
-    {
-      "name": "deployment-strategies",
-      "marketplace": "claude-code-workflows",
-      "description": "Deployment orchestration, blue/green, canary releases, rollback strategies",
-      "agent_count": 1,
-      "tags": ["deployment", "devops"],
-      "category": "infrastructure"
-    },
-    {
-      "name": "deployment-validation",
-      "marketplace": "claude-code-workflows",
-      "description": "Deployment validation, smoke tests, health checks, verification",
-      "agent_count": 1,
-      "tags": ["deployment", "validation", "testing"],
-      "category": "infrastructure"
-    },
-    {
-      "name": "kubernetes-operations",
-      "marketplace": "claude-code-workflows",
-      "description": "K8s manifest generation, Helm charts, GitOps, security policies",
-      "agent_count": 4,
-      "tags": ["kubernetes", "helm", "gitops"],
-      "category": "infrastructure"
-    },
-    {
-      "name": "cloud-infrastructure",
-      "marketplace": "claude-code-workflows",
-      "description": "Multi-cloud Terraform, networking, cost optimization, Istio, service mesh",
-      "agent_count": 8,
-      "tags": ["cloud", "terraform", "aws", "azure", "gcp", "istio"],
-      "category": "infrastructure"
-    },
-    {
-      "name": "cicd-automation",
-      "marketplace": "claude-code-workflows",
-      "description": "Pipeline design, GitHub Actions, GitLab CI, secrets management",
-      "agent_count": 4,
-      "tags": ["cicd", "github-actions", "gitlab", "pipelines"],
-      "category": "infrastructure"
-    },
-    {
-      "name": "observability-monitoring",
-      "marketplace": "claude-code-workflows",
-      "description": "Prometheus, Grafana, distributed tracing, SLO implementation",
-      "agent_count": 4,
-      "tags": ["monitoring", "prometheus", "grafana", "tracing", "slo"],
-      "category": "infrastructure"
-    },
-    {
-      "name": "unit-testing",
-      "marketplace": "claude-code-workflows",
-      "description": "Unit and integration test automation for Python and JavaScript",
-      "agent_count": 1,
-      "tags": ["testing", "unit-tests"],
-      "category": "quality-security"
-    },
-    {
-      "name": "code-review-ai",
-      "marketplace": "claude-code-workflows",
-      "description": "AI-powered architectural review and code quality analysis",
-      "agent_count": 1,
-      "tags": ["review", "quality", "architecture"],
-      "category": "quality-security"
-    },
-    {
-      "name": "comprehensive-review",
-      "marketplace": "claude-code-workflows",
-      "description": "Comprehensive code quality and architecture reviews",
-      "agent_count": 1,
-      "tags": ["review", "quality"],
-      "category": "quality-security"
-    },
-    {
-      "name": "performance-testing-review",
-      "marketplace": "claude-code-workflows",
-      "description": "Performance testing, profiling, and optimization strategies",
-      "agent_count": 1,
-      "tags": ["performance", "testing", "profiling"],
-      "category": "quality-security"
+      "category": "design"
     },
     {
       "name": "accessibility-compliance",
@@ -408,63 +87,7 @@
       "description": "WCAG 2.2 accessibility audits, screen reader testing, compliance",
       "agent_count": 2,
       "tags": ["accessibility", "wcag", "compliance"],
-      "category": "quality-security"
-    },
-    {
-      "name": "security-scanning",
-      "marketplace": "claude-code-workflows",
-      "description": "SAST analysis, STRIDE threat modeling, attack trees, OWASP Top 10",
-      "agent_count": 5,
-      "tags": ["security", "sast", "owasp", "threat-modeling"],
-      "category": "quality-security"
-    },
-    {
-      "name": "security-compliance",
-      "marketplace": "claude-code-workflows",
-      "description": "Security compliance standards enforcement and auditing",
-      "agent_count": 1,
-      "tags": ["security", "compliance"],
-      "category": "quality-security"
-    },
-    {
-      "name": "backend-api-security",
-      "marketplace": "claude-code-workflows",
-      "description": "API security hardening, authentication, authorization patterns",
-      "agent_count": 1,
-      "tags": ["security", "api", "auth"],
-      "category": "quality-security"
-    },
-    {
-      "name": "frontend-mobile-security",
-      "marketplace": "claude-code-workflows",
-      "description": "XSS prevention, CSRF protection, content security policies",
-      "agent_count": 1,
-      "tags": ["security", "xss", "csrf", "csp"],
-      "category": "quality-security"
-    },
-    {
-      "name": "incident-response",
-      "marketplace": "claude-code-workflows",
-      "description": "Postmortem writing, incident runbooks, on-call handoffs",
-      "agent_count": 3,
-      "tags": ["incident-response", "postmortem", "runbooks"],
-      "category": "quality-security"
-    },
-    {
-      "name": "tdd-workflows",
-      "marketplace": "claude-code-workflows",
-      "description": "Test-driven development with red-green-refactor cycles",
-      "agent_count": 1,
-      "tags": ["tdd", "testing"],
-      "category": "quality-security"
-    },
-    {
-      "name": "reverse-engineering",
-      "marketplace": "claude-code-workflows",
-      "description": "Code analysis and reverse engineering techniques",
-      "agent_count": 1,
-      "tags": ["reverse-engineering", "analysis"],
-      "category": "quality-security"
+      "category": "design"
     },
     {
       "name": "llm-application-dev",
@@ -472,46 +95,6 @@
       "description": "LLM apps with LangChain, RAG, evaluation, embeddings, vector search",
       "agent_count": 8,
       "tags": ["llm", "langchain", "rag", "embeddings", "ai"],
-      "category": "data-ai"
-    },
-    {
-      "name": "agent-orchestration",
-      "marketplace": "claude-code-workflows",
-      "description": "Multi-agent orchestration and coordination patterns",
-      "agent_count": 1,
-      "tags": ["agents", "orchestration", "ai"],
-      "category": "data-ai"
-    },
-    {
-      "name": "context-management",
-      "marketplace": "claude-code-workflows",
-      "description": "Context and knowledge management systems for AI applications",
-      "agent_count": 1,
-      "tags": ["context", "knowledge", "ai"],
-      "category": "data-ai"
-    },
-    {
-      "name": "machine-learning-ops",
-      "marketplace": "claude-code-workflows",
-      "description": "MLOps pipelines, model versioning, and deployment workflows",
-      "agent_count": 1,
-      "tags": ["mlops", "ml", "pipelines"],
-      "category": "data-ai"
-    },
-    {
-      "name": "database-design",
-      "marketplace": "claude-code-workflows",
-      "description": "Database schema design, normalization, and optimization patterns",
-      "agent_count": 1,
-      "tags": ["database", "schema", "design"],
-      "category": "data-ai"
-    },
-    {
-      "name": "database-migrations",
-      "marketplace": "claude-code-workflows",
-      "description": "Database migration strategies, versioning, and automation",
-      "agent_count": 1,
-      "tags": ["database", "migrations"],
       "category": "data-ai"
     },
     {
@@ -523,6 +106,14 @@
       "category": "data-ai"
     },
     {
+      "name": "database-migrations",
+      "marketplace": "claude-code-workflows",
+      "description": "Database migration strategies, versioning, and automation",
+      "agent_count": 1,
+      "tags": ["database", "migrations"],
+      "category": "data-ai"
+    },
+    {
       "name": "data-validation-suite",
       "marketplace": "claude-code-workflows",
       "description": "Data quality validation, testing frameworks, and data integrity checks",
@@ -531,124 +122,12 @@
       "category": "data-ai"
     },
     {
-      "name": "database-cloud-optimization",
+      "name": "machine-learning-ops",
       "marketplace": "claude-code-workflows",
-      "description": "Cloud database performance optimization and cost management",
+      "description": "MLOps pipelines, model versioning, and deployment workflows",
       "agent_count": 1,
-      "tags": ["database", "cloud", "performance"],
+      "tags": ["mlops", "ml", "pipelines"],
       "category": "data-ai"
-    },
-    {
-      "name": "api-testing-observability",
-      "marketplace": "claude-code-workflows",
-      "description": "API testing strategies and observability integration",
-      "agent_count": 1,
-      "tags": ["api", "testing", "observability"],
-      "category": "data-ai"
-    },
-    {
-      "name": "code-documentation",
-      "marketplace": "claude-code-workflows",
-      "description": "Documentation generation, code explanation, and technical writing",
-      "agent_count": 1,
-      "tags": ["docs", "documentation"],
-      "category": "dev-experience"
-    },
-    {
-      "name": "debugging-toolkit",
-      "marketplace": "claude-code-workflows",
-      "description": "Interactive debugging and developer experience optimization",
-      "agent_count": 1,
-      "tags": ["debugging", "dx"],
-      "category": "dev-experience"
-    },
-    {
-      "name": "git-pr-workflows",
-      "marketplace": "claude-code-workflows",
-      "description": "Git workflow management, PR automation, and branch strategies",
-      "agent_count": 1,
-      "tags": ["git", "pr", "workflows"],
-      "category": "dev-experience"
-    },
-    {
-      "name": "code-refactoring",
-      "marketplace": "claude-code-workflows",
-      "description": "Code refactoring, modernization strategies, and pattern migration",
-      "agent_count": 1,
-      "tags": ["refactoring", "modernization"],
-      "category": "dev-experience"
-    },
-    {
-      "name": "dependency-management",
-      "marketplace": "claude-code-workflows",
-      "description": "Dependency management, updates, security audits, and lockfile maintenance",
-      "agent_count": 1,
-      "tags": ["dependencies", "packages", "security"],
-      "category": "dev-experience"
-    },
-    {
-      "name": "error-debugging",
-      "marketplace": "claude-code-workflows",
-      "description": "Error debugging and root cause analysis methodologies",
-      "agent_count": 1,
-      "tags": ["debugging", "errors"],
-      "category": "dev-experience"
-    },
-    {
-      "name": "error-diagnostics",
-      "marketplace": "claude-code-workflows",
-      "description": "Error diagnosis, stack trace analysis, and debugging methodologies",
-      "agent_count": 1,
-      "tags": ["diagnostics", "errors", "debugging"],
-      "category": "dev-experience"
-    },
-    {
-      "name": "distributed-debugging",
-      "marketplace": "claude-code-workflows",
-      "description": "Distributed system debugging, tracing, and correlation techniques",
-      "agent_count": 1,
-      "tags": ["distributed", "debugging", "tracing"],
-      "category": "dev-experience"
-    },
-    {
-      "name": "application-performance",
-      "marketplace": "claude-code-workflows",
-      "description": "Application performance optimization, profiling, and bottleneck analysis",
-      "agent_count": 1,
-      "tags": ["performance", "profiling", "optimization"],
-      "category": "dev-experience"
-    },
-    {
-      "name": "codebase-cleanup",
-      "marketplace": "claude-code-workflows",
-      "description": "Codebase cleanup, dead code removal, and optimization",
-      "agent_count": 1,
-      "tags": ["cleanup", "dead-code", "optimization"],
-      "category": "dev-experience"
-    },
-    {
-      "name": "documentation-generation",
-      "marketplace": "claude-code-workflows",
-      "description": "OpenAPI specs, changelog automation, ADRs, and documentation tooling",
-      "agent_count": 3,
-      "tags": ["docs", "openapi", "changelog", "adr"],
-      "category": "dev-experience"
-    },
-    {
-      "name": "conductor",
-      "marketplace": "claude-code-workflows",
-      "description": "Context-driven development, track management, and workflow patterns",
-      "agent_count": 3,
-      "tags": ["workflow", "context", "management"],
-      "category": "dev-experience"
-    },
-    {
-      "name": "agent-teams",
-      "marketplace": "claude-code-workflows",
-      "description": "Multi-agent team orchestration with preset team configurations",
-      "agent_count": 1,
-      "tags": ["agents", "teams", "orchestration"],
-      "category": "dev-experience"
     },
     {
       "name": "blockchain-web3",
@@ -688,14 +167,6 @@
       "description": "React/Angular modernization, database migration, dependency upgrades",
       "agent_count": 4,
       "tags": ["migration", "modernization", "frameworks"],
-      "category": "specialized"
-    },
-    {
-      "name": "api-scaffolding",
-      "marketplace": "claude-code-workflows",
-      "description": "API project scaffolding with FastAPI templates and boilerplate generation",
-      "agent_count": 1,
-      "tags": ["api", "scaffolding", "fastapi"],
       "category": "specialized"
     },
     {
@@ -745,6 +216,46 @@
       "agent_count": 1,
       "tags": ["collaboration", "communication", "teams"],
       "category": "business"
+    },
+    {
+      "name": "incident-response",
+      "marketplace": "claude-code-workflows",
+      "description": "Postmortem writing, incident runbooks, on-call handoffs",
+      "agent_count": 3,
+      "tags": ["incident-response", "postmortem", "runbooks"],
+      "category": "operations"
+    },
+    {
+      "name": "application-performance",
+      "marketplace": "claude-code-workflows",
+      "description": "Application performance optimization, profiling, and bottleneck analysis",
+      "agent_count": 1,
+      "tags": ["performance", "profiling", "optimization"],
+      "category": "operations"
+    },
+    {
+      "name": "dependency-management",
+      "marketplace": "claude-code-workflows",
+      "description": "Dependency management, updates, security audits, and lockfile maintenance",
+      "agent_count": 1,
+      "tags": ["dependencies", "packages", "security"],
+      "category": "operations"
+    },
+    {
+      "name": "reverse-engineering",
+      "marketplace": "claude-code-workflows",
+      "description": "Code analysis and reverse engineering techniques",
+      "agent_count": 1,
+      "tags": ["reverse-engineering", "analysis"],
+      "category": "operations"
+    },
+    {
+      "name": "voltagent-research",
+      "marketplace": "voltagent-subagents",
+      "description": "Research agents: competitive analysis, market research, data research, trend analysis, search optimization",
+      "agent_count": 6,
+      "tags": ["research", "analytics", "trends", "search"],
+      "category": "research"
     },
     {
       "name": "content-marketing",

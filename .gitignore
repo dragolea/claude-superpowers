@@ -3,33 +3,3 @@ node_modules/
 dist/
 *.tgz
 
-# Claude Superpowers (local scope)
-.claude/skills/systematic-debugging/
-.claude/skills/test-driven-development/
-.claude/skills/verification-before-completion/
-.claude/skills/property-based-testing/
-.claude/skills/frontend-design/
-.claude/skills/algorithmic-art/
-.claude/skills/canvas-design/
-.claude/skills/theme-factory/
-.claude/skills/slack-gif-creator/
-.claude/skills/brand-guidelines/
-.claude/skills/using-git-worktrees/
-.claude/skills/requesting-code-review/
-.claude/skills/receiving-code-review/
-.claude/skills/finishing-a-development-branch/
-.claude/skills/differential-review/
-.claude/skills/webapp-testing/
-.claude/skills/web-artifacts-builder/
-.claude/skills/react-expert/
-.claude/skills/nextjs-developer/
-.claude/skills/vue-expert/
-.claude/skills/angular-architect/
-.claude/skills/playwright-expert/
-.claude/skills/brainstorming/
-.claude/skills/writing-plans/
-.claude/skills/executing-plans/
-.claude/skills/dispatching-parallel-agents/
-.claude/skills/subagent-driven-development/
-.claude/skills/doc-coauthoring/
-.claude/skills/typescript-pro/

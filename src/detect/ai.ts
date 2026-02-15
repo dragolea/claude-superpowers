@@ -55,9 +55,8 @@ const VALID_SKILL_CATS = new Set([
   "devops", "security", "design", "documents", "meta",
 ]);
 const VALID_AGENT_CATS = new Set([
-  "core-dev", "languages", "infrastructure", "quality-security", "data-ai",
-  "dev-experience", "specialized", "business", "orchestration", "research",
-  "marketing",
+  "design", "data-ai", "specialized", "business", "operations",
+  "research", "marketing",
 ]);
 const VALID_SKILL_TAGS = new Set([
   "universal", "web", "react", "nextjs", "vue", "angular", "mobile",
@@ -66,14 +65,26 @@ const VALID_SKILL_TAGS = new Set([
   "go", "rust", "typescript", "devops", "creative", "documents", "web3",
 ]);
 const VALID_AGENT_TAGS = new Set([
-  "backend", "frontend", "fullstack", "mobile", "api", "design", "typescript",
-  "python", "rust", "go", "java", "csharp", "swift", "php", "ruby", "react",
-  "vue", "angular", "nextjs", "django", "spring", "laravel", "flutter",
-  "kotlin", "elixir", "cloud", "docker", "kubernetes", "terraform", "azure",
-  "devops", "sre", "testing", "security", "review", "debugging", "ai", "ml",
-  "data", "tooling", "cli", "docs", "git", "refactoring", "blockchain",
-  "embedded", "fintech", "gamedev", "iot", "payments", "seo", "product",
-  "marketing", "meta", "orchestration", "workflow", "research", "analytics",
+  "design", "ui", "ux", "accessibility", "responsive",
+  "llm", "langchain", "rag", "embeddings", "ai", "ml", "mlops",
+  "data", "spark", "dbt", "airflow", "pipelines", "database", "migrations",
+  "validation", "quality",
+  "blockchain", "web3", "solidity", "defi", "nft",
+  "trading", "finance", "backtesting", "risk",
+  "gamedev", "unity", "godot",
+  "architecture", "c4", "modeling", "migration", "modernization", "frameworks",
+  "payments", "stripe", "paypal", "billing", "pci",
+  "analytics", "kpi", "dashboards", "reporting",
+  "startup", "business", "financial-modeling",
+  "hr", "legal", "gdpr", "compliance",
+  "crm", "sales", "automation",
+  "collaboration", "communication", "teams",
+  "incident-response", "postmortem", "runbooks",
+  "performance", "profiling", "optimization",
+  "dependencies", "packages", "security",
+  "reverse-engineering", "analysis",
+  "research", "trends", "search",
+  "content", "marketing", "seo", "writing", "technical", "monitoring",
 ]);
 
 async function readFileSafe(path: string, maxLines: number): Promise<string> {
@@ -192,14 +203,14 @@ FIELD DEFINITIONS:
 - agent_tags: Agent tags from VALID list that match detected technologies
 
 VALID SKILL CATEGORIES: core, workflow, git, web, mobile, backend, languages, devops, security, design, documents, meta
-VALID AGENT CATEGORIES: core-dev, languages, infrastructure, quality-security, data-ai, dev-experience, specialized, business, orchestration, research, marketing
+VALID AGENT CATEGORIES: design, data-ai, specialized, business, operations, research, marketing
 VALID SKILL TAGS: universal, web, react, nextjs, vue, angular, mobile, react-native, expo, flutter, ios, swift, android, kotlin, backend, nodejs, python, php, ruby, java, cpp, csharp, go, rust, typescript, devops, creative, documents, web3
-VALID AGENT TAGS: backend, frontend, fullstack, mobile, api, design, typescript, python, rust, go, java, csharp, swift, php, ruby, react, vue, angular, nextjs, django, spring, laravel, flutter, kotlin, elixir, cloud, docker, kubernetes, terraform, azure, devops, sre, testing, security, review, debugging, ai, ml, data, tooling, cli, docs, git, refactoring, blockchain, embedded, fintech, gamedev, iot, payments, seo, product, marketing, meta, orchestration, workflow, research, analytics
+VALID AGENT TAGS: design, ui, ux, accessibility, responsive, llm, langchain, rag, embeddings, ai, ml, mlops, data, spark, dbt, airflow, pipelines, database, migrations, validation, quality, blockchain, web3, solidity, defi, nft, trading, finance, backtesting, risk, gamedev, unity, godot, architecture, c4, modeling, migration, modernization, frameworks, payments, stripe, paypal, billing, pci, analytics, kpi, dashboards, reporting, startup, business, financial-modeling, hr, legal, gdpr, compliance, crm, sales, automation, collaboration, communication, teams, incident-response, postmortem, runbooks, performance, profiling, optimization, dependencies, packages, security, reverse-engineering, analysis, research, trends, search, content, marketing, seo, writing, technical, monitoring
 
 RULES:
-1. Always include "core" and "workflow" in skill_cats, and "core-dev" in agent_cats — these are universal.
+1. Always include "core" and "workflow" in skill_cats — these are universal. Do NOT auto-include any agent_cats.
 2. Be CONSERVATIVE. Only include a category/tag if there is concrete evidence in the project files.
-3. Category-specific evidence requirements:
+3. Skill category evidence requirements:
    - "devops": ONLY if Dockerfile, docker-compose, terraform, k8s manifests, CI/CD configs, or cloud SDK dependencies exist
    - "security": ONLY if auth/crypto/security libraries are dependencies (e.g. passport, helmet, bcrypt, jsonwebtoken, oauth) or security-focused tooling is configured
    - "documents": ONLY if PDF/Office processing libraries are dependencies (e.g. pdfkit, docx, exceljs, sharp)
@@ -209,8 +220,14 @@ RULES:
    - "meta": ONLY if the project itself is a tool/framework for building developer tools or skills
    - "languages": Include when the project uses a language that has specific skill tags (e.g. TypeScript, Python, Go, Rust)
    - "backend": ONLY if server frameworks (Express, Fastify, Django, Rails, etc.), database drivers, or API frameworks are dependencies
-4. Do NOT speculatively include categories because "every project could use X". Match only what IS there, not what COULD be useful.
-5. Return ONLY the JSON object, no other text.
+4. Agent category evidence requirements (agents are for niche delegation — most projects need NO agent categories):
+   - "data-ai": ONLY if AI/ML libraries (tensorflow, pytorch, langchain, openai, transformers) or data pipeline tools (spark, dbt, airflow) are dependencies
+   - "specialized": ONLY if blockchain/web3 (hardhat, ethers, solidity), game engines (unity, godot), or payment libraries (stripe) are dependencies
+   - "design": ONLY if this is primarily a design-system or accessibility-focused project
+   - "business"/"marketing"/"research": Almost never auto-suggest — these are opt-in by users
+   - "operations": ONLY if incident management or monitoring dependencies exist
+5. Do NOT speculatively include categories because "every project could use X". Match only what IS there, not what COULD be useful.
+6. Return ONLY the JSON object, no other text.
 
 PROJECT FILES:
 ${projectContext}`;

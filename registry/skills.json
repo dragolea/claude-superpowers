@@ -391,16 +391,6 @@
       "category": "web"
     },
     {
-      "name": "playwright-expert",
-      "description": "E2E testing with Playwright \u2014 Page Object Model, browser automation, visual testing",
-      "source": "jeffallan/claude-skills",
-      "path": "skills/playwright-expert/SKILL.md",
-      "tags": [
-        "web"
-      ],
-      "category": "web"
-    },
-    {
       "name": "react-native-expert",
       "description": "Cross-platform mobile with React Native/Expo \u2014 navigation, native modules, FlatList optimization",
       "source": "jeffallan/claude-skills",
@@ -549,16 +539,6 @@
       "description": "Create MCP servers to integrate external APIs \u2014 Python (FastMCP) and TypeScript SDK",
       "source": "anthropic/skills",
       "path": "skills/mcp-builder/SKILL.md",
-      "tags": [
-        "universal"
-      ],
-      "category": "backend"
-    },
-    {
-      "name": "mcp-developer",
-      "description": "Build MCP servers and clients \u2014 protocol compliance, resource providers, tool functions",
-      "source": "jeffallan/claude-skills",
-      "path": "skills/mcp-developer/SKILL.md",
       "tags": [
         "universal"
       ],
@@ -958,16 +938,6 @@
       "description": "Introduction to the skills system \u2014 how to find and invoke skills",
       "source": "obra/superpowers",
       "path": "skills/using-superpowers/SKILL.md",
-      "tags": [
-        "universal"
-      ],
-      "category": "meta"
-    },
-    {
-      "name": "writing-skills",
-      "description": "Guide for creating new skills following the SKILL.md format",
-      "source": "obra/superpowers",
-      "path": "skills/writing-skills/SKILL.md",
       "tags": [
         "universal"
       ],
