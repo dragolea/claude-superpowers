@@ -66,6 +66,7 @@ print_help() {
   echo "  ./install.sh --search            Search & pick individual skills"
   echo "  ./install.sh --search <term>     Pre-filtered search"
   echo "  ./install.sh --update            Re-download installed skills"
+  echo "  ./install.sh --scan              Detect project stack & show categories"
   echo "  ./install.sh --help              Show this help"
   echo ""
   echo -e "${BOLD}USAGE — AGENTS (via plugin marketplace)${NC}"
@@ -663,6 +664,273 @@ select_agent_scope() {
     1) INSTALL_SCOPE="user" ;;
     2) INSTALL_SCOPE="local" ;;
   esac
+}
+
+# ============================================================================
+# Project detection
+# ============================================================================
+
+# Global arrays populated by detect_project()
+DETECTED_TECHS=()
+DETECTED_SKILL_CATS=()
+DETECTED_AGENT_CATS=()
+
+_add_tech() {
+  local tech="$1"
+  local found=false
+  for t in "${DETECTED_TECHS[@]+"${DETECTED_TECHS[@]}"}"; do
+    if [[ "$t" == "$tech" ]]; then found=true; break; fi
+  done
+  $found || DETECTED_TECHS+=("$tech")
+}
+
+_add_skill_cats() {
+  for cat in "$@"; do
+    local found=false
+    for c in "${DETECTED_SKILL_CATS[@]+"${DETECTED_SKILL_CATS[@]}"}"; do
+      if [[ "$c" == "$cat" ]]; then found=true; break; fi
+    done
+    $found || DETECTED_SKILL_CATS+=("$cat")
+  done
+}
+
+_add_agent_cats() {
+  for cat in "$@"; do
+    local found=false
+    for c in "${DETECTED_AGENT_CATS[@]+"${DETECTED_AGENT_CATS[@]}"}"; do
+      if [[ "$c" == "$cat" ]]; then found=true; break; fi
+    done
+    $found || DETECTED_AGENT_CATS+=("$cat")
+  done
+}
+
+detect_project() {
+  DETECTED_TECHS=()
+  DETECTED_SKILL_CATS=()
+  DETECTED_AGENT_CATS=()
+
+  # ---- Node.js / package.json based detection ----
+  if [[ -f "package.json" ]]; then
+    _add_tech "Node.js"
+    _add_skill_cats "core" "workflow"
+    _add_agent_cats "core-dev"
+
+    local pkg
+    pkg=$(cat package.json 2>/dev/null || true)
+
+    if echo "$pkg" | grep -q '"react-native"'; then
+      _add_tech "React Native"
+      _add_skill_cats "mobile" "languages"
+      _add_agent_cats "core-dev" "languages"
+    elif echo "$pkg" | grep -q '"react"'; then
+      _add_tech "React"
+      _add_skill_cats "web" "languages"
+      _add_agent_cats "core-dev" "languages"
+    fi
+
+    if echo "$pkg" | grep -q '"vue"'; then
+      _add_tech "Vue"
+      _add_skill_cats "web" "languages"
+      _add_agent_cats "core-dev" "languages"
+    fi
+
+    if echo "$pkg" | grep -q '"@angular/core"'; then
+      _add_tech "Angular"
+      _add_skill_cats "web" "languages"
+      _add_agent_cats "core-dev" "languages"
+    fi
+
+    if echo "$pkg" | grep -q '"next"'; then
+      _add_tech "Next.js"
+      _add_skill_cats "web" "backend" "languages"
+      _add_agent_cats "core-dev" "languages"
+    fi
+
+    if echo "$pkg" | grep -q '"nuxt"'; then
+      _add_tech "Nuxt"
+      _add_skill_cats "web" "backend" "languages"
+      _add_agent_cats "core-dev" "languages"
+    fi
+
+    if echo "$pkg" | grep -q '"express"'; then
+      _add_tech "Express"
+      _add_skill_cats "backend" "languages"
+      _add_agent_cats "core-dev" "languages"
+    fi
+
+    if echo "$pkg" | grep -q '"@nestjs/core"'; then
+      _add_tech "NestJS"
+      _add_skill_cats "backend" "languages"
+      _add_agent_cats "core-dev" "languages"
+    fi
+
+    if echo "$pkg" | grep -q '"fastify"'; then
+      _add_tech "Fastify"
+      _add_skill_cats "backend" "languages"
+      _add_agent_cats "core-dev" "languages"
+    fi
+
+    if echo "$pkg" | grep -q '"expo"'; then
+      _add_tech "Expo"
+      _add_skill_cats "mobile" "languages"
+      _add_agent_cats "core-dev" "languages"
+    fi
+
+    if echo "$pkg" | grep -qE '"(jest|vitest|mocha|cypress|playwright)"'; then
+      _add_tech "Testing"
+      _add_skill_cats "core"
+      _add_agent_cats "quality-security"
+    fi
+  fi
+
+  # ---- TypeScript ----
+  if [[ -f "tsconfig.json" ]]; then
+    _add_tech "TypeScript"
+    _add_skill_cats "languages"
+    _add_agent_cats "languages"
+  fi
+
+  # ---- Python ----
+  if [[ -f "requirements.txt" || -f "pyproject.toml" || -f "setup.py" || -f "Pipfile" ]]; then
+    _add_tech "Python"
+    _add_skill_cats "backend" "languages"
+    _add_agent_cats "core-dev" "languages"
+
+    local pydeps=""
+    [[ -f "requirements.txt" ]] && pydeps+=$(cat requirements.txt 2>/dev/null || true)
+    [[ -f "pyproject.toml" ]] && pydeps+=$(cat pyproject.toml 2>/dev/null || true)
+    [[ -f "Pipfile" ]] && pydeps+=$(cat Pipfile 2>/dev/null || true)
+
+    if echo "$pydeps" | grep -qi "django"; then
+      _add_tech "Django"
+    fi
+    if echo "$pydeps" | grep -qi "fastapi"; then
+      _add_tech "FastAPI"
+    fi
+    if echo "$pydeps" | grep -qi "flask"; then
+      _add_tech "Flask"
+    fi
+  fi
+
+  # ---- Go ----
+  if [[ -f "go.mod" ]]; then
+    _add_tech "Go"
+    _add_skill_cats "backend" "languages"
+    _add_agent_cats "core-dev" "languages"
+  fi
+
+  # ---- Rust ----
+  if [[ -f "Cargo.toml" ]]; then
+    _add_tech "Rust"
+    _add_skill_cats "backend" "languages"
+    _add_agent_cats "core-dev" "languages"
+  fi
+
+  # ---- Ruby ----
+  if [[ -f "Gemfile" ]]; then
+    _add_tech "Ruby"
+    _add_skill_cats "backend" "languages"
+    _add_agent_cats "core-dev" "languages"
+
+    if grep -qi "rails" Gemfile 2>/dev/null; then
+      _add_tech "Rails"
+    fi
+  fi
+
+  # ---- Java / Kotlin ----
+  if [[ -f "pom.xml" || -f "build.gradle" || -f "build.gradle.kts" ]]; then
+    _add_tech "Java/Kotlin"
+    _add_skill_cats "backend" "languages"
+    _add_agent_cats "core-dev" "languages"
+  fi
+
+  # ---- iOS ----
+  if [[ -f "Podfile" ]] || ls *.xcodeproj &>/dev/null; then
+    _add_tech "iOS"
+    _add_skill_cats "mobile"
+    _add_agent_cats "core-dev" "languages"
+  fi
+
+  # ---- Flutter ----
+  if [[ -f "pubspec.yaml" ]]; then
+    _add_tech "Flutter"
+    _add_skill_cats "mobile"
+    _add_agent_cats "core-dev" "languages"
+  fi
+
+  # ---- Docker ----
+  if [[ -f "Dockerfile" || -f "docker-compose.yml" || -f "docker-compose.yaml" || -f "compose.yml" || -f "compose.yaml" ]]; then
+    _add_tech "Docker"
+    _add_skill_cats "devops"
+    _add_agent_cats "infrastructure"
+  fi
+
+  # ---- Kubernetes ----
+  if [[ -d "k8s" || -d "kubernetes" ]]; then
+    _add_tech "Kubernetes"
+    _add_skill_cats "devops"
+    _add_agent_cats "infrastructure"
+  fi
+
+  # ---- Terraform ----
+  if ls *.tf &>/dev/null || [[ -d "terraform" ]]; then
+    _add_tech "Terraform"
+    _add_skill_cats "devops"
+    _add_agent_cats "infrastructure"
+  fi
+
+  # ---- CI/CD ----
+  if [[ -d ".github/workflows" || -f ".gitlab-ci.yml" || -f "Jenkinsfile" ]]; then
+    _add_tech "CI/CD"
+    _add_skill_cats "devops"
+    _add_agent_cats "infrastructure"
+  fi
+
+  # ---- Linting / Formatting ----
+  if [[ -f ".eslintrc" || -f ".eslintrc.js" || -f ".eslintrc.json" || -f ".eslintrc.yml" || -f "eslint.config.js" || -f "eslint.config.mjs" || -f ".prettierrc" || -f ".prettierrc.json" || -f "prettier.config.js" || -f "prettier.config.mjs" || -f "biome.json" ]]; then
+    _add_tech "Linting"
+    _add_skill_cats "core"
+    _add_agent_cats "dev-experience"
+  fi
+}
+
+cmd_scan() {
+  detect_project
+
+  if [[ ${#DETECTED_TECHS[@]} -eq 0 ]]; then
+    echo ""
+    echo -e "${YELLOW}No project signals detected in current directory.${NC}"
+    echo -e "${DIM}Run from a project root with package.json, go.mod, etc.${NC}"
+    echo ""
+    return 0
+  fi
+
+  echo ""
+  echo -e "${BOLD}${CYAN}Project scan results${NC}"
+  echo ""
+
+  # Detected technologies
+  local tech_list=""
+  for t in "${DETECTED_TECHS[@]}"; do
+    if [[ -n "$tech_list" ]]; then tech_list+=", "; fi
+    tech_list+="$t"
+  done
+  echo -e "  ${BOLD}Detected:${NC} ${tech_list}"
+  echo ""
+
+  # Skill categories
+  echo -e "  ${BOLD}Skill categories:${NC}"
+  for cat in "${DETECTED_SKILL_CATS[@]}"; do
+    echo -e "    ${GREEN}+${NC} ${cat}"
+  done
+  echo ""
+
+  # Agent categories
+  echo -e "  ${BOLD}Agent categories:${NC}"
+  for cat in "${DETECTED_AGENT_CATS[@]}"; do
+    echo -e "    ${GREEN}+${NC} ${cat}"
+  done
+  echo ""
 }
 
 # ============================================================================
@@ -1343,6 +1611,24 @@ cmd_interactive() {
 _run_skill_wizard() {
   local step=1
   local project_label stack_label
+  local use_detection=false
+
+  # Try auto-detection first
+  detect_project
+  if [[ ${#DETECTED_SKILL_CATS[@]} -gt 0 ]]; then
+    use_detection=true
+    step=3
+
+    # Show detection banner
+    local tech_list=""
+    for t in "${DETECTED_TECHS[@]}"; do
+      if [[ -n "$tech_list" ]]; then tech_list+=", "; fi
+      tech_list+="$t"
+    done
+    echo ""
+    echo -e "  ${GREEN}Detected:${NC} ${BOLD}${tech_list}${NC}"
+    echo -e "  ${DIM}Pre-selecting relevant categories. Press Back to choose manually.${NC}"
+  fi
 
   while true; do
     case $step in
@@ -1452,24 +1738,38 @@ _run_skill_wizard() {
           desc=$(get_category_desc "$cat_id")
           cat_options+=("${name}|${desc}")
 
-          local rec
-          rec=$(is_category_recommended "$cat_id")
-          if [[ "$rec" == "true" ]]; then
-            preselected+=("$idx")
+          if $use_detection; then
+            # Pre-select based on detection results
+            for dcat in "${DETECTED_SKILL_CATS[@]}"; do
+              if [[ "$dcat" == "$cat_id" ]]; then
+                preselected+=("$idx")
+                break
+              fi
+            done
+          else
+            local rec
+            rec=$(is_category_recommended "$cat_id")
+            if [[ "$rec" == "true" ]]; then
+              preselected+=("$idx")
+            fi
           fi
           ((idx++))
         done < <(get_all_categories)
 
-        # Go back to tech stack if applicable, otherwise project type
+        # Back behavior: detection → manual step 1; otherwise tech/project step
         local prev_step=1
-        if [[ "$project_label" == "mobile" || "$project_label" == "web" || "$project_label" == "backend" ]]; then
-          prev_step=2
+        if ! $use_detection; then
+          if [[ "$project_label" == "mobile" || "$project_label" == "web" || "$project_label" == "backend" ]]; then
+            prev_step=2
+          fi
         fi
 
         if ! checkbox_menu --back "Which skill categories do you want?" \
           "${cat_options[@]}" \
           "__SEP__" \
           "${preselected[@]}"; then
+          # If coming from detection, disable it and go to manual step 1
+          use_detection=false
           step=$prev_step; continue
         fi
 
@@ -1777,6 +2077,22 @@ cmd_agents_interactive() {
   check_claude_cli
   print_banner
 
+  # Try auto-detection
+  detect_project
+  local use_agent_detection=false
+  if [[ ${#DETECTED_AGENT_CATS[@]} -gt 0 ]]; then
+    use_agent_detection=true
+
+    local tech_list=""
+    for t in "${DETECTED_TECHS[@]}"; do
+      if [[ -n "$tech_list" ]]; then tech_list+=", "; fi
+      tech_list+="$t"
+    done
+    echo ""
+    echo -e "  ${GREEN}Detected:${NC} ${BOLD}${tech_list}${NC}"
+    echo -e "  ${DIM}Pre-selecting relevant plugin categories.${NC}"
+  fi
+
   # Step 1: Category selection
   local -a cat_ids=()
   local -a cat_options=()
@@ -1792,10 +2108,19 @@ cmd_agents_interactive() {
     desc=$(get_plugin_category_desc "$cat_id")
     cat_options+=("${name}|${desc}")
 
-    local rec
-    rec=$(is_plugin_category_recommended "$cat_id")
-    if [[ "$rec" == "true" ]]; then
-      preselected+=("$idx")
+    if $use_agent_detection; then
+      for dcat in "${DETECTED_AGENT_CATS[@]}"; do
+        if [[ "$dcat" == "$cat_id" ]]; then
+          preselected+=("$idx")
+          break
+        fi
+      done
+    else
+      local rec
+      rec=$(is_plugin_category_recommended "$cat_id")
+      if [[ "$rec" == "true" ]]; then
+        preselected+=("$idx")
+      fi
     fi
     ((idx++))
   done < <(get_all_plugin_categories)
@@ -1968,6 +2293,9 @@ main() {
       ;;
     --search|-s)
       cmd_search "${2:-}"
+      ;;
+    --scan)
+      cmd_scan
       ;;
     --version|-v)
       echo "claude-superpowers v${VERSION}"
