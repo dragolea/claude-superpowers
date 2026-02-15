@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# Wrap entire script in { } so bash reads it fully before executing.
+# This is required for `curl | bash` to work correctly with interactive TUI.
+{
 set -euo pipefail
 
 # ============================================================================
@@ -1166,3 +1169,5 @@ main() {
 }
 
 main "$@"
+exit $?
+}
