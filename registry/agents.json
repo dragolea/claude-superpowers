@@ -1,0 +1,1143 @@
+{
+  "version": "1.0.0",
+  "categories": {
+    "core-dev": {
+      "name": "Core Development",
+      "description": "API design, frontend/backend/fullstack development, mobile, UI, microservices",
+      "recommended": true
+    },
+    "languages": {
+      "name": "Language Specialists",
+      "description": "Framework and language experts — TypeScript, Python, Rust, Go, Java, C#, Swift, PHP",
+      "recommended": false
+    },
+    "infrastructure": {
+      "name": "Infrastructure",
+      "description": "Cloud, DevOps, Docker, Kubernetes, Terraform, SRE, networking, incident response",
+      "recommended": false
+    },
+    "quality-security": {
+      "name": "Quality & Security",
+      "description": "Code review, testing, security auditing, debugging, compliance, penetration testing",
+      "recommended": false
+    },
+    "data-ai": {
+      "name": "Data & AI",
+      "description": "Data science, ML/AI engineering, MLOps, NLP, LLM architecture, database optimization",
+      "recommended": false
+    },
+    "dev-experience": {
+      "name": "Developer Experience",
+      "description": "Build tooling, CLI, dependencies, documentation, DX, git workflows, refactoring",
+      "recommended": false
+    },
+    "specialized": {
+      "name": "Specialized Domains",
+      "description": "Blockchain, embedded systems, fintech, gaming, IoT, payments, SEO",
+      "recommended": false
+    },
+    "business": {
+      "name": "Business & Product",
+      "description": "Product/project management, business analysis, UX research, technical writing, marketing",
+      "recommended": false
+    },
+    "orchestration": {
+      "name": "Meta & Orchestration",
+      "description": "Agent coordination, task distribution, workflow orchestration, context management",
+      "recommended": false
+    },
+    "research": {
+      "name": "Research & Analysis",
+      "description": "Competitive analysis, market research, data research, trend analysis",
+      "recommended": false
+    }
+  },
+  "presets": {
+    "core-dev": {
+      "name": "Core Development",
+      "description": "Essential development agents — frontend, backend, fullstack, API, mobile",
+      "categories": ["core-dev"]
+    },
+    "web": {
+      "name": "Web Development",
+      "description": "Core + language specialists for web frameworks",
+      "categories": ["core-dev", "languages"]
+    },
+    "mobile": {
+      "name": "Mobile Development",
+      "description": "Core + language specialists for mobile platforms",
+      "categories": ["core-dev", "languages"]
+    },
+    "backend": {
+      "name": "Backend / API",
+      "description": "Core + languages + infrastructure for server-side work",
+      "categories": ["core-dev", "languages", "infrastructure"]
+    },
+    "fullstack": {
+      "name": "Fullstack",
+      "description": "Core + languages + quality + developer experience",
+      "categories": ["core-dev", "languages", "quality-security", "dev-experience"]
+    },
+    "devops": {
+      "name": "DevOps",
+      "description": "Infrastructure + quality/security + orchestration",
+      "categories": ["infrastructure", "quality-security", "orchestration"]
+    },
+    "security": {
+      "name": "Security",
+      "description": "Quality/security + infrastructure security agents",
+      "categories": ["quality-security", "infrastructure"]
+    },
+    "full": {
+      "name": "Everything",
+      "description": "Install all available agents",
+      "categories": [
+        "core-dev", "languages", "infrastructure", "quality-security",
+        "data-ai", "dev-experience", "specialized", "business",
+        "orchestration", "research"
+      ]
+    }
+  },
+  "agents": [
+    {
+      "name": "api-designer",
+      "description": "RESTful and GraphQL API design — schemas, versioning, pagination, error handling",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/01-core-development/api-designer.md",
+      "tags": ["backend", "api"],
+      "category": "core-dev"
+    },
+    {
+      "name": "backend-developer",
+      "description": "Server-side APIs, microservices, and backend systems — Node.js, Python, Go",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/01-core-development/backend-developer.md",
+      "tags": ["backend"],
+      "category": "core-dev"
+    },
+    {
+      "name": "electron-pro",
+      "description": "Desktop applications with Electron — IPC, native modules, packaging, auto-update",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/01-core-development/electron-pro.md",
+      "tags": ["desktop", "electron"],
+      "category": "core-dev"
+    },
+    {
+      "name": "frontend-developer",
+      "description": "Frontend interfaces — React, Vue, Angular, responsive design, accessibility",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/01-core-development/frontend-developer.md",
+      "tags": ["frontend", "web"],
+      "category": "core-dev"
+    },
+    {
+      "name": "fullstack-developer",
+      "description": "End-to-end application development spanning frontend, backend, and database layers",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/01-core-development/fullstack-developer.md",
+      "tags": ["fullstack"],
+      "category": "core-dev"
+    },
+    {
+      "name": "graphql-architect",
+      "description": "GraphQL API design — schemas, resolvers, subscriptions, federation, caching",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/01-core-development/graphql-architect.md",
+      "tags": ["backend", "graphql"],
+      "category": "core-dev"
+    },
+    {
+      "name": "microservices-architect",
+      "description": "Distributed systems design — service decomposition, messaging, resilience patterns",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/01-core-development/microservices-architect.md",
+      "tags": ["backend", "architecture"],
+      "category": "core-dev"
+    },
+    {
+      "name": "mobile-developer",
+      "description": "Cross-platform mobile development — React Native, Flutter, native iOS/Android",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/01-core-development/mobile-developer.md",
+      "tags": ["mobile"],
+      "category": "core-dev"
+    },
+    {
+      "name": "ui-designer",
+      "description": "UI/UX design implementation — component libraries, design systems, prototyping",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/01-core-development/ui-designer.md",
+      "tags": ["frontend", "design"],
+      "category": "core-dev"
+    },
+    {
+      "name": "websocket-engineer",
+      "description": "Real-time communication — WebSocket servers, Socket.io, connection management",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/01-core-development/websocket-engineer.md",
+      "tags": ["backend", "realtime"],
+      "category": "core-dev"
+    },
+    {
+      "name": "angular-architect",
+      "description": "Angular application architecture — modules, signals, dependency injection, RxJS",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/02-language-specialists/angular-architect.md",
+      "tags": ["web", "angular"],
+      "category": "languages"
+    },
+    {
+      "name": "cpp-pro",
+      "description": "Modern C++ (17/20/23) — smart pointers, ranges, coroutines, template metaprogramming",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/02-language-specialists/cpp-pro.md",
+      "tags": ["cpp"],
+      "category": "languages"
+    },
+    {
+      "name": "csharp-developer",
+      "description": "C# and .NET — async/await, LINQ, EF Core, minimal APIs, Blazor",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/02-language-specialists/csharp-developer.md",
+      "tags": ["csharp", "dotnet"],
+      "category": "languages"
+    },
+    {
+      "name": "django-developer",
+      "description": "Django and DRF — models, ORM optimization, serializers, viewsets, JWT auth",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/02-language-specialists/django-developer.md",
+      "tags": ["python", "django"],
+      "category": "languages"
+    },
+    {
+      "name": "dotnet-core-expert",
+      "description": ".NET Core and .NET 6+ — minimal APIs, dependency injection, middleware, EF Core",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/02-language-specialists/dotnet-core-expert.md",
+      "tags": ["csharp", "dotnet"],
+      "category": "languages"
+    },
+    {
+      "name": "dotnet-framework-4-8-expert",
+      "description": ".NET Framework 4.8 — WPF, WCF, ASP.NET MVC, Entity Framework, legacy modernization",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/02-language-specialists/dotnet-framework-4.8-expert.md",
+      "tags": ["csharp", "dotnet"],
+      "category": "languages"
+    },
+    {
+      "name": "elixir-expert",
+      "description": "Elixir and Phoenix — OTP, GenServer, LiveView, Ecto, distributed systems",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/02-language-specialists/elixir-expert.md",
+      "tags": ["elixir"],
+      "category": "languages"
+    },
+    {
+      "name": "flutter-expert",
+      "description": "Flutter 3+ and Dart — widgets, Riverpod/Bloc, GoRouter, platform-specific code",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/02-language-specialists/flutter-expert.md",
+      "tags": ["mobile", "flutter"],
+      "category": "languages"
+    },
+    {
+      "name": "golang-pro",
+      "description": "Go concurrency, goroutines, channels, generics, gRPC, microservices",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/02-language-specialists/golang-pro.md",
+      "tags": ["go"],
+      "category": "languages"
+    },
+    {
+      "name": "java-architect",
+      "description": "Java architecture — Spring, virtual threads, records, JVM optimization, design patterns",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/02-language-specialists/java-architect.md",
+      "tags": ["java"],
+      "category": "languages"
+    },
+    {
+      "name": "javascript-pro",
+      "description": "Modern JavaScript — ES2024+, async patterns, Web APIs, bundlers, testing",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/02-language-specialists/javascript-pro.md",
+      "tags": ["javascript"],
+      "category": "languages"
+    },
+    {
+      "name": "kotlin-specialist",
+      "description": "Kotlin for Android — coroutines, Jetpack Compose, KMP, Ktor, Gradle",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/02-language-specialists/kotlin-specialist.md",
+      "tags": ["kotlin", "android"],
+      "category": "languages"
+    },
+    {
+      "name": "laravel-specialist",
+      "description": "Laravel framework — Eloquent ORM, middleware, Blade templates, queues, testing",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/02-language-specialists/laravel-specialist.md",
+      "tags": ["php", "laravel"],
+      "category": "languages"
+    },
+    {
+      "name": "nextjs-developer",
+      "description": "Next.js 14+ App Router — server components, server actions, SSR/SSG, deployment",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/02-language-specialists/nextjs-developer.md",
+      "tags": ["web", "nextjs"],
+      "category": "languages"
+    },
+    {
+      "name": "php-pro",
+      "description": "PHP 8+ — fibers, enums, attributes, Composer, PSR standards, performance tuning",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/02-language-specialists/php-pro.md",
+      "tags": ["php"],
+      "category": "languages"
+    },
+    {
+      "name": "powershell-5-1-expert",
+      "description": "PowerShell 5.1 — Windows automation, DSC, WMI/CIM, Active Directory, registry",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/02-language-specialists/powershell-5.1-expert.md",
+      "tags": ["powershell", "windows"],
+      "category": "languages"
+    },
+    {
+      "name": "powershell-7-expert",
+      "description": "PowerShell 7+ — cross-platform scripting, parallel foreach, ternary operators, SSH remoting",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/02-language-specialists/powershell-7-expert.md",
+      "tags": ["powershell"],
+      "category": "languages"
+    },
+    {
+      "name": "python-pro",
+      "description": "Python 3.11+ — type hints, pytest, async/await, dataclasses, mypy",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/02-language-specialists/python-pro.md",
+      "tags": ["python"],
+      "category": "languages"
+    },
+    {
+      "name": "rails-expert",
+      "description": "Ruby on Rails — ActiveRecord, Hotwire, Turbo, testing, deployment conventions",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/02-language-specialists/rails-expert.md",
+      "tags": ["ruby", "rails"],
+      "category": "languages"
+    },
+    {
+      "name": "react-specialist",
+      "description": "React 18+ — hooks, Server Components, Suspense, performance, state management",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/02-language-specialists/react-specialist.md",
+      "tags": ["web", "react"],
+      "category": "languages"
+    },
+    {
+      "name": "rust-engineer",
+      "description": "Rust ownership, lifetimes, async with Tokio, macros, unsafe, FFI",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/02-language-specialists/rust-engineer.md",
+      "tags": ["rust"],
+      "category": "languages"
+    },
+    {
+      "name": "spring-boot-engineer",
+      "description": "Spring Boot microservices — dependency injection, JPA, security, cloud-native",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/02-language-specialists/spring-boot-engineer.md",
+      "tags": ["java", "spring"],
+      "category": "languages"
+    },
+    {
+      "name": "sql-pro",
+      "description": "SQL optimization — query tuning, indexing, execution plans, stored procedures",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/02-language-specialists/sql-pro.md",
+      "tags": ["database", "sql"],
+      "category": "languages"
+    },
+    {
+      "name": "swift-expert",
+      "description": "iOS/macOS with Swift 5.9+ — SwiftUI, async/await, actors, protocol-oriented design",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/02-language-specialists/swift-expert.md",
+      "tags": ["mobile", "ios", "swift"],
+      "category": "languages"
+    },
+    {
+      "name": "typescript-pro",
+      "description": "Advanced TypeScript — generics, type guards, utility types, tRPC, monorepo setup",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/02-language-specialists/typescript-pro.md",
+      "tags": ["typescript"],
+      "category": "languages"
+    },
+    {
+      "name": "vue-expert",
+      "description": "Vue.js — Composition API, Pinia state management, Vue Router, Nuxt",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/02-language-specialists/vue-expert.md",
+      "tags": ["web", "vue"],
+      "category": "languages"
+    },
+    {
+      "name": "azure-infra-engineer",
+      "description": "Azure infrastructure — ARM/Bicep templates, AKS, App Service, Azure DevOps",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/03-infrastructure/azure-infra-engineer.md",
+      "tags": ["cloud", "azure"],
+      "category": "infrastructure"
+    },
+    {
+      "name": "cloud-architect",
+      "description": "Cloud architecture across AWS, Azure, GCP — well-architected patterns, cost optimization",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/03-infrastructure/cloud-architect.md",
+      "tags": ["cloud"],
+      "category": "infrastructure"
+    },
+    {
+      "name": "database-administrator",
+      "description": "Database administration — replication, backup/restore, tuning, migration, high availability",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/03-infrastructure/database-administrator.md",
+      "tags": ["database"],
+      "category": "infrastructure"
+    },
+    {
+      "name": "deployment-engineer",
+      "description": "Application deployment — blue/green, canary, rolling updates, release automation",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/03-infrastructure/deployment-engineer.md",
+      "tags": ["devops", "deployment"],
+      "category": "infrastructure"
+    },
+    {
+      "name": "devops-engineer",
+      "description": "CI/CD pipelines, infrastructure automation, GitOps workflows, monitoring",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/03-infrastructure/devops-engineer.md",
+      "tags": ["devops"],
+      "category": "infrastructure"
+    },
+    {
+      "name": "devops-incident-responder",
+      "description": "DevOps incident response — triage, root cause analysis, runbooks, postmortems",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/03-infrastructure/devops-incident-responder.md",
+      "tags": ["devops", "incident-response"],
+      "category": "infrastructure"
+    },
+    {
+      "name": "docker-expert",
+      "description": "Docker containerization — multi-stage builds, Compose, optimization, security scanning",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/03-infrastructure/docker-expert.md",
+      "tags": ["devops", "docker"],
+      "category": "infrastructure"
+    },
+    {
+      "name": "incident-responder",
+      "description": "Production incident management — escalation, communication, mitigation, recovery",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/03-infrastructure/incident-responder.md",
+      "tags": ["sre", "incident-response"],
+      "category": "infrastructure"
+    },
+    {
+      "name": "kubernetes-specialist",
+      "description": "Kubernetes workloads — Helm charts, RBAC, NetworkPolicies, storage, troubleshooting",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/03-infrastructure/kubernetes-specialist.md",
+      "tags": ["devops", "kubernetes"],
+      "category": "infrastructure"
+    },
+    {
+      "name": "network-engineer",
+      "description": "Network architecture — routing, firewalls, load balancing, VPN, DNS, troubleshooting",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/03-infrastructure/network-engineer.md",
+      "tags": ["networking"],
+      "category": "infrastructure"
+    },
+    {
+      "name": "platform-engineer",
+      "description": "Internal developer platforms — service catalogs, self-service infrastructure, golden paths",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/03-infrastructure/platform-engineer.md",
+      "tags": ["devops", "platform"],
+      "category": "infrastructure"
+    },
+    {
+      "name": "security-engineer",
+      "description": "Infrastructure security — network hardening, IAM, secrets management, compliance",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/03-infrastructure/security-engineer.md",
+      "tags": ["security", "infrastructure"],
+      "category": "infrastructure"
+    },
+    {
+      "name": "sre-engineer",
+      "description": "Site reliability — SLIs/SLOs, incident response, capacity planning, observability",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/03-infrastructure/sre-engineer.md",
+      "tags": ["sre"],
+      "category": "infrastructure"
+    },
+    {
+      "name": "terraform-engineer",
+      "description": "Infrastructure as code with Terraform — modules, state, multi-environment, testing",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/03-infrastructure/terraform-engineer.md",
+      "tags": ["devops", "terraform"],
+      "category": "infrastructure"
+    },
+    {
+      "name": "terragrunt-expert",
+      "description": "Terragrunt — DRY Terraform configurations, multi-account, dependency management",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/03-infrastructure/terragrunt-expert.md",
+      "tags": ["devops", "terraform"],
+      "category": "infrastructure"
+    },
+    {
+      "name": "windows-infra-admin",
+      "description": "Windows Server administration — Active Directory, Group Policy, IIS, PowerShell DSC",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/03-infrastructure/windows-infra-admin.md",
+      "tags": ["windows", "infrastructure"],
+      "category": "infrastructure"
+    },
+    {
+      "name": "accessibility-tester",
+      "description": "Accessibility testing — WCAG compliance, screen reader testing, ARIA, keyboard navigation",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/04-quality-security/accessibility-tester.md",
+      "tags": ["testing", "accessibility"],
+      "category": "quality-security"
+    },
+    {
+      "name": "ad-security-reviewer",
+      "description": "Active Directory security — privilege escalation detection, GPO hardening, trust analysis",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/04-quality-security/ad-security-reviewer.md",
+      "tags": ["security", "windows"],
+      "category": "quality-security"
+    },
+    {
+      "name": "architect-reviewer",
+      "description": "Architecture review — design patterns, scalability, coupling analysis, tech debt assessment",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/04-quality-security/architect-reviewer.md",
+      "tags": ["architecture", "review"],
+      "category": "quality-security"
+    },
+    {
+      "name": "chaos-engineer",
+      "description": "Chaos engineering — fault injection, resilience testing, failure mode analysis, game days",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/04-quality-security/chaos-engineer.md",
+      "tags": ["testing", "reliability"],
+      "category": "quality-security"
+    },
+    {
+      "name": "code-reviewer",
+      "description": "Code review — style consistency, bug detection, performance, security, best practices",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/04-quality-security/code-reviewer.md",
+      "tags": ["review"],
+      "category": "quality-security"
+    },
+    {
+      "name": "compliance-auditor",
+      "description": "Compliance auditing — SOC 2, HIPAA, GDPR, PCI-DSS, evidence collection, gap analysis",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/04-quality-security/compliance-auditor.md",
+      "tags": ["security", "compliance"],
+      "category": "quality-security"
+    },
+    {
+      "name": "debugger",
+      "description": "Systematic debugging — root cause analysis, log analysis, memory profiling, stack traces",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/04-quality-security/debugger.md",
+      "tags": ["debugging"],
+      "category": "quality-security"
+    },
+    {
+      "name": "error-detective",
+      "description": "Error investigation — stack trace analysis, error pattern matching, reproduction steps",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/04-quality-security/error-detective.md",
+      "tags": ["debugging"],
+      "category": "quality-security"
+    },
+    {
+      "name": "penetration-tester",
+      "description": "Penetration testing — OWASP Top 10, vulnerability scanning, exploitation, remediation",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/04-quality-security/penetration-tester.md",
+      "tags": ["security", "pentest"],
+      "category": "quality-security"
+    },
+    {
+      "name": "performance-engineer",
+      "description": "Performance engineering — load testing, profiling, bottleneck analysis, optimization",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/04-quality-security/performance-engineer.md",
+      "tags": ["performance", "testing"],
+      "category": "quality-security"
+    },
+    {
+      "name": "powershell-security-hardening",
+      "description": "PowerShell security — execution policies, constrained language mode, logging, JEA",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/04-quality-security/powershell-security-hardening.md",
+      "tags": ["security", "powershell"],
+      "category": "quality-security"
+    },
+    {
+      "name": "qa-expert",
+      "description": "QA strategy — test planning, coverage analysis, regression testing, defect tracking",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/04-quality-security/qa-expert.md",
+      "tags": ["testing", "qa"],
+      "category": "quality-security"
+    },
+    {
+      "name": "security-auditor",
+      "description": "Security audits — SAST, DAST, dependency scanning, threat modeling, remediation",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/04-quality-security/security-auditor.md",
+      "tags": ["security"],
+      "category": "quality-security"
+    },
+    {
+      "name": "test-automator",
+      "description": "Test automation — framework setup, CI integration, parallel execution, flaky test detection",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/04-quality-security/test-automator.md",
+      "tags": ["testing", "automation"],
+      "category": "quality-security"
+    },
+    {
+      "name": "ai-engineer",
+      "description": "End-to-end AI systems — model selection, training pipelines, production deployment",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/05-data-ai/ai-engineer.md",
+      "tags": ["ai", "ml"],
+      "category": "data-ai"
+    },
+    {
+      "name": "data-analyst",
+      "description": "Data analysis — SQL queries, visualization, dashboards, statistical analysis, reporting",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/05-data-ai/data-analyst.md",
+      "tags": ["data", "analytics"],
+      "category": "data-ai"
+    },
+    {
+      "name": "data-engineer",
+      "description": "Data pipelines — ETL/ELT, data warehousing, Spark, Airflow, data quality",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/05-data-ai/data-engineer.md",
+      "tags": ["data", "engineering"],
+      "category": "data-ai"
+    },
+    {
+      "name": "data-scientist",
+      "description": "Data science — statistical modeling, feature engineering, experimentation, visualization",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/05-data-ai/data-scientist.md",
+      "tags": ["data", "ml"],
+      "category": "data-ai"
+    },
+    {
+      "name": "database-optimizer",
+      "description": "Database optimization — query tuning, index design, execution plans, partitioning",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/05-data-ai/database-optimizer.md",
+      "tags": ["database"],
+      "category": "data-ai"
+    },
+    {
+      "name": "llm-architect",
+      "description": "LLM systems — prompt engineering, RAG, fine-tuning, evaluation, deployment strategies",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/05-data-ai/llm-architect.md",
+      "tags": ["ai", "llm"],
+      "category": "data-ai"
+    },
+    {
+      "name": "machine-learning-engineer",
+      "description": "ML engineering — model training, hyperparameter tuning, feature stores, serving",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/05-data-ai/machine-learning-engineer.md",
+      "tags": ["ml"],
+      "category": "data-ai"
+    },
+    {
+      "name": "ml-engineer",
+      "description": "ML workflows — scikit-learn, PyTorch, TensorFlow, model evaluation, deployment",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/05-data-ai/ml-engineer.md",
+      "tags": ["ml"],
+      "category": "data-ai"
+    },
+    {
+      "name": "mlops-engineer",
+      "description": "MLOps — model versioning, experiment tracking, CI/CD for ML, monitoring, drift detection",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/05-data-ai/mlops-engineer.md",
+      "tags": ["ml", "devops"],
+      "category": "data-ai"
+    },
+    {
+      "name": "nlp-engineer",
+      "description": "NLP systems — text processing, transformers, embeddings, sentiment analysis, NER",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/05-data-ai/nlp-engineer.md",
+      "tags": ["ai", "nlp"],
+      "category": "data-ai"
+    },
+    {
+      "name": "postgres-pro",
+      "description": "PostgreSQL — advanced queries, extensions, replication, partitioning, performance tuning",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/05-data-ai/postgres-pro.md",
+      "tags": ["database", "postgresql"],
+      "category": "data-ai"
+    },
+    {
+      "name": "prompt-engineer",
+      "description": "Prompt engineering — chain-of-thought, few-shot, system prompts, evaluation, optimization",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/05-data-ai/prompt-engineer.md",
+      "tags": ["ai", "prompts"],
+      "category": "data-ai"
+    },
+    {
+      "name": "build-engineer",
+      "description": "Build systems — webpack, Vite, esbuild, Gradle, Make, build optimization, caching",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/06-developer-experience/build-engineer.md",
+      "tags": ["tooling", "build"],
+      "category": "dev-experience"
+    },
+    {
+      "name": "cli-developer",
+      "description": "CLI tool development — argument parsing, interactive prompts, output formatting",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/06-developer-experience/cli-developer.md",
+      "tags": ["tooling", "cli"],
+      "category": "dev-experience"
+    },
+    {
+      "name": "dependency-manager",
+      "description": "Dependency management — version conflicts, lockfiles, security audits, monorepo deps",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/06-developer-experience/dependency-manager.md",
+      "tags": ["tooling"],
+      "category": "dev-experience"
+    },
+    {
+      "name": "documentation-engineer",
+      "description": "Technical documentation — API docs, architecture diagrams, runbooks, README guides",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/06-developer-experience/documentation-engineer.md",
+      "tags": ["docs"],
+      "category": "dev-experience"
+    },
+    {
+      "name": "dx-optimizer",
+      "description": "Developer experience — workflow automation, tooling ergonomics, onboarding, productivity",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/06-developer-experience/dx-optimizer.md",
+      "tags": ["dx"],
+      "category": "dev-experience"
+    },
+    {
+      "name": "git-workflow-manager",
+      "description": "Git workflows — branching strategies, merge policies, hooks, monorepo management",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/06-developer-experience/git-workflow-manager.md",
+      "tags": ["git"],
+      "category": "dev-experience"
+    },
+    {
+      "name": "legacy-modernizer",
+      "description": "Legacy code modernization — migration planning, incremental refactoring, compatibility",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/06-developer-experience/legacy-modernizer.md",
+      "tags": ["refactoring"],
+      "category": "dev-experience"
+    },
+    {
+      "name": "mcp-developer",
+      "description": "MCP servers and clients — protocol compliance, resource providers, tool functions",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/06-developer-experience/mcp-developer.md",
+      "tags": ["mcp"],
+      "category": "dev-experience"
+    },
+    {
+      "name": "powershell-module-architect",
+      "description": "PowerShell module design — binary/script modules, manifest files, Pester testing, PSGallery",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/06-developer-experience/powershell-module-architect.md",
+      "tags": ["powershell"],
+      "category": "dev-experience"
+    },
+    {
+      "name": "powershell-ui-architect",
+      "description": "PowerShell UI — WPF/XAML interfaces, console formatting, Progress bars, Out-GridView",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/06-developer-experience/powershell-ui-architect.md",
+      "tags": ["powershell", "ui"],
+      "category": "dev-experience"
+    },
+    {
+      "name": "refactoring-specialist",
+      "description": "Code refactoring — extract methods, design patterns, reduce complexity, preserve behavior",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/06-developer-experience/refactoring-specialist.md",
+      "tags": ["refactoring"],
+      "category": "dev-experience"
+    },
+    {
+      "name": "slack-expert",
+      "description": "Slack integrations — Bolt framework, slash commands, interactive messages, workflows",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/06-developer-experience/slack-expert.md",
+      "tags": ["integrations", "slack"],
+      "category": "dev-experience"
+    },
+    {
+      "name": "tooling-engineer",
+      "description": "Developer tooling — linters, formatters, IDE extensions, code generators, scaffolding",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/06-developer-experience/tooling-engineer.md",
+      "tags": ["tooling"],
+      "category": "dev-experience"
+    },
+    {
+      "name": "api-documenter",
+      "description": "API documentation — OpenAPI/Swagger specs, examples, versioning, developer portals",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/07-specialized-domains/api-documenter.md",
+      "tags": ["docs", "api"],
+      "category": "specialized"
+    },
+    {
+      "name": "blockchain-developer",
+      "description": "Blockchain development — Solidity, smart contracts, DeFi, Web3.js, auditing",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/07-specialized-domains/blockchain-developer.md",
+      "tags": ["blockchain", "web3"],
+      "category": "specialized"
+    },
+    {
+      "name": "embedded-systems",
+      "description": "Embedded systems — firmware, RTOS, bare-metal C/C++, hardware interfaces, drivers",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/07-specialized-domains/embedded-systems.md",
+      "tags": ["embedded", "hardware"],
+      "category": "specialized"
+    },
+    {
+      "name": "fintech-engineer",
+      "description": "Financial technology — payment processing, ledgers, regulatory compliance, trading systems",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/07-specialized-domains/fintech-engineer.md",
+      "tags": ["fintech"],
+      "category": "specialized"
+    },
+    {
+      "name": "game-developer",
+      "description": "Game development — Unity, Unreal, game loops, physics, shaders, multiplayer networking",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/07-specialized-domains/game-developer.md",
+      "tags": ["gamedev"],
+      "category": "specialized"
+    },
+    {
+      "name": "iot-engineer",
+      "description": "IoT engineering — device communication, MQTT, edge computing, sensor networks",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/07-specialized-domains/iot-engineer.md",
+      "tags": ["iot"],
+      "category": "specialized"
+    },
+    {
+      "name": "m365-admin",
+      "description": "Microsoft 365 administration — Exchange, SharePoint, Teams, Azure AD, compliance",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/07-specialized-domains/m365-admin.md",
+      "tags": ["microsoft", "admin"],
+      "category": "specialized"
+    },
+    {
+      "name": "mobile-app-developer",
+      "description": "Mobile app development — app store optimization, push notifications, deep linking",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/07-specialized-domains/mobile-app-developer.md",
+      "tags": ["mobile"],
+      "category": "specialized"
+    },
+    {
+      "name": "payment-integration",
+      "description": "Payment integration — Stripe, PayPal, PCI compliance, webhooks, subscription billing",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/07-specialized-domains/payment-integration.md",
+      "tags": ["payments"],
+      "category": "specialized"
+    },
+    {
+      "name": "quant-analyst",
+      "description": "Quantitative analysis — financial modeling, algorithmic trading, risk metrics, backtesting",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/07-specialized-domains/quant-analyst.md",
+      "tags": ["finance", "analytics"],
+      "category": "specialized"
+    },
+    {
+      "name": "risk-manager",
+      "description": "Risk management — threat assessment, mitigation strategies, business continuity, compliance",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/07-specialized-domains/risk-manager.md",
+      "tags": ["risk"],
+      "category": "specialized"
+    },
+    {
+      "name": "seo-specialist",
+      "description": "SEO optimization — technical SEO, structured data, Core Web Vitals, content strategy",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/07-specialized-domains/seo-specialist.md",
+      "tags": ["seo", "web"],
+      "category": "specialized"
+    },
+    {
+      "name": "business-analyst",
+      "description": "Business analysis — requirements gathering, process modeling, stakeholder management",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/08-business-product/business-analyst.md",
+      "tags": ["business"],
+      "category": "business"
+    },
+    {
+      "name": "content-marketer",
+      "description": "Content marketing — editorial calendars, SEO writing, brand voice, analytics",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/08-business-product/content-marketer.md",
+      "tags": ["marketing"],
+      "category": "business"
+    },
+    {
+      "name": "customer-success-manager",
+      "description": "Customer success — onboarding, health scoring, churn prevention, expansion strategies",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/08-business-product/customer-success-manager.md",
+      "tags": ["customer-success"],
+      "category": "business"
+    },
+    {
+      "name": "legal-advisor",
+      "description": "Legal advisory — contracts, IP, privacy regulations, terms of service, compliance",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/08-business-product/legal-advisor.md",
+      "tags": ["legal"],
+      "category": "business"
+    },
+    {
+      "name": "product-manager",
+      "description": "Product management — roadmapping, prioritization, user stories, stakeholder alignment",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/08-business-product/product-manager.md",
+      "tags": ["product"],
+      "category": "business"
+    },
+    {
+      "name": "project-manager",
+      "description": "Project management — Agile/Scrum, timelines, resource allocation, risk tracking",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/08-business-product/project-manager.md",
+      "tags": ["project-management"],
+      "category": "business"
+    },
+    {
+      "name": "sales-engineer",
+      "description": "Sales engineering — technical demos, proof of concepts, RFP responses, solution design",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/08-business-product/sales-engineer.md",
+      "tags": ["sales"],
+      "category": "business"
+    },
+    {
+      "name": "scrum-master",
+      "description": "Scrum facilitation — sprint planning, retrospectives, velocity tracking, impediment removal",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/08-business-product/scrum-master.md",
+      "tags": ["agile"],
+      "category": "business"
+    },
+    {
+      "name": "technical-writer",
+      "description": "Technical writing — user guides, API references, tutorials, information architecture",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/08-business-product/technical-writer.md",
+      "tags": ["docs"],
+      "category": "business"
+    },
+    {
+      "name": "ux-researcher",
+      "description": "UX research — user interviews, usability testing, journey mapping, personas, A/B testing",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/08-business-product/ux-researcher.md",
+      "tags": ["ux", "research"],
+      "category": "business"
+    },
+    {
+      "name": "wordpress-master",
+      "description": "WordPress development — themes, plugins, Gutenberg blocks, WooCommerce, performance",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/08-business-product/wordpress-master.md",
+      "tags": ["wordpress", "web"],
+      "category": "business"
+    },
+    {
+      "name": "agent-installer",
+      "description": "Agent installation — setup, configuration, dependency resolution, environment validation",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/09-meta-orchestration/agent-installer.md",
+      "tags": ["meta"],
+      "category": "orchestration"
+    },
+    {
+      "name": "agent-organizer",
+      "description": "Agent organization — cataloging, tagging, routing rules, capability mapping",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/09-meta-orchestration/agent-organizer.md",
+      "tags": ["meta"],
+      "category": "orchestration"
+    },
+    {
+      "name": "context-manager",
+      "description": "Context management — memory optimization, conversation summarization, state tracking",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/09-meta-orchestration/context-manager.md",
+      "tags": ["meta"],
+      "category": "orchestration"
+    },
+    {
+      "name": "error-coordinator",
+      "description": "Error coordination — error aggregation, pattern detection, automated recovery workflows",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/09-meta-orchestration/error-coordinator.md",
+      "tags": ["meta"],
+      "category": "orchestration"
+    },
+    {
+      "name": "it-ops-orchestrator",
+      "description": "IT operations orchestration — runbook automation, change management, service desk workflows",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/09-meta-orchestration/it-ops-orchestrator.md",
+      "tags": ["meta", "operations"],
+      "category": "orchestration"
+    },
+    {
+      "name": "knowledge-synthesizer",
+      "description": "Knowledge synthesis — cross-domain research, pattern identification, insight generation",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/09-meta-orchestration/knowledge-synthesizer.md",
+      "tags": ["meta", "research"],
+      "category": "orchestration"
+    },
+    {
+      "name": "multi-agent-coordinator",
+      "description": "Multi-agent coordination — task routing, agent selection, result aggregation, conflict resolution",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/09-meta-orchestration/multi-agent-coordinator.md",
+      "tags": ["meta"],
+      "category": "orchestration"
+    },
+    {
+      "name": "performance-monitor",
+      "description": "Performance monitoring — metrics collection, alerting, dashboards, anomaly detection",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/09-meta-orchestration/performance-monitor.md",
+      "tags": ["meta", "monitoring"],
+      "category": "orchestration"
+    },
+    {
+      "name": "task-distributor",
+      "description": "Task distribution — workload balancing, priority queuing, parallel execution, scheduling",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/09-meta-orchestration/task-distributor.md",
+      "tags": ["meta"],
+      "category": "orchestration"
+    },
+    {
+      "name": "workflow-orchestrator",
+      "description": "Workflow orchestration — pipeline design, step sequencing, error handling, state machines",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/09-meta-orchestration/workflow-orchestrator.md",
+      "tags": ["meta"],
+      "category": "orchestration"
+    },
+    {
+      "name": "competitive-analyst",
+      "description": "Competitive analysis — market positioning, feature comparison, SWOT, pricing strategy",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/10-research-analysis/competitive-analyst.md",
+      "tags": ["research", "business"],
+      "category": "research"
+    },
+    {
+      "name": "data-researcher",
+      "description": "Data research — dataset discovery, data quality assessment, statistical validation",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/10-research-analysis/data-researcher.md",
+      "tags": ["research", "data"],
+      "category": "research"
+    },
+    {
+      "name": "market-researcher",
+      "description": "Market research — industry analysis, customer segmentation, TAM/SAM/SOM, surveys",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/10-research-analysis/market-researcher.md",
+      "tags": ["research", "business"],
+      "category": "research"
+    },
+    {
+      "name": "research-analyst",
+      "description": "Research analysis — literature review, methodology design, data interpretation, reporting",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/10-research-analysis/research-analyst.md",
+      "tags": ["research"],
+      "category": "research"
+    },
+    {
+      "name": "search-specialist",
+      "description": "Search optimization — Elasticsearch, Solr, relevance tuning, autocomplete, faceted search",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/10-research-analysis/search-specialist.md",
+      "tags": ["search"],
+      "category": "research"
+    },
+    {
+      "name": "trend-analyst",
+      "description": "Trend analysis — emerging technology tracking, adoption curves, market signals, forecasting",
+      "source": "voltagent/awesome-claude-code-subagents",
+      "path": "categories/10-research-analysis/trend-analyst.md",
+      "tags": ["research", "trends"],
+      "category": "research"
+    }
+  ]
+}

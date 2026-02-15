@@ -29,6 +29,12 @@
       "base_url": "https://raw.githubusercontent.com/agamm/claude-code-owasp/main",
       "repo_url": "https://github.com/agamm/claude-code-owasp",
       "description": "OWASP Top 10:2025, ASVS 5.0, and Agentic AI security review"
+    },
+    "voltagent/awesome-claude-code-subagents": {
+      "name": "VoltAgent Subagents",
+      "base_url": "https://raw.githubusercontent.com/VoltAgent/awesome-claude-code-subagents/main",
+      "repo_url": "https://github.com/VoltAgent/awesome-claude-code-subagents",
+      "description": "130+ specialized AI agent personas for development, infrastructure, security, data, and business"
     }
   }
 }

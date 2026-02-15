@@ -25,6 +25,7 @@ VERSION="2.0.0"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
 REGISTRY_URL="https://raw.githubusercontent.com/dragolea/claude-superpowers/main/registry"
 SKILLS_DIR=".claude/skills"
+AGENTS_DIR=".claude/agents"
 
 # Colors
 RED='\033[0;31m'
@@ -57,16 +58,24 @@ print_banner() {
 
 print_help() {
   print_banner
-  echo -e "${BOLD}USAGE${NC}"
+  echo -e "${BOLD}USAGE — SKILLS${NC}"
   echo "  ./install.sh                     Interactive mode"
   echo "  ./install.sh --preset <name>     Install a preset"
   echo "  ./install.sh --list              List all skills"
-  echo "  ./install.sh --search              Search & pick individual skills"
-  echo "  ./install.sh --search <term>       Pre-filtered search"
+  echo "  ./install.sh --search            Search & pick individual skills"
+  echo "  ./install.sh --search <term>     Pre-filtered search"
   echo "  ./install.sh --update            Re-download installed skills"
   echo "  ./install.sh --help              Show this help"
   echo ""
-  echo -e "${BOLD}PRESETS${NC}"
+  echo -e "${BOLD}USAGE — AGENTS${NC}"
+  echo "  ./install.sh --agents                     Interactive mode"
+  echo "  ./install.sh --agents --preset <name>     Install a preset"
+  echo "  ./install.sh --agents --list              List all agents"
+  echo "  ./install.sh --agents --search [term]     Search & pick agents"
+  echo "  ./install.sh --agents --update            Re-download installed agents"
+  echo "  ./install.sh --agents --help              Agent help"
+  echo ""
+  echo -e "${BOLD}SKILL PRESETS${NC}"
   echo "  core           Debugging, TDD, verification (4 skills)"
   echo "  workflow        Core + planning & execution (10 skills)"
   echo "  web            Web stack + frameworks + design (28 skills)"
@@ -82,7 +91,8 @@ print_help() {
   echo -e "${BOLD}EXAMPLES${NC}"
   echo "  ./install.sh --preset core"
   echo "  ./install.sh --preset mobile-expo"
-  echo "  ./install.sh --list"
+  echo "  ./install.sh --agents --preset fullstack"
+  echo "  ./install.sh --agents --search kubernetes"
   echo ""
 }
 
@@ -112,6 +122,13 @@ query = '''$query'''
 # Simple jq-compatible queries
 if query == '.skills | length':
     print(len(data['skills']))
+elif query == '.agents | length':
+    print(len(data['agents']))
+elif query.startswith('.agents['):
+    import re
+    m = re.match(r'\.agents\[(\d+)\]\.(\w+)', query)
+    if m:
+        print(data['agents'][int(m.group(1))][m.group(2)])
 elif query.startswith('.skills['):
     import re
     m = re.match(r'\.skills\[(\d+)\]\.(\w+)', query)
@@ -170,6 +187,31 @@ load_registry() {
   fi
 
   SKILL_COUNT=$(json_query "$SKILLS_JSON" '.skills | length')
+}
+
+load_agent_registry() {
+  local agents_file=""
+  local sources_file=""
+
+  # Try local registry first (when running from repo), then fetch from GitHub
+  if [[ -f "${SCRIPT_DIR}/registry/agents.json" ]]; then
+    agents_file="${SCRIPT_DIR}/registry/agents.json"
+    sources_file="${SCRIPT_DIR}/registry/sources.json"
+    AGENTS_JSON=$(cat "$agents_file")
+    SOURCES_JSON=$(cat "$sources_file")
+  else
+    echo -e "${DIM}Fetching agent registry from GitHub...${NC}"
+    AGENTS_JSON=$(curl -sL --fail "${REGISTRY_URL}/agents.json") || {
+      echo -e "${RED}Failed to fetch agent registry.${NC}"
+      exit 1
+    }
+    SOURCES_JSON=$(curl -sL --fail "${REGISTRY_URL}/sources.json") || {
+      echo -e "${RED}Failed to fetch source registry.${NC}"
+      exit 1
+    }
+  fi
+
+  AGENT_COUNT=$(json_query "$AGENTS_JSON" '.agents | length')
 }
 
 # Get base URL for a source
@@ -295,6 +337,123 @@ get_preset_categories() {
     echo "$SKILLS_JSON" | jq -r ".presets[\"${preset_name}\"].categories[]"
   else
     echo "$SKILLS_JSON" | python3 -c "
+import sys, json
+data = json.load(sys.stdin)
+for c in data['presets']['${preset_name}']['categories']:
+    print(c)
+"
+  fi
+}
+
+# ============================================================================
+# Agent queries
+# ============================================================================
+
+# Get all agents matching given categories
+get_agents_by_categories() {
+  local categories=("$@")
+  if command -v jq &>/dev/null; then
+    local filter
+    filter=$(printf '"%s",' "${categories[@]}")
+    filter="[${filter%,}]"
+    echo "$AGENTS_JSON" | jq -r --argjson cats "$filter" \
+      '.agents[] | select(.category as $c | $cats | index($c)) | .name'
+  else
+    local cats_str
+    cats_str=$(printf "'%s'," "${categories[@]}")
+    cats_str="[${cats_str%,}]"
+    echo "$AGENTS_JSON" | python3 -c "
+import sys, json
+data = json.load(sys.stdin)
+cats = ${cats_str}
+for a in data['agents']:
+    if a['category'] in cats:
+        print(a['name'])
+"
+  fi
+}
+
+# Get agent info by name
+get_agent_info() {
+  local agent_name="$1"
+  local field="$2"
+  if command -v jq &>/dev/null; then
+    echo "$AGENTS_JSON" | jq -r ".agents[] | select(.name == \"${agent_name}\") | .${field}"
+  else
+    echo "$AGENTS_JSON" | python3 -c "
+import sys, json
+data = json.load(sys.stdin)
+for a in data['agents']:
+    if a['name'] == '${agent_name}':
+        print(a['${field}'])
+        break
+"
+  fi
+}
+
+# Get all unique agent categories
+get_all_agent_categories() {
+  if command -v jq &>/dev/null; then
+    echo "$AGENTS_JSON" | jq -r '.categories | keys[]'
+  else
+    echo "$AGENTS_JSON" | python3 -c "
+import sys, json
+data = json.load(sys.stdin)
+for k in data['categories']:
+    print(k)
+"
+  fi
+}
+
+# Get agent category display name
+get_agent_category_name() {
+  local cat_id="$1"
+  if command -v jq &>/dev/null; then
+    echo "$AGENTS_JSON" | jq -r ".categories[\"${cat_id}\"].name"
+  else
+    echo "$AGENTS_JSON" | python3 -c "
+import sys, json
+data = json.load(sys.stdin)
+print(data['categories']['${cat_id}']['name'])
+"
+  fi
+}
+
+# Get agent category description
+get_agent_category_desc() {
+  local cat_id="$1"
+  if command -v jq &>/dev/null; then
+    echo "$AGENTS_JSON" | jq -r ".categories[\"${cat_id}\"].description"
+  else
+    echo "$AGENTS_JSON" | python3 -c "
+import sys, json
+data = json.load(sys.stdin)
+print(data['categories']['${cat_id}']['description'])
+"
+  fi
+}
+
+# Check if agent category is recommended
+is_agent_category_recommended() {
+  local cat_id="$1"
+  if command -v jq &>/dev/null; then
+    echo "$AGENTS_JSON" | jq -r ".categories[\"${cat_id}\"].recommended"
+  else
+    echo "$AGENTS_JSON" | python3 -c "
+import sys, json
+data = json.load(sys.stdin)
+print(str(data['categories']['${cat_id}'].get('recommended', False)).lower())
+"
+  fi
+}
+
+# Get agent preset categories
+get_agent_preset_categories() {
+  local preset_name="$1"
+  if command -v jq &>/dev/null; then
+    echo "$AGENTS_JSON" | jq -r ".presets[\"${preset_name}\"].categories[]"
+  else
+    echo "$AGENTS_JSON" | python3 -c "
 import sys, json
 data = json.load(sys.stdin)
 for c in data['presets']['${preset_name}']['categories']:
@@ -787,6 +946,66 @@ install_skills() {
 }
 
 # ============================================================================
+# Agent installation
+# ============================================================================
+
+download_agent() {
+  local agent_name="$1"
+  local source
+  local path
+  local base_url
+
+  source=$(get_agent_info "$agent_name" "source")
+  path=$(get_agent_info "$agent_name" "path")
+  base_url=$(get_source_url "$source")
+
+  mkdir -p "$AGENTS_DIR"
+
+  local url="${base_url}/${path}"
+  if curl -sL --fail "$url" -o "${AGENTS_DIR}/${agent_name}.md" 2>/dev/null; then
+    echo -e "  ${GREEN}+${NC} ${agent_name}"
+    return 0
+  else
+    echo -e "  ${RED}x${NC} ${agent_name} ${DIM}(download failed)${NC}"
+    rm -f "${AGENTS_DIR}/${agent_name}.md"
+    return 1
+  fi
+}
+
+install_agents() {
+  local -a agent_names=("$@")
+  local success=0
+  local failed=0
+  local total=${#agent_names[@]}
+
+  echo ""
+  echo -e "${BOLD}Installing ${total} agents to ${AGENTS_DIR}/${NC}"
+  echo ""
+
+  mkdir -p "$AGENTS_DIR"
+
+  for agent in "${agent_names[@]}"; do
+    if download_agent "$agent"; then
+      ((success++))
+    else
+      ((failed++))
+    fi
+  done
+
+  echo ""
+  echo -e "${BOLD}────────────────────────────────────${NC}"
+  echo -e "  ${GREEN}Installed:${NC} ${success} agents"
+  if [[ $failed -gt 0 ]]; then
+    echo -e "  ${RED}Failed:${NC}    ${failed} agents"
+  fi
+  echo -e "${BOLD}────────────────────────────────────${NC}"
+  echo ""
+  echo -e "Agents installed to: ${BOLD}${AGENTS_DIR}/${NC}"
+  echo -e "Run ${DIM}./install.sh --agents --update${NC} to refresh later."
+  echo ""
+}
+
+# ============================================================================
 # Commands
 # ============================================================================
 
@@ -1127,11 +1346,306 @@ cmd_interactive() {
 }
 
 # ============================================================================
+# Agent commands
+# ============================================================================
+
+print_agents_help() {
+  print_banner
+  echo -e "${BOLD}AGENT INSTALLATION${NC}"
+  echo ""
+  echo -e "${BOLD}USAGE${NC}"
+  echo "  ./install.sh --agents                     Interactive mode"
+  echo "  ./install.sh --agents --preset <name>     Install a preset"
+  echo "  ./install.sh --agents --list              List all agents"
+  echo "  ./install.sh --agents --search            Search & pick agents"
+  echo "  ./install.sh --agents --search <term>     Pre-filtered search"
+  echo "  ./install.sh --agents --update            Re-download installed agents"
+  echo "  ./install.sh --agents --help              Show this help"
+  echo ""
+  echo -e "${BOLD}PRESETS${NC}"
+  echo "  core-dev       Frontend, backend, fullstack, API, mobile (10 agents)"
+  echo "  web            Core + language specialists (36 agents)"
+  echo "  mobile         Core + language specialists (36 agents)"
+  echo "  backend        Core + languages + infrastructure (52 agents)"
+  echo "  fullstack      Core + languages + quality + DX (63 agents)"
+  echo "  devops         Infrastructure + quality + orchestration (40 agents)"
+  echo "  security       Quality/security + infrastructure (30 agents)"
+  echo "  full           Everything (130 agents)"
+  echo ""
+  echo -e "${BOLD}EXAMPLES${NC}"
+  echo "  ./install.sh --agents --preset core-dev"
+  echo "  ./install.sh --agents --search kubernetes"
+  echo "  ./install.sh --agents --list"
+  echo ""
+}
+
+cmd_agents_list() {
+  load_agent_registry
+  echo ""
+  echo -e "${BOLD}Available Agents (${AGENT_COUNT} total)${NC}"
+  echo ""
+
+  local categories
+  categories=$(get_all_agent_categories)
+
+  while IFS= read -r cat_id; do
+    local cat_name
+    cat_name=$(get_agent_category_name "$cat_id")
+    local cat_desc
+    cat_desc=$(get_agent_category_desc "$cat_id")
+    echo -e "  ${BOLD}${CYAN}${cat_name}${NC} ${DIM}— ${cat_desc}${NC}"
+
+    local agents
+    agents=$(get_agents_by_categories "$cat_id")
+    while IFS= read -r agent_name; do
+      [[ -z "$agent_name" ]] && continue
+      local desc
+      desc=$(get_agent_info "$agent_name" "description")
+
+      local installed=""
+      if [[ -f "${AGENTS_DIR}/${agent_name}.md" ]]; then
+        installed="${GREEN} (installed)${NC}"
+      fi
+
+      echo -e "    ${BOLD}${agent_name}${NC}${installed}"
+      echo -e "    ${DIM}${desc}${NC}"
+      echo ""
+    done <<< "$agents"
+  done <<< "$categories"
+}
+
+cmd_agents_preset() {
+  local preset_name="$1"
+  load_agent_registry
+
+  # Validate preset
+  local valid_presets
+  valid_presets=$(json_query "$AGENTS_JSON" '.presets | keys[]')
+  if ! echo "$valid_presets" | grep -qx "$preset_name"; then
+    echo -e "${RED}Unknown agent preset: ${preset_name}${NC}"
+    echo ""
+    echo "Available presets:"
+    while IFS= read -r p; do
+      echo "  $p"
+    done <<< "$valid_presets"
+    exit 1
+  fi
+
+  echo -e "${BOLD}Installing agent preset: ${CYAN}${preset_name}${NC}"
+
+  local -a categories=()
+  while IFS= read -r line; do
+    [[ -n "$line" ]] && categories+=("$line")
+  done < <(get_agent_preset_categories "$preset_name")
+
+  local -a agent_names=()
+  for cat in "${categories[@]}"; do
+    local agents
+    agents=$(get_agents_by_categories "$cat")
+    while IFS= read -r name; do
+      [[ -n "$name" ]] && agent_names+=("$name")
+    done <<< "$agents"
+  done
+
+  install_agents "${agent_names[@]}"
+}
+
+cmd_agents_search() {
+  local initial_filter="${1:-}"
+  load_agent_registry
+  print_banner
+
+  # Build parallel arrays of all agents
+  _SCM_NAMES=()
+  _SCM_DESCS=()
+  for ((i = 0; i < AGENT_COUNT; i++)); do
+    _SCM_NAMES+=("$(json_query "$AGENTS_JSON" ".agents[$i].name")")
+    _SCM_DESCS+=("$(json_query "$AGENTS_JSON" ".agents[$i].description")")
+  done
+
+  echo ""
+  if search_checkbox_menu "Search agents (${AGENT_COUNT} available)" "$AGENT_COUNT" "$initial_filter"; then
+    if [[ ${#SELECTED_SKILLS[@]} -eq 0 ]]; then
+      echo -e "${YELLOW}No agents selected. Exiting.${NC}"
+      exit 0
+    fi
+
+    # Confirmation
+    echo ""
+    echo -e "${BOLD}Agents to install (${#SELECTED_SKILLS[@]}):${NC}"
+    echo ""
+    for agent in "${SELECTED_SKILLS[@]}"; do
+      local desc
+      desc=$(get_agent_info "$agent" "description")
+      echo -e "  ${GREEN}+${NC} ${BOLD}${agent}${NC}  ${DIM}${desc}${NC}"
+    done
+    echo ""
+
+    read -rp "$(echo -e "${BOLD}Install these agents? ${NC}[Y/n] ")" confirm < /dev/tty
+    case "${confirm:-y}" in
+      [Yy]*|"")
+        install_agents "${SELECTED_SKILLS[@]}"
+        ;;
+      *)
+        echo -e "${YELLOW}Installation cancelled.${NC}"
+        exit 0
+        ;;
+    esac
+  else
+    echo ""
+    echo -e "${YELLOW}Search cancelled.${NC}"
+    exit 0
+  fi
+}
+
+cmd_agents_update() {
+  load_agent_registry
+
+  if [[ ! -d "$AGENTS_DIR" ]]; then
+    echo -e "${YELLOW}No agents installed yet. Run ./install.sh --agents first.${NC}"
+    exit 0
+  fi
+
+  echo -e "${BOLD}Updating installed agents...${NC}"
+
+  local -a installed=()
+  for file in "${AGENTS_DIR}"/*.md; do
+    [[ -f "$file" ]] || continue
+    local name
+    name=$(basename "$file" .md)
+    installed+=("$name")
+  done
+
+  if [[ ${#installed[@]} -eq 0 ]]; then
+    echo -e "${YELLOW}No agents found in ${AGENTS_DIR}/${NC}"
+    exit 0
+  fi
+
+  install_agents "${installed[@]}"
+}
+
+cmd_agents_interactive() {
+  load_agent_registry
+  print_banner
+
+  # Step 1: Category selection
+  local -a cat_ids=()
+  local -a cat_options=()
+  local -a preselected=()
+  local idx=0
+
+  while IFS= read -r cat_id; do
+    [[ -z "$cat_id" ]] && continue
+    cat_ids+=("$cat_id")
+    local name
+    name=$(get_agent_category_name "$cat_id")
+    local desc
+    desc=$(get_agent_category_desc "$cat_id")
+    cat_options+=("${name}|${desc}")
+
+    local rec
+    rec=$(is_agent_category_recommended "$cat_id")
+    if [[ "$rec" == "true" ]]; then
+      preselected+=("$idx")
+    fi
+    ((idx++))
+  done < <(get_all_agent_categories)
+
+  echo ""
+  if ! checkbox_menu "Which agent categories do you want?" \
+    "${cat_options[@]}" \
+    "__SEP__" \
+    "${preselected[@]}"; then
+    echo -e "${YELLOW}Cancelled.${NC}"
+    exit 0
+  fi
+
+  # Gather selected categories
+  local -a selected_categories=()
+  for i in "${SELECTED_INDICES[@]}"; do
+    selected_categories+=("${cat_ids[$i]}")
+  done
+
+  if [[ ${#selected_categories[@]} -eq 0 ]]; then
+    echo -e "${YELLOW}No categories selected. Exiting.${NC}"
+    exit 0
+  fi
+
+  # Resolve agents
+  local -a agent_names=()
+  for cat in "${selected_categories[@]}"; do
+    local agents
+    agents=$(get_agents_by_categories "$cat")
+    while IFS= read -r name; do
+      [[ -n "$name" ]] && agent_names+=("$name")
+    done <<< "$agents"
+  done
+
+  # Show summary and confirm
+  echo ""
+  echo -e "${BOLD}Agents to install (${#agent_names[@]}):${NC}"
+  echo ""
+  for agent in "${agent_names[@]}"; do
+    local desc
+    desc=$(get_agent_info "$agent" "description")
+    echo -e "  ${GREEN}+${NC} ${BOLD}${agent}${NC}  ${DIM}${desc}${NC}"
+  done
+  echo ""
+
+  read -rp "$(echo -e "${BOLD}Install these agents? ${NC}[Y/n] ")" confirm < /dev/tty
+  case "${confirm:-y}" in
+    [Yy]*|"")
+      install_agents "${agent_names[@]}"
+      ;;
+    *)
+      echo -e "${YELLOW}Installation cancelled.${NC}"
+      exit 0
+      ;;
+  esac
+}
+
+# ============================================================================
 # Main
 # ============================================================================
 
 main() {
   check_dependencies
+
+  # Agent mode: --agents consumes first arg, dispatches remaining to agent commands
+  if [[ "${1:-}" == "--agents" ]]; then
+    shift
+    case "${1:-}" in
+      --help|-h)
+        print_agents_help
+        ;;
+      --list|-l)
+        cmd_agents_list
+        ;;
+      --preset|-p)
+        if [[ -z "${2:-}" ]]; then
+          echo -e "${RED}Error: --preset requires a name${NC}"
+          echo "Usage: ./install.sh --agents --preset <name>"
+          exit 1
+        fi
+        cmd_agents_preset "$2"
+        ;;
+      --update|-u)
+        cmd_agents_update
+        ;;
+      --search|-s)
+        cmd_agents_search "${2:-}"
+        ;;
+      "")
+        cmd_agents_interactive
+        ;;
+      *)
+        echo -e "${RED}Unknown agent option: $1${NC}"
+        print_agents_help
+        exit 1
+        ;;
+    esac
+    return
+  fi
 
   case "${1:-}" in
     --help|-h)
