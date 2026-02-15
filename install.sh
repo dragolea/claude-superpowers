@@ -19,7 +19,7 @@ set -euo pipefail
 # ============================================================================
 
 VERSION="2.0.0"
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
 REGISTRY_URL="https://raw.githubusercontent.com/dragolea/claude-superpowers/main/registry"
 SKILLS_DIR=".claude/skills"
 
@@ -384,10 +384,10 @@ checkbox_menu() {
     echo -e "\033[2K"
 
     # Read input
-    IFS= read -rsn1 key
+    IFS= read -rsn1 key < /dev/tty
     case "$key" in
       $'\x1b')
-        read -rsn2 key
+        read -rsn2 key < /dev/tty
         case "$key" in
           '[A') # Up
             ((current > 0)) && ((current--))
@@ -573,13 +573,13 @@ search_checkbox_menu() {
     last_drawn=$lines_drawn
 
     # Read input
-    IFS= read -rsn1 key
+    IFS= read -rsn1 key < /dev/tty
     case "$key" in
       $'\x1b') # Escape sequence
         # Use timeout to distinguish bare ESC (cancel) from arrow key sequences
         # Arrow keys send ESC [ A/B; bare ESC is just ESC with no follow-up
-        if IFS= read -rsn1 -t 0.1 seq1; then
-          if IFS= read -rsn1 -t 0.1 seq2; then
+        if IFS= read -rsn1 -t 0.1 seq1 < /dev/tty; then
+          if IFS= read -rsn1 -t 0.1 seq2 < /dev/tty; then
             case "${seq1}${seq2}" in
               '[A') # Up
                 ((current > 0)) && ((current--))
@@ -693,10 +693,10 @@ select_menu() {
 
     echo -e "\033[2K"
 
-    IFS= read -rsn1 key
+    IFS= read -rsn1 key < /dev/tty
     case "$key" in
       $'\x1b')
-        read -rsn2 key
+        read -rsn2 key < /dev/tty
         case "$key" in
           '[A') ((current > 0)) && ((current--)) ;;
           '[B') ((current < max_index)) && ((current++)) ;;
@@ -918,7 +918,7 @@ cmd_search() {
     done
     echo ""
 
-    read -rp "$(echo -e "${BOLD}Install these skills? ${NC}[Y/n] ")" confirm
+    read -rp "$(echo -e "${BOLD}Install these skills? ${NC}[Y/n] ")" confirm < /dev/tty
     case "${confirm:-y}" in
       [Yy]*|"")
         install_skills "${SELECTED_SKILLS[@]}"
@@ -1103,7 +1103,7 @@ cmd_interactive() {
         done
         echo ""
 
-        read -rp "$(echo -e "${BOLD}Install these skills? ${NC}[Y/n/b] ")" confirm
+        read -rp "$(echo -e "${BOLD}Install these skills? ${NC}[Y/n/b] ")" confirm < /dev/tty
         case "${confirm:-y}" in
           [Yy]*|"")
             install_skills "${skill_names[@]}"
