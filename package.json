@@ -1,6 +1,6 @@
 {
   "name": "superpower-installer",
-  "version": "2.0.0",
+  "version": "1.0.0",
   "description": "Interactive installer for Claude Code skills and agent plugins",
   "type": "module",
   "bin": {

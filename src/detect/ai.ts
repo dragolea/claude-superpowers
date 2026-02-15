@@ -1,11 +1,53 @@
 import { readFile, readdir, access } from "node:fs/promises";
 import { existsSync } from "node:fs";
-import { execFile } from "node:child_process";
-import { promisify } from "node:util";
+import { spawn } from "node:child_process";
+import * as p from "@clack/prompts";
 import { theme } from "../ui/format.js";
 import type { DetectionResult } from "./patterns.js";
 
-const execFileAsync = promisify(execFile);
+function spawnWithStdin(
+  cmd: string,
+  args: string[],
+  input: string,
+  opts: { env?: NodeJS.ProcessEnv; timeout?: number },
+): Promise<{ stdout: string; killed: boolean }> {
+  return new Promise((resolve, reject) => {
+    const child = spawn(cmd, args, {
+      env: opts.env,
+      stdio: ["pipe", "pipe", "pipe"],
+    });
+
+    let stdout = "";
+    let stderr = "";
+    let killed = false;
+
+    child.stdout.on("data", (d) => { stdout += d; });
+    child.stderr.on("data", (d) => { stderr += d; });
+
+    const timer = opts.timeout
+      ? setTimeout(() => { killed = true; child.kill(); }, opts.timeout)
+      : undefined;
+
+    child.on("close", (code) => {
+      if (timer) clearTimeout(timer);
+      if (killed) {
+        reject(Object.assign(new Error("Process timed out"), { killed: true }));
+      } else if (code !== 0) {
+        reject(new Error(`Process exited with code ${code}: ${stderr}`));
+      } else {
+        resolve({ stdout, killed: false });
+      }
+    });
+
+    child.on("error", (err) => {
+      if (timer) clearTimeout(timer);
+      reject(err);
+    });
+
+    child.stdin.write(input);
+    child.stdin.end();
+  });
+}
 
 // Valid values for validation
 const VALID_SKILL_CATS = new Set([
@@ -122,11 +164,18 @@ interface AiDetectionJson {
 }
 
 export async function detectProjectAI(): Promise<DetectionResult | null> {
-  const projectContext = await gatherProjectContext();
-  if (!projectContext.trim()) return null;
+  const s = p.spinner();
 
-  const prompt = `Analyze the following project files and detect the technology stack.
-Return ONLY a JSON object with these exact keys:
+  s.start("Gathering project context...");
+  const projectContext = await gatherProjectContext();
+  if (!projectContext.trim()) {
+    s.stop("AI detection failed: no project files found", 1);
+    return null;
+  }
+
+  const prompt = `You are a strict project analyzer. Examine the project files below and detect ONLY technologies that are explicitly present as dependencies, config files, or source code.
+
+Return ONLY a JSON object:
 {
   "techs": [...],
   "skill_cats": [...],
@@ -135,9 +184,12 @@ Return ONLY a JSON object with these exact keys:
   "agent_tags": [...]
 }
 
-- techs: Human-readable technology names detected (e.g. "React", "TypeScript", "Docker")
-- skill_cats / agent_cats: Categories from the valid lists below
-- skill_tags / agent_tags: Tags from the valid lists below
+FIELD DEFINITIONS:
+- techs: Human-readable names of technologies explicitly found (e.g. "React", "TypeScript", "Docker")
+- skill_cats: Skill categories from VALID list that match detected technologies
+- agent_cats: Agent categories from VALID list that match detected technologies
+- skill_tags: Skill tags from VALID list that match detected technologies
+- agent_tags: Agent tags from VALID list that match detected technologies
 
 VALID SKILL CATEGORIES: core, workflow, git, web, mobile, backend, languages, devops, security, design, documents, meta
 VALID AGENT CATEGORIES: core-dev, languages, infrastructure, quality-security, data-ai, dev-experience, specialized, business, orchestration, research, marketing
@@ -145,33 +197,56 @@ VALID SKILL TAGS: universal, web, react, nextjs, vue, angular, mobile, react-nat
 VALID AGENT TAGS: backend, frontend, fullstack, mobile, api, design, typescript, python, rust, go, java, csharp, swift, php, ruby, react, vue, angular, nextjs, django, spring, laravel, flutter, kotlin, elixir, cloud, docker, kubernetes, terraform, azure, devops, sre, testing, security, review, debugging, ai, ml, data, tooling, cli, docs, git, refactoring, blockchain, embedded, fintech, gamedev, iot, payments, seo, product, marketing, meta, orchestration, workflow, research, analytics
 
 RULES:
-- Always include "core" and "workflow" in skill_cats, and "core-dev" in agent_cats
-- Only include categories/tags relevant to detected technologies
-- Return ONLY the JSON object, no other text
+1. Always include "core" and "workflow" in skill_cats, and "core-dev" in agent_cats — these are universal.
+2. Be CONSERVATIVE. Only include a category/tag if there is concrete evidence in the project files.
+3. Category-specific evidence requirements:
+   - "devops": ONLY if Dockerfile, docker-compose, terraform, k8s manifests, CI/CD configs, or cloud SDK dependencies exist
+   - "security": ONLY if auth/crypto/security libraries are dependencies (e.g. passport, helmet, bcrypt, jsonwebtoken, oauth) or security-focused tooling is configured
+   - "documents": ONLY if PDF/Office processing libraries are dependencies (e.g. pdfkit, docx, exceljs, sharp)
+   - "web": ONLY if frontend framework dependencies exist (React, Vue, Angular, Svelte) or HTML/CSS tooling is present
+   - "mobile": ONLY if React Native, Flutter, Swift, Kotlin, or mobile SDK dependencies exist
+   - "design": ONLY if design/theming/CSS-in-JS libraries are dependencies
+   - "meta": ONLY if the project itself is a tool/framework for building developer tools or skills
+   - "languages": Include when the project uses a language that has specific skill tags (e.g. TypeScript, Python, Go, Rust)
+   - "backend": ONLY if server frameworks (Express, Fastify, Django, Rails, etc.), database drivers, or API frameworks are dependencies
+4. Do NOT speculatively include categories because "every project could use X". Match only what IS there, not what COULD be useful.
+5. Return ONLY the JSON object, no other text.
 
 PROJECT FILES:
 ${projectContext}`;
 
-  console.log(`  ${theme.accent("Analyzing project with AI...")}`);
+  s.message("Analyzing project with AI...");
 
   try {
-    const { stdout } = await execFileAsync(
+    const { stdout } = await spawnWithStdin(
       "claude",
-      ["-p", "--model", "haiku", "--output-format", "text", "--max-budget-usd", "0.01", prompt],
+      ["-p", "--model", "sonnet", "--output-format", "text", "--max-budget-usd", "0.02"],
+      prompt,
       { env: { ...process.env, CLAUDECODE: "" }, timeout: 30000 },
     );
 
     if (!stdout.trim()) {
-      console.log(`  ${theme.warn("AI detection failed, using pattern-based fallback.")}`);
+      s.stop("AI detection failed: empty response from AI", 1);
       return null;
     }
 
     // Strip markdown code fences
     const jsonStr = stdout.replace(/^```\w*\n?/gm, "").replace(/```$/gm, "").trim();
 
-    const data: AiDetectionJson = JSON.parse(jsonStr);
+    let data: AiDetectionJson;
+    try {
+      data = JSON.parse(jsonStr);
+    } catch {
+      s.stop("AI detection failed: could not parse AI response", 1);
+      return null;
+    }
 
-    if (!data.techs || data.techs.length === 0) return null;
+    if (!data.techs || data.techs.length === 0) {
+      s.stop("AI detection failed: no technologies detected", 1);
+      return null;
+    }
+
+    s.stop("AI scan complete");
 
     return {
       techs: data.techs,
@@ -180,8 +255,13 @@ ${projectContext}`;
       skillTags: (data.skill_tags ?? []).filter((t) => VALID_SKILL_TAGS.has(t)),
       agentTags: (data.agent_tags ?? []).filter((t) => VALID_AGENT_TAGS.has(t)),
     };
-  } catch {
-    console.log(`  ${theme.warn("AI detection failed, using pattern-based fallback.")}`);
+  } catch (err: unknown) {
+    const isTimeout =
+      err instanceof Error && "killed" in err && (err as any).killed;
+    const reason = isTimeout
+      ? "Claude CLI timed out (30s)"
+      : "AI detection failed";
+    s.stop(`AI detection failed: ${reason}`, 1);
     return null;
   }
 }

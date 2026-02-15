@@ -15,10 +15,12 @@ export async function selectMenu(
   options: SelectOption[],
   opts?: { showBack?: boolean },
 ): Promise<string | null> {
+  const maxLabelLen = Math.max(...options.map((o) => o.label.length));
   const items: Array<{ label: string; value: string; hint?: string }> = options.map((o) => ({
-    label: o.label,
+    label: o.description
+      ? `${o.label.padEnd(maxLabelLen + 2)}${pc.dim(`— ${o.description}`)}`
+      : o.label,
     value: o.value,
-    hint: o.description,
   }));
 
   if (opts?.showBack) {

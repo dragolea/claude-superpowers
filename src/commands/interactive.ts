@@ -262,7 +262,7 @@ async function runSkillWizard(
         const result = await checkboxMenu(
           "Which skill categories do you want?",
           options,
-          { preselected },
+          { preselected, showBack: true },
         );
 
         if (!result) {
@@ -327,6 +327,7 @@ async function runSkillWizard(
 
         const result = await checkboxMenu("Select skills to install", options, {
           preselected,
+          showBack: true,
         });
 
         if (!result) {
@@ -444,7 +445,7 @@ async function runAgentWizard(
         const result = await checkboxMenu(
           "Which plugin categories do you want?",
           options,
-          { preselected },
+          { preselected, showBack: true },
         );
 
         if (!result) {
@@ -498,6 +499,7 @@ async function runAgentWizard(
 
         const result = await checkboxMenu("Select plugins to install", options, {
           preselected,
+          showBack: true,
         });
 
         if (!result) {
@@ -599,7 +601,10 @@ export async function cmdInteractive(
   let detection: DetectionResult | null = null;
 
   if (choice === "agents") {
+    const s = p.spinner();
+    s.start("Loading registry...");
     const agentsRegistry = await loadAgentsRegistry();
+    s.stop("Registry loaded");
     detection = await runDetection();
     await runAgentWizard(agentsRegistry, scope, scopeSetByFlag, detection);
     return;
@@ -622,8 +627,11 @@ export async function cmdInteractive(
   }
 
   // Skills wizard
+  const regSpinner = p.spinner();
+  regSpinner.start("Loading registry...");
   const skillsRegistry = await loadSkillsRegistry();
   const sourcesRegistry = await loadSourcesRegistry();
+  regSpinner.stop("Registry loaded");
 
   if (choice !== "scan") {
     // Run detection for pre-selection
@@ -645,7 +653,10 @@ export async function cmdInteractive(
   );
 
   if (choice === "both" || choice === "scan") {
+    const agentSpinner = p.spinner();
+    agentSpinner.start("Loading registry...");
     const agentsRegistry = await loadAgentsRegistry();
+    agentSpinner.stop("Registry loaded");
     await runAgentWizard(agentsRegistry, scope, scopeSetByFlag, detection);
   }
 }
@@ -654,7 +665,10 @@ export async function cmdAgentsInteractive(
   scope: InstallScope,
   scopeSetByFlag: boolean,
 ): Promise<void> {
+  const s = p.spinner();
+  s.start("Loading registry...");
   const agentsRegistry = await loadAgentsRegistry();
+  s.stop("Registry loaded");
 
   if (!(await isClaudeCliAvailable())) {
     printClaudeCliError();

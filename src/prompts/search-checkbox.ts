@@ -90,6 +90,7 @@ export async function searchCheckboxMenu(
         lines.push(`  ${pc.dim(`No items match "${filter}"`)}`);
         lines.push("");
       } else {
+        const maxNameLen = Math.max(...visible.map((i) => items[i].name.length));
         const end = Math.min(scrollOffset + displayCount, visCount);
         for (let vi = scrollOffset; vi < end; vi++) {
           const idx = visible[vi];
@@ -100,12 +101,14 @@ export async function searchCheckboxMenu(
           let desc = item.description;
           if (desc.length > 50) desc = desc.slice(0, 50) + "...";
 
+          const paddedName = item.name.padEnd(maxNameLen + 2);
+
           if (vi === cursorIdx) {
             lines.push(
-              `  ${pc.bold(">")} ${checkbox} ${pc.bold(item.name)}  ${pc.dim(desc)}`,
+              `  ${pc.bold(">")} ${checkbox} ${pc.bold(paddedName)}${pc.dim(`— ${desc}`)}`,
             );
           } else {
-            lines.push(`    ${checkbox} ${item.name}  ${pc.dim(desc)}`);
+            lines.push(`    ${checkbox} ${paddedName}${pc.dim(`— ${desc}`)}`);
           }
         }
       }

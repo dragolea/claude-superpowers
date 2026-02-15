@@ -1,4 +1,5 @@
 import * as p from "@clack/prompts";
+import pc from "picocolors";
 
 export interface CheckboxOption {
   label: string;
@@ -18,18 +19,24 @@ export async function checkboxMenu(
     showBack?: boolean;
   },
 ): Promise<string[] | null> {
-  const preselected = new Set(opts?.preselected ?? []);
+  const preselected = opts?.preselected ?? [];
 
-  const items = options.map((o) => ({
-    label: o.label,
+  const maxLabelLen = Math.max(...options.map((o) => o.label.length));
+  const items: Array<{ label: string; value: string }> = options.map((o) => ({
+    label: o.description
+      ? `${o.label.padEnd(maxLabelLen + 2)}${pc.dim(`— ${o.description}`)}`
+      : o.label,
     value: o.value,
-    hint: o.description,
-    initialValue: preselected.has(o.value),
   }));
+
+  if (opts?.showBack) {
+    items.push({ label: pc.dim("← Back"), value: "__back__" });
+  }
 
   const result = await p.multiselect({
     message: title,
     options: items,
+    initialValues: preselected,
     required: false,
   });
 
@@ -37,5 +44,10 @@ export async function checkboxMenu(
     return null;
   }
 
-  return result as string[];
+  const selected = result as string[];
+  if (selected.includes("__back__")) {
+    return null;
+  }
+
+  return selected;
 }

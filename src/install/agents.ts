@@ -1,5 +1,6 @@
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
+import * as p from "@clack/prompts";
 import { theme, formatInstallSummary } from "../ui/format.js";
 import {
   getPluginByName,
@@ -69,13 +70,15 @@ export async function ensureAllMarketplaces(
   marketplaceIds?: string[],
 ): Promise<void> {
   const ids = marketplaceIds ?? getAllMarketplaceIds(registry);
-  console.log(theme.dim("Ensuring plugin marketplaces are configured..."));
+  const s = p.spinner();
+  s.start("Configuring marketplaces...");
 
   for (const id of ids) {
     const repo = getMarketplaceRepo(registry, id);
     await ensureMarketplace(id, repo);
   }
-  console.log("");
+
+  s.stop("Marketplaces configured");
 }
 
 async function installPlugin(
@@ -123,9 +126,8 @@ export async function installPlugins(
 
   await ensureAllMarketplaces(registry, [...marketplaceIds]);
 
-  console.log("");
-  console.log(theme.bold(`Installing ${total} plugins (scope: ${scope})`));
-  console.log("");
+  const s = p.spinner();
+  s.start(`Installing plugins (0/${total})...`);
 
   for (const name of pluginNames) {
     const plugin = getPluginByName(registry, name);
@@ -134,6 +136,7 @@ export async function installPlugins(
         `  ${theme.error("x")} ${name} ${theme.dim("(not in registry)")}`,
       );
       failed++;
+      s.message(`Installing plugins (${success + failed}/${total})...`);
       continue;
     }
 
@@ -149,7 +152,10 @@ export async function installPlugins(
     } else {
       failed++;
     }
+    s.message(`Installing plugins (${success + failed}/${total})...`);
   }
+
+  s.stop(`Installed ${success} plugins${failed > 0 ? ` (${failed} failed)` : ""}`);
 
   console.log(
     formatInstallSummary({

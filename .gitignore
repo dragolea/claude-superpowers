@@ -32,3 +32,4 @@ dist/
 .claude/skills/dispatching-parallel-agents/
 .claude/skills/subagent-driven-development/
 .claude/skills/doc-coauthoring/
+.claude/skills/typescript-pro/

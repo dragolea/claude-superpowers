@@ -1,5 +1,6 @@
 import { mkdir, writeFile, rm } from "node:fs/promises";
 import { join } from "node:path";
+import * as p from "@clack/prompts";
 import { theme, formatInstallSummary } from "../ui/format.js";
 import { getSkillByName, getSourceUrl } from "../registry/skills.js";
 import { ensureGitignored, resolveSkillsDir } from "./scope.js";
@@ -62,9 +63,8 @@ export async function installSkills(
   let success = 0;
   let failed = 0;
 
-  console.log("");
-  console.log(`${theme.bold(`Installing ${total} skills to ${skillsDir}/`)}`);
-  console.log("");
+  const s = p.spinner();
+  s.start(`Installing skills (0/${total})...`);
 
   await mkdir(skillsDir, { recursive: true });
 
@@ -78,7 +78,10 @@ export async function installSkills(
     );
     if (ok) success++;
     else failed++;
+    s.message(`Installing skills (${success + failed}/${total})...`);
   }
+
+  s.stop(`Installed ${success} skills${failed > 0 ? ` (${failed} failed)` : ""}`);
 
   console.log(
     formatInstallSummary({
