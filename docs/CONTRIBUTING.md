@@ -112,15 +112,18 @@ After editing the registry:
 
 ```bash
 # Verify JSON is valid
-python3 -m json.tool registry/skills.json > /dev/null
-python3 -m json.tool registry/sources.json > /dev/null
+node -e "JSON.parse(require('fs').readFileSync('registry/skills.json','utf-8'))"
+node -e "JSON.parse(require('fs').readFileSync('registry/sources.json','utf-8'))"
+
+# Build and test
+npm run build
 
 # Test listing
-./install.sh --list
+node dist/bin.js --list
 
 # Test preset install
-./install.sh --preset core
+node dist/bin.js --preset core
 
 # Test interactive mode
-./install.sh
+node dist/bin.js
 ```

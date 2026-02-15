@@ -1,0 +1,47 @@
+{
+  "name": "superpower-installer",
+  "version": "2.0.0",
+  "description": "Interactive installer for Claude Code skills and agent plugins",
+  "type": "module",
+  "bin": {
+    "superpower-installer": "./dist/bin.js"
+  },
+  "files": [
+    "dist",
+    "registry"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "start": "node dist/bin.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "claude",
+    "claude-code",
+    "skills",
+    "agents",
+    "installer",
+    "superpowers"
+  ],
+  "author": "dragolea",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dragolea/claude-superpowers"
+  },
+  "dependencies": {
+    "@clack/core": "^0.4.1",
+    "@clack/prompts": "^0.9.1",
+    "commander": "^13.1.0",
+    "picocolors": "^1.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.4",
+    "tsup": "^8.4.0",
+    "typescript": "^5.7.3"
+  }
+}

@@ -2,94 +2,99 @@
 
 Curated, technology-aware skill installer for [Claude Code](https://claude.ai/code).
 
-Instead of installing every skill blindly, **pick only what fits your stack** — web, mobile, backend, security, or just the essentials. **77 skills** from 5 source repositories, organized into 12 categories. Now also supports **130 agent personas** from VoltAgent.
+Instead of installing every skill blindly, **pick only what fits your stack** — web, mobile, backend, security, or just the essentials. **77 skills** from 5 source repositories, organized into 12 categories. Also supports **130 agent plugins** from 2 marketplaces.
 
 ## Quick Start
 
-**One-liner** (runs interactively):
-
 ```bash
-curl -sL https://raw.githubusercontent.com/dragolea/claude-superpowers/main/install.sh | bash
+npx superpower-installer
 ```
 
-**Or clone and run:**
-
-```bash
-git clone https://github.com/dragolea/claude-superpowers.git
-cd claude-superpowers
-./install.sh
-```
+That's it. The interactive wizard walks you through project type, tech stack, and skill selection.
 
 ## Presets
 
 Skip the interactive wizard with `--preset`:
 
 ```bash
-./install.sh --preset core          # Debugging, TDD, verification (4 skills)
-./install.sh --preset workflow       # Core + planning & execution (10 skills)
-./install.sh --preset web           # Web stack + frameworks + design (28 skills)
-./install.sh --preset mobile        # Mobile frameworks + core (19 skills)
-./install.sh --preset mobile-expo   # React Native/Expo focused (19 skills)
-./install.sh --preset backend       # Server frameworks + databases (25 skills)
-./install.sh --preset fullstack     # Web + backend + languages (46 skills)
-./install.sh --preset devops        # Infrastructure + CI/CD (22 skills)
-./install.sh --preset security      # OWASP, static analysis, auditing (17 skills)
-./install.sh --preset documents     # PDF, Word, Excel, PowerPoint (5 skills)
-./install.sh --preset full          # Everything (77 skills)
+npx superpower-installer --preset core          # Debugging, TDD, verification (4 skills)
+npx superpower-installer --preset workflow       # Core + planning & execution (10 skills)
+npx superpower-installer --preset web           # Web stack + frameworks + design (28 skills)
+npx superpower-installer --preset mobile        # Mobile frameworks + core (19 skills)
+npx superpower-installer --preset mobile-expo   # React Native/Expo focused (19 skills)
+npx superpower-installer --preset backend       # Server frameworks + databases (25 skills)
+npx superpower-installer --preset fullstack     # Web + backend + languages (46 skills)
+npx superpower-installer --preset devops        # Infrastructure + CI/CD (22 skills)
+npx superpower-installer --preset security      # OWASP, static analysis, auditing (17 skills)
+npx superpower-installer --preset documents     # PDF, Word, Excel, PowerPoint (5 skills)
+npx superpower-installer --preset full          # Everything (77 skills)
 ```
 
 ## Interactive Mode
 
-Run `./install.sh` without arguments for a guided experience:
+Run `npx superpower-installer` without arguments for a guided experience:
 
 1. **Project type** — Web, Mobile, Backend, CLI, or General
 2. **Tech stack** — Framework-specific (React, Expo, Node.js, etc.)
 3. **Skill categories** — Pick from 12 categories with smart pre-selection
-4. **Confirm** — Review selected skills, then install
+4. **Per-skill picker** — Tag-based pre-selection, toggle individual skills
+5. **Confirm** — Review selected skills, choose scope, then install
 
 Skills are downloaded to `.claude/skills/` in your current directory.
 
 ## Other Commands
 
 ```bash
-./install.sh --list      # Show all 77 skills with descriptions
-./install.sh --update    # Re-download already installed skills
-./install.sh --help      # Full usage info
+npx superpower-installer --list      # Show all 77 skills with descriptions
+npx superpower-installer --search    # Searchable multi-select picker
+npx superpower-installer --search react  # Pre-filtered search
+npx superpower-installer --update    # Re-download already installed skills
+npx superpower-installer --scan      # Detect project tech stack
+npx superpower-installer --help      # Full usage info
+```
+
+## Scope
+
+Control where skills are installed:
+
+```bash
+npx superpower-installer --scope project   # .claude/ — shared with collaborators (default)
+npx superpower-installer --scope user      # ~/.claude/ — available in all your projects
+npx superpower-installer --scope local     # .claude/ + .gitignore — this repo only
 ```
 
 ## Agent Installation
 
-Agents are specialized AI personas with YAML frontmatter defining their role, tools, and model routing. **130 agents** from [VoltAgent/awesome-claude-code-subagents](https://github.com/VoltAgent/awesome-claude-code-subagents), organized into 10 categories.
-
-Agents install to `.claude/agents/{name}.md` (flat files, not subdirectories like skills).
+Agents are installed as plugins from two marketplaces via the Claude CLI. **83 plugins** (~240 agents) from [VoltAgent](https://github.com/VoltAgent/awesome-claude-code-subagents) and [Claude Code Workflows](https://github.com/wshobson/agents).
 
 ```bash
-./install.sh --agents                        # Interactive wizard
-./install.sh --agents --preset core-dev      # Install a preset
-./install.sh --agents --preset fullstack     # Core + languages + quality + DX
-./install.sh --agents --search               # Search & pick individual agents
-./install.sh --agents --search kubernetes    # Pre-filtered search
-./install.sh --agents --list                 # List all 130 agents by category
-./install.sh --agents --update               # Re-download installed agents
-./install.sh --agents --help                 # Agent-specific help
+npx superpower-installer --agents                        # Interactive wizard
+npx superpower-installer --agents --preset core-dev      # Install a preset
+npx superpower-installer --agents --preset fullstack     # Core + languages + quality + DX
+npx superpower-installer --agents --search               # Search & pick individual plugins
+npx superpower-installer --agents --search kubernetes    # Pre-filtered search
+npx superpower-installer --agents --list                 # List all plugins by category
+npx superpower-installer --agents --update               # Update installed plugins
 ```
+
+> **Note:** Agent installation requires the Claude CLI (`npm install -g @anthropic-ai/claude-code`).
 
 ### Agent Presets
 
 ```bash
-./install.sh --agents --preset core-dev     # Frontend, backend, fullstack, API, mobile (10 agents)
-./install.sh --agents --preset web          # Core + language specialists (36 agents)
-./install.sh --agents --preset backend      # Core + languages + infrastructure (52 agents)
-./install.sh --agents --preset fullstack    # Core + languages + quality + DX (63 agents)
-./install.sh --agents --preset devops       # Infrastructure + quality + orchestration (40 agents)
-./install.sh --agents --preset security     # Quality/security + infrastructure (30 agents)
-./install.sh --agents --preset full         # Everything (130 agents)
+npx superpower-installer --agents --preset core-dev     # Frontend, backend, fullstack, API, mobile
+npx superpower-installer --agents --preset web          # Core + language specialists
+npx superpower-installer --agents --preset backend      # Core + languages + infrastructure
+npx superpower-installer --agents --preset fullstack    # Core + languages + quality + DX
+npx superpower-installer --agents --preset devops       # Infrastructure + quality + orchestration
+npx superpower-installer --agents --preset security     # Quality/security + infrastructure
+npx superpower-installer --agents --preset full         # Everything
 ```
 
 ### Agent Categories
 
-| Category | Count | Highlights |
-|----------|-------|------------|
+| Category | Agents | Highlights |
+|----------|--------|------------|
 | **Core Development** | 10 | fullstack-developer, backend-developer, frontend-developer, mobile-developer |
 | **Language Specialists** | 26 | TypeScript, Python, Rust, Go, Java, C#, Swift, PHP, Elixir, PowerShell |
 | **Infrastructure** | 16 | DevOps, Docker, Kubernetes, Terraform, SRE, cloud, networking |
@@ -129,20 +134,6 @@ Skills are fetched from their original repositories at install time:
 | [jeffallan/claude-skills](https://github.com/jeffallan/claude-skills) | 30 skills | Fullstack — frameworks, languages, DevOps |
 | [trailofbits/skills](https://github.com/trailofbits/skills) | 16 skills | Security — static analysis, vulnerability detection, auditing |
 | [agamm/claude-code-owasp](https://github.com/agamm/claude-code-owasp) | 1 skill | OWASP Top 10:2025, ASVS 5.0 |
-| [VoltAgent/awesome-claude-code-subagents](https://github.com/VoltAgent/awesome-claude-code-subagents) | 130 agents | Specialized AI agent personas — dev, infra, security, data, business |
-
-## Overlap Analysis
-
-Several repositories offer skills in similar domains. This registry resolves overlaps by picking the best source for each niche:
-
-| Domain | We use | Alternatives considered |
-|--------|--------|------------------------|
-| Debugging | obra/superpowers `systematic-debugging` | jeffallan `debugging-wizard` (less structured) |
-| Code review | obra/superpowers `requesting/receiving-code-review` | jeffallan `code-reviewer` (single skill vs workflow pair) |
-| Security review | jeffallan `security-reviewer` + trailofbits (specialized) | obra overlaps only on general debugging |
-| MCP building | anthropic `mcp-builder` + jeffallan `mcp-developer` | Both included — Anthropic for guide, jeffallan for SDK expertise |
-| Playwright | anthropic `webapp-testing` + jeffallan `playwright-expert` | Both included — Anthropic for Playwright MCP, jeffallan for patterns |
-| Skill creation | anthropic `skill-creator` + obra `writing-skills` | Both included — interactive Q&A vs reference guide |
 
 ## Adding Skills
 
@@ -153,11 +144,8 @@ See [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) for how to:
 
 ## Requirements
 
-- `bash` (macOS/Linux)
-- `curl`
-- `jq` or `python3` (for JSON parsing)
+- Node.js 18+ (already required by [Claude Code](https://docs.anthropic.com/en/docs/claude-code/overview))
 
 ## License
 
 MIT
-# claude-superpowers
