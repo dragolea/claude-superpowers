@@ -464,14 +464,14 @@ search_checkbox_menu() {
   _rebuild_visible() {
     visible=()
     local lc_filter
-    lc_filter="${filter,,}"
+    lc_filter=$(echo "$filter" | tr '[:upper:]' '[:lower:]')
     for ((i = 0; i < total_count; i++)); do
       if [[ -z "$filter" ]]; then
         visible+=("$i")
       else
         local lc_name lc_desc
-        lc_name="${names[$i],,}"
-        lc_desc="${descs[$i],,}"
+        lc_name=$(echo "${names[$i]}" | tr '[:upper:]' '[:lower:]')
+        lc_desc=$(echo "${descs[$i]}" | tr '[:upper:]' '[:lower:]')
         if [[ "$lc_name" == *"$lc_filter"* || "$lc_desc" == *"$lc_filter"* ]]; then
           visible+=("$i")
         fi
