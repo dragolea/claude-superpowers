@@ -883,6 +883,54 @@ cmd_update() {
   install_skills "${installed[@]}"
 }
 
+cmd_search() {
+  local initial_filter="${1:-}"
+  load_registry
+  print_banner
+
+  # Build parallel arrays of all skills
+  _SCM_NAMES=()
+  _SCM_DESCS=()
+  for ((i = 0; i < SKILL_COUNT; i++)); do
+    _SCM_NAMES+=("$(json_query "$SKILLS_JSON" ".skills[$i].name")")
+    _SCM_DESCS+=("$(json_query "$SKILLS_JSON" ".skills[$i].description")")
+  done
+
+  echo ""
+  if search_checkbox_menu "Search skills (${SKILL_COUNT} available)" "$SKILL_COUNT" "$initial_filter"; then
+    if [[ ${#SELECTED_SKILLS[@]} -eq 0 ]]; then
+      echo -e "${YELLOW}No skills selected. Exiting.${NC}"
+      exit 0
+    fi
+
+    # Confirmation
+    echo ""
+    echo -e "${BOLD}Skills to install (${#SELECTED_SKILLS[@]}):${NC}"
+    echo ""
+    for skill in "${SELECTED_SKILLS[@]}"; do
+      local desc
+      desc=$(get_skill_info "$skill" "description")
+      echo -e "  ${GREEN}+${NC} ${BOLD}${skill}${NC}  ${DIM}${desc}${NC}"
+    done
+    echo ""
+
+    read -rp "$(echo -e "${BOLD}Install these skills? ${NC}[Y/n] ")" confirm
+    case "${confirm:-y}" in
+      [Yy]*|"")
+        install_skills "${SELECTED_SKILLS[@]}"
+        ;;
+      *)
+        echo -e "${YELLOW}Installation cancelled.${NC}"
+        exit 0
+        ;;
+    esac
+  else
+    echo ""
+    echo -e "${YELLOW}Search cancelled.${NC}"
+    exit 0
+  fi
+}
+
 cmd_interactive() {
   load_registry
   print_banner
