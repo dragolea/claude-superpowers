@@ -12,6 +12,8 @@ set -euo pipefail
 #   ./install.sh                        # Interactive mode
 #   ./install.sh --preset core          # Non-interactive preset
 #   ./install.sh --list                 # List all available skills
+#   ./install.sh --search               # Search & pick individual skills
+#   ./install.sh --search <term>         # Pre-filtered search
 #   ./install.sh --update               # Re-download installed skills
 #   ./install.sh --help                 # Show help
 # ============================================================================
@@ -56,6 +58,8 @@ print_help() {
   echo "  ./install.sh                     Interactive mode"
   echo "  ./install.sh --preset <name>     Install a preset"
   echo "  ./install.sh --list              List all skills"
+  echo "  ./install.sh --search              Search & pick individual skills"
+  echo "  ./install.sh --search <term>       Pre-filtered search"
   echo "  ./install.sh --update            Re-download installed skills"
   echo "  ./install.sh --help              Show this help"
   echo ""
@@ -1143,6 +1147,9 @@ main() {
       ;;
     --update|-u)
       cmd_update
+      ;;
+    --search|-s)
+      cmd_search "${2:-}"
       ;;
     --version|-v)
       echo "claude-superpowers v${VERSION}"
