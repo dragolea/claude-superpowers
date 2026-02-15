@@ -1,0 +1,987 @@
+{
+  "version": "2.0.0",
+  "categories": {
+    "core": {
+      "name": "Core",
+      "description": "Essential development skills \u2014 debugging, testing, verification",
+      "recommended": true
+    },
+    "workflow": {
+      "name": "Workflow",
+      "description": "Planning, brainstorming, and execution orchestration",
+      "recommended": true
+    },
+    "git": {
+      "name": "Git & Code Review",
+      "description": "Branch management, worktrees, code review workflows",
+      "recommended": false
+    },
+    "web": {
+      "name": "Web Development",
+      "description": "Frontend frameworks, testing, design for web applications",
+      "recommended": false
+    },
+    "mobile": {
+      "name": "Mobile Development",
+      "description": "React Native, Flutter, Swift, Kotlin for mobile apps",
+      "recommended": false
+    },
+    "backend": {
+      "name": "Backend & API",
+      "description": "Server frameworks, databases, API design",
+      "recommended": false
+    },
+    "languages": {
+      "name": "Languages",
+      "description": "Language-specific expert skills \u2014 TypeScript, Python, Go, Rust",
+      "recommended": false
+    },
+    "devops": {
+      "name": "DevOps & Infrastructure",
+      "description": "CI/CD, Docker, Kubernetes, Terraform, cloud platforms",
+      "recommended": false
+    },
+    "security": {
+      "name": "Security",
+      "description": "OWASP, static analysis, vulnerability detection, code auditing",
+      "recommended": false
+    },
+    "design": {
+      "name": "Design & Creative",
+      "description": "Frontend design, algorithmic art, theming, visual assets",
+      "recommended": false
+    },
+    "documents": {
+      "name": "Documents",
+      "description": "PDF, Word, Excel, PowerPoint manipulation",
+      "recommended": false
+    },
+    "meta": {
+      "name": "Meta",
+      "description": "Skills about skills \u2014 creating and using the system itself",
+      "recommended": false
+    }
+  },
+  "presets": {
+    "core": {
+      "name": "Core Only",
+      "description": "Just the essentials: debugging, TDD, verification",
+      "categories": [
+        "core"
+      ]
+    },
+    "workflow": {
+      "name": "Core + Workflow",
+      "description": "Core skills plus planning and execution",
+      "categories": [
+        "core",
+        "workflow"
+      ]
+    },
+    "web": {
+      "name": "Web Development",
+      "description": "Full web stack: core + workflow + git + web frameworks + design",
+      "categories": [
+        "core",
+        "workflow",
+        "git",
+        "web",
+        "design"
+      ]
+    },
+    "mobile": {
+      "name": "Mobile Development",
+      "description": "Mobile stack: core + workflow + git + mobile frameworks",
+      "categories": [
+        "core",
+        "workflow",
+        "git",
+        "mobile"
+      ]
+    },
+    "mobile-expo": {
+      "name": "Mobile (React Native Expo)",
+      "description": "Core + workflow + git + React Native/Expo skills",
+      "categories": [
+        "core",
+        "workflow",
+        "git",
+        "mobile"
+      ]
+    },
+    "backend": {
+      "name": "Backend / API",
+      "description": "Server stack: core + workflow + git + backend + databases",
+      "categories": [
+        "core",
+        "workflow",
+        "git",
+        "backend"
+      ]
+    },
+    "fullstack": {
+      "name": "Fullstack",
+      "description": "Web + backend + languages + git",
+      "categories": [
+        "core",
+        "workflow",
+        "git",
+        "web",
+        "backend",
+        "languages"
+      ]
+    },
+    "devops": {
+      "name": "DevOps",
+      "description": "Infrastructure: core + workflow + git + devops",
+      "categories": [
+        "core",
+        "workflow",
+        "git",
+        "devops"
+      ]
+    },
+    "security": {
+      "name": "Security",
+      "description": "Security-focused: core + security skills",
+      "categories": [
+        "core",
+        "security"
+      ]
+    },
+    "documents": {
+      "name": "Documents Only",
+      "description": "PDF, Word, Excel, PowerPoint skills",
+      "categories": [
+        "documents"
+      ]
+    },
+    "full": {
+      "name": "Everything",
+      "description": "Install all available skills",
+      "categories": [
+        "core",
+        "workflow",
+        "git",
+        "web",
+        "mobile",
+        "backend",
+        "languages",
+        "devops",
+        "security",
+        "design",
+        "documents",
+        "meta"
+      ]
+    }
+  },
+  "skills": [
+    {
+      "name": "systematic-debugging",
+      "description": "Four-phase root cause analysis \u2014 read errors, reproduce, trace data flow, fix",
+      "source": "obra/superpowers",
+      "path": "skills/systematic-debugging/SKILL.md",
+      "tags": [
+        "universal"
+      ],
+      "category": "core"
+    },
+    {
+      "name": "test-driven-development",
+      "description": "RED-GREEN-REFACTOR cycle \u2014 write failing test first, minimal code, then clean up",
+      "source": "obra/superpowers",
+      "path": "skills/test-driven-development/SKILL.md",
+      "tags": [
+        "universal"
+      ],
+      "category": "core"
+    },
+    {
+      "name": "verification-before-completion",
+      "description": "Run verification commands and confirm output before claiming work is done",
+      "source": "obra/superpowers",
+      "path": "skills/verification-before-completion/SKILL.md",
+      "tags": [
+        "universal"
+      ],
+      "category": "core"
+    },
+    {
+      "name": "property-based-testing",
+      "description": "Property-based testing guidance across languages and smart contracts for stronger coverage",
+      "source": "trailofbits/skills",
+      "path": "plugins/property-based-testing/skills/property-based-testing/SKILL.md",
+      "tags": [
+        "universal"
+      ],
+      "category": "core"
+    },
+    {
+      "name": "brainstorming",
+      "description": "Collaborative design exploration \u2014 understand intent, propose approaches, get approval",
+      "source": "obra/superpowers",
+      "path": "skills/brainstorming/SKILL.md",
+      "tags": [
+        "universal"
+      ],
+      "category": "workflow"
+    },
+    {
+      "name": "writing-plans",
+      "description": "Create detailed implementation plans with bite-sized tasks and dependencies",
+      "source": "obra/superpowers",
+      "path": "skills/writing-plans/SKILL.md",
+      "tags": [
+        "universal"
+      ],
+      "category": "workflow"
+    },
+    {
+      "name": "executing-plans",
+      "description": "Batch execution of implementation plans with human review checkpoints",
+      "source": "obra/superpowers",
+      "path": "skills/executing-plans/SKILL.md",
+      "tags": [
+        "universal"
+      ],
+      "category": "workflow"
+    },
+    {
+      "name": "dispatching-parallel-agents",
+      "description": "Launch concurrent subagent workflows for independent tasks",
+      "source": "obra/superpowers",
+      "path": "skills/dispatching-parallel-agents/SKILL.md",
+      "tags": [
+        "universal"
+      ],
+      "category": "workflow"
+    },
+    {
+      "name": "subagent-driven-development",
+      "description": "Two-stage review process for autonomous task execution with quality gates",
+      "source": "obra/superpowers",
+      "path": "skills/subagent-driven-development/SKILL.md",
+      "tags": [
+        "universal"
+      ],
+      "category": "workflow"
+    },
+    {
+      "name": "doc-coauthoring",
+      "description": "Structured workflow for co-authoring documentation, proposals, and technical specs",
+      "source": "anthropic/skills",
+      "path": "skills/doc-coauthoring/SKILL.md",
+      "tags": [
+        "universal"
+      ],
+      "category": "workflow"
+    },
+    {
+      "name": "using-git-worktrees",
+      "description": "Create and manage isolated git worktrees for feature development",
+      "source": "obra/superpowers",
+      "path": "skills/using-git-worktrees/SKILL.md",
+      "tags": [
+        "universal"
+      ],
+      "category": "git"
+    },
+    {
+      "name": "requesting-code-review",
+      "description": "Pre-review checklist \u2014 validate tasks, run tests, prepare PR for review",
+      "source": "obra/superpowers",
+      "path": "skills/requesting-code-review/SKILL.md",
+      "tags": [
+        "universal"
+      ],
+      "category": "git"
+    },
+    {
+      "name": "receiving-code-review",
+      "description": "Systematically handle review feedback and incorporate changes",
+      "source": "obra/superpowers",
+      "path": "skills/receiving-code-review/SKILL.md",
+      "tags": [
+        "universal"
+      ],
+      "category": "git"
+    },
+    {
+      "name": "finishing-a-development-branch",
+      "description": "Merge/PR decisions, branch cleanup, and post-merge verification",
+      "source": "obra/superpowers",
+      "path": "skills/finishing-a-development-branch/SKILL.md",
+      "tags": [
+        "universal"
+      ],
+      "category": "git"
+    },
+    {
+      "name": "differential-review",
+      "description": "Security-focused differential review of PRs, commits, and diffs",
+      "source": "trailofbits/skills",
+      "path": "plugins/differential-review/skills/differential-review/SKILL.md",
+      "tags": [
+        "universal"
+      ],
+      "category": "git"
+    },
+    {
+      "name": "webapp-testing",
+      "description": "Browser automation and testing with Playwright \u2014 verify UI, capture screenshots, view logs",
+      "source": "anthropic/skills",
+      "path": "skills/webapp-testing/SKILL.md",
+      "tags": [
+        "web"
+      ],
+      "category": "web"
+    },
+    {
+      "name": "web-artifacts-builder",
+      "description": "Build multi-component HTML artifacts using React, Tailwind CSS, and shadcn/ui",
+      "source": "anthropic/skills",
+      "path": "skills/web-artifacts-builder/SKILL.md",
+      "tags": [
+        "web"
+      ],
+      "category": "web"
+    },
+    {
+      "name": "react-expert",
+      "description": "React 18+ component architecture, hooks, Server Components, performance optimization",
+      "source": "jeffallan/claude-skills",
+      "path": "skills/react-expert/SKILL.md",
+      "tags": [
+        "web",
+        "react"
+      ],
+      "category": "web"
+    },
+    {
+      "name": "nextjs-developer",
+      "description": "Next.js 14+ App Router, server components, server actions, SSR/SSG, deployment",
+      "source": "jeffallan/claude-skills",
+      "path": "skills/nextjs-developer/SKILL.md",
+      "tags": [
+        "web",
+        "nextjs"
+      ],
+      "category": "web"
+    },
+    {
+      "name": "vue-expert",
+      "description": "Vue.js expert patterns, Composition API, Pinia state management, Vue Router",
+      "source": "jeffallan/claude-skills",
+      "path": "skills/vue-expert/SKILL.md",
+      "tags": [
+        "web",
+        "vue"
+      ],
+      "category": "web"
+    },
+    {
+      "name": "angular-architect",
+      "description": "Angular application architecture, modules, signals, dependency injection, RxJS",
+      "source": "jeffallan/claude-skills",
+      "path": "skills/angular-architect/SKILL.md",
+      "tags": [
+        "web",
+        "angular"
+      ],
+      "category": "web"
+    },
+    {
+      "name": "playwright-expert",
+      "description": "E2E testing with Playwright \u2014 Page Object Model, browser automation, visual testing",
+      "source": "jeffallan/claude-skills",
+      "path": "skills/playwright-expert/SKILL.md",
+      "tags": [
+        "web"
+      ],
+      "category": "web"
+    },
+    {
+      "name": "react-native-expert",
+      "description": "Cross-platform mobile with React Native/Expo \u2014 navigation, native modules, FlatList optimization",
+      "source": "jeffallan/claude-skills",
+      "path": "skills/react-native-expert/SKILL.md",
+      "tags": [
+        "mobile",
+        "react-native",
+        "expo"
+      ],
+      "category": "mobile"
+    },
+    {
+      "name": "flutter-expert",
+      "description": "Flutter 3+ and Dart \u2014 widgets, Riverpod/Bloc, GoRouter, platform-specific code",
+      "source": "jeffallan/claude-skills",
+      "path": "skills/flutter-expert/SKILL.md",
+      "tags": [
+        "mobile",
+        "flutter"
+      ],
+      "category": "mobile"
+    },
+    {
+      "name": "swift-expert",
+      "description": "iOS/macOS with Swift 5.9+ \u2014 SwiftUI, async/await, actors, protocol-oriented design",
+      "source": "jeffallan/claude-skills",
+      "path": "skills/swift-expert/SKILL.md",
+      "tags": [
+        "mobile",
+        "ios",
+        "swift"
+      ],
+      "category": "mobile"
+    },
+    {
+      "name": "kotlin-specialist",
+      "description": "Kotlin for Android \u2014 coroutines, Jetpack Compose, KMP, Ktor, Gradle",
+      "source": "jeffallan/claude-skills",
+      "path": "skills/kotlin-specialist/SKILL.md",
+      "tags": [
+        "mobile",
+        "android",
+        "kotlin"
+      ],
+      "category": "mobile"
+    },
+    {
+      "name": "nestjs-expert",
+      "description": "NestJS modular architecture \u2014 modules, controllers, services, DTOs, guards, TypeORM/Prisma",
+      "source": "jeffallan/claude-skills",
+      "path": "skills/nestjs-expert/SKILL.md",
+      "tags": [
+        "backend",
+        "nodejs"
+      ],
+      "category": "backend"
+    },
+    {
+      "name": "django-expert",
+      "description": "Django and DRF \u2014 models, ORM optimization, serializers, viewsets, JWT auth",
+      "source": "jeffallan/claude-skills",
+      "path": "skills/django-expert/SKILL.md",
+      "tags": [
+        "backend",
+        "python"
+      ],
+      "category": "backend"
+    },
+    {
+      "name": "fastapi-expert",
+      "description": "FastAPI async APIs \u2014 Pydantic models, dependency injection, background tasks",
+      "source": "jeffallan/claude-skills",
+      "path": "skills/fastapi-expert/SKILL.md",
+      "tags": [
+        "backend",
+        "python"
+      ],
+      "category": "backend"
+    },
+    {
+      "name": "rails-expert",
+      "description": "Ruby on Rails conventions \u2014 ActiveRecord, Hotwire, Turbo, testing, deployment",
+      "source": "jeffallan/claude-skills",
+      "path": "skills/rails-expert/SKILL.md",
+      "tags": [
+        "backend",
+        "ruby"
+      ],
+      "category": "backend"
+    },
+    {
+      "name": "laravel-specialist",
+      "description": "Laravel framework \u2014 Eloquent ORM, middleware, Blade templates, queues, testing",
+      "source": "jeffallan/claude-skills",
+      "path": "skills/laravel-specialist/SKILL.md",
+      "tags": [
+        "backend",
+        "php"
+      ],
+      "category": "backend"
+    },
+    {
+      "name": "spring-boot-engineer",
+      "description": "Spring Boot microservices \u2014 dependency injection, JPA, security, cloud-native",
+      "source": "jeffallan/claude-skills",
+      "path": "skills/spring-boot-engineer/SKILL.md",
+      "tags": [
+        "backend",
+        "java"
+      ],
+      "category": "backend"
+    },
+    {
+      "name": "graphql-architect",
+      "description": "GraphQL API design \u2014 schemas, resolvers, subscriptions, federation, caching",
+      "source": "jeffallan/claude-skills",
+      "path": "skills/graphql-architect/SKILL.md",
+      "tags": [
+        "backend",
+        "web"
+      ],
+      "category": "backend"
+    },
+    {
+      "name": "api-designer",
+      "description": "RESTful API design \u2014 OpenAPI specs, versioning, pagination, error handling",
+      "source": "jeffallan/claude-skills",
+      "path": "skills/api-designer/SKILL.md",
+      "tags": [
+        "backend"
+      ],
+      "category": "backend"
+    },
+    {
+      "name": "database-optimizer",
+      "description": "Query optimization, index design, execution plans, partitioning, lock contention",
+      "source": "jeffallan/claude-skills",
+      "path": "skills/database-optimizer/SKILL.md",
+      "tags": [
+        "backend"
+      ],
+      "category": "backend"
+    },
+    {
+      "name": "mcp-builder",
+      "description": "Create MCP servers to integrate external APIs \u2014 Python (FastMCP) and TypeScript SDK",
+      "source": "anthropic/skills",
+      "path": "skills/mcp-builder/SKILL.md",
+      "tags": [
+        "universal"
+      ],
+      "category": "backend"
+    },
+    {
+      "name": "mcp-developer",
+      "description": "Build MCP servers and clients \u2014 protocol compliance, resource providers, tool functions",
+      "source": "jeffallan/claude-skills",
+      "path": "skills/mcp-developer/SKILL.md",
+      "tags": [
+        "universal"
+      ],
+      "category": "backend"
+    },
+    {
+      "name": "typescript-pro",
+      "description": "Advanced TypeScript \u2014 generics, type guards, utility types, tRPC, monorepo setup",
+      "source": "jeffallan/claude-skills",
+      "path": "skills/typescript-pro/SKILL.md",
+      "tags": [
+        "universal",
+        "typescript"
+      ],
+      "category": "languages"
+    },
+    {
+      "name": "python-pro",
+      "description": "Python 3.11+ \u2014 type hints, pytest, async/await, dataclasses, mypy",
+      "source": "jeffallan/claude-skills",
+      "path": "skills/python-pro/SKILL.md",
+      "tags": [
+        "universal",
+        "python"
+      ],
+      "category": "languages"
+    },
+    {
+      "name": "golang-pro",
+      "description": "Go concurrency, goroutines, channels, generics, gRPC, microservices",
+      "source": "jeffallan/claude-skills",
+      "path": "skills/golang-pro/SKILL.md",
+      "tags": [
+        "universal",
+        "go"
+      ],
+      "category": "languages"
+    },
+    {
+      "name": "rust-engineer",
+      "description": "Rust ownership, lifetimes, async with Tokio, macros, unsafe, FFI",
+      "source": "jeffallan/claude-skills",
+      "path": "skills/rust-engineer/SKILL.md",
+      "tags": [
+        "universal",
+        "rust"
+      ],
+      "category": "languages"
+    },
+    {
+      "name": "java-architect",
+      "description": "Java architecture patterns, Spring, virtual threads, records, JVM optimization",
+      "source": "jeffallan/claude-skills",
+      "path": "skills/java-architect/SKILL.md",
+      "tags": [
+        "universal",
+        "java"
+      ],
+      "category": "languages"
+    },
+    {
+      "name": "cpp-pro",
+      "description": "Modern C++ (17/20/23) \u2014 smart pointers, ranges, coroutines, template metaprogramming",
+      "source": "jeffallan/claude-skills",
+      "path": "skills/cpp-pro/SKILL.md",
+      "tags": [
+        "universal",
+        "cpp"
+      ],
+      "category": "languages"
+    },
+    {
+      "name": "csharp-developer",
+      "description": "C# and .NET \u2014 async/await, LINQ, EF Core, minimal APIs, Blazor",
+      "source": "jeffallan/claude-skills",
+      "path": "skills/csharp-developer/SKILL.md",
+      "tags": [
+        "universal",
+        "csharp"
+      ],
+      "category": "languages"
+    },
+    {
+      "name": "devops-engineer",
+      "description": "CI/CD pipelines, Docker, Kubernetes, cloud platforms, GitOps workflows",
+      "source": "jeffallan/claude-skills",
+      "path": "skills/devops-engineer/SKILL.md",
+      "tags": [
+        "devops"
+      ],
+      "category": "devops"
+    },
+    {
+      "name": "kubernetes-specialist",
+      "description": "Kubernetes workloads \u2014 Helm charts, RBAC, NetworkPolicies, storage, troubleshooting",
+      "source": "jeffallan/claude-skills",
+      "path": "skills/kubernetes-specialist/SKILL.md",
+      "tags": [
+        "devops"
+      ],
+      "category": "devops"
+    },
+    {
+      "name": "terraform-engineer",
+      "description": "Infrastructure as code with Terraform \u2014 modules, state, multi-environment, testing",
+      "source": "jeffallan/claude-skills",
+      "path": "skills/terraform-engineer/SKILL.md",
+      "tags": [
+        "devops"
+      ],
+      "category": "devops"
+    },
+    {
+      "name": "cloud-architect",
+      "description": "Cloud architecture across AWS, Azure, GCP \u2014 well-architected patterns, cost optimization",
+      "source": "jeffallan/claude-skills",
+      "path": "skills/cloud-architect/SKILL.md",
+      "tags": [
+        "devops"
+      ],
+      "category": "devops"
+    },
+    {
+      "name": "sre-engineer",
+      "description": "Site reliability \u2014 SLIs/SLOs, incident response, capacity planning, observability",
+      "source": "jeffallan/claude-skills",
+      "path": "skills/sre-engineer/SKILL.md",
+      "tags": [
+        "devops"
+      ],
+      "category": "devops"
+    },
+    {
+      "name": "monitoring-expert",
+      "description": "Observability stack \u2014 Prometheus, Grafana, distributed tracing, alerting strategies",
+      "source": "jeffallan/claude-skills",
+      "path": "skills/monitoring-expert/SKILL.md",
+      "tags": [
+        "devops"
+      ],
+      "category": "devops"
+    },
+    {
+      "name": "owasp-security",
+      "description": "OWASP Top 10:2025, ASVS 5.0, and Agentic AI security \u2014 code review checklists",
+      "source": "agamm/claude-code-owasp",
+      "path": ".claude/skills/owasp-security/SKILL.md",
+      "tags": [
+        "universal",
+        "web"
+      ],
+      "category": "security"
+    },
+    {
+      "name": "security-reviewer",
+      "description": "Security audits, SAST scans, penetration testing, DevSecOps, cloud security reviews",
+      "source": "jeffallan/claude-skills",
+      "path": "skills/security-reviewer/SKILL.md",
+      "tags": [
+        "universal"
+      ],
+      "category": "security"
+    },
+    {
+      "name": "semgrep-rule-creator",
+      "description": "Create custom Semgrep rules for detecting vulnerabilities and code patterns",
+      "source": "trailofbits/skills",
+      "path": "plugins/semgrep-rule-creator/skills/semgrep-rule-creator/SKILL.md",
+      "tags": [
+        "universal"
+      ],
+      "category": "security"
+    },
+    {
+      "name": "variant-analysis",
+      "description": "Find similar vulnerabilities across codebases using CodeQL/Semgrep pattern analysis",
+      "source": "trailofbits/skills",
+      "path": "plugins/variant-analysis/skills/variant-analysis/SKILL.md",
+      "tags": [
+        "universal"
+      ],
+      "category": "security"
+    },
+    {
+      "name": "sharp-edges",
+      "description": "Identify error-prone APIs, dangerous configs, and footgun designs in code",
+      "source": "trailofbits/skills",
+      "path": "plugins/sharp-edges/skills/sharp-edges/SKILL.md",
+      "tags": [
+        "universal"
+      ],
+      "category": "security"
+    },
+    {
+      "name": "insecure-defaults",
+      "description": "Detect fail-open insecure defaults \u2014 hardcoded secrets, weak auth, permissive configs",
+      "source": "trailofbits/skills",
+      "path": "plugins/insecure-defaults/skills/insecure-defaults/SKILL.md",
+      "tags": [
+        "universal"
+      ],
+      "category": "security"
+    },
+    {
+      "name": "audit-context-building",
+      "description": "Ultra-granular line-by-line code analysis for deep architectural context before auditing",
+      "source": "trailofbits/skills",
+      "path": "plugins/audit-context-building/skills/audit-context-building/SKILL.md",
+      "tags": [
+        "universal"
+      ],
+      "category": "security"
+    },
+    {
+      "name": "second-opinion",
+      "description": "Run external LLM code reviews (Codex/Gemini CLI) on diffs and commits",
+      "source": "trailofbits/skills",
+      "path": "plugins/second-opinion/skills/second-opinion/SKILL.md",
+      "tags": [
+        "universal"
+      ],
+      "category": "security"
+    },
+    {
+      "name": "constant-time-analysis",
+      "description": "Detect timing side-channel vulnerabilities in cryptographic code",
+      "source": "trailofbits/skills",
+      "path": "plugins/constant-time-analysis/skills/constant-time-analysis/SKILL.md",
+      "tags": [
+        "universal"
+      ],
+      "category": "security"
+    },
+    {
+      "name": "entry-point-analyzer",
+      "description": "Analyze smart contract entry points for security auditing \u2014 access control, state changes",
+      "source": "trailofbits/skills",
+      "path": "plugins/entry-point-analyzer/skills/entry-point-analyzer/SKILL.md",
+      "tags": [
+        "web3"
+      ],
+      "category": "security"
+    },
+    {
+      "name": "spec-to-code-compliance",
+      "description": "Verify code implements exactly what documentation specifies \u2014 spec vs implementation gaps",
+      "source": "trailofbits/skills",
+      "path": "plugins/spec-to-code-compliance/skills/spec-to-code-compliance/SKILL.md",
+      "tags": [
+        "universal"
+      ],
+      "category": "security"
+    },
+    {
+      "name": "semgrep-rule-variant-creator",
+      "description": "Port existing Semgrep rules to other target languages",
+      "source": "trailofbits/skills",
+      "path": "plugins/semgrep-rule-variant-creator/skills/semgrep-rule-variant-creator/SKILL.md",
+      "tags": [
+        "universal"
+      ],
+      "category": "security"
+    },
+    {
+      "name": "firebase-apk-scanner",
+      "description": "Scan Android APKs for Firebase security misconfigurations and exposed endpoints",
+      "source": "trailofbits/skills",
+      "path": "plugins/firebase-apk-scanner/skills/firebase-apk-scanner/SKILL.md",
+      "tags": [
+        "mobile",
+        "android"
+      ],
+      "category": "security"
+    },
+    {
+      "name": "frontend-design",
+      "description": "Production-grade frontend interfaces \u2014 distinctive UI that avoids generic AI aesthetics",
+      "source": "anthropic/skills",
+      "path": "skills/frontend-design/SKILL.md",
+      "tags": [
+        "web"
+      ],
+      "category": "design"
+    },
+    {
+      "name": "algorithmic-art",
+      "description": "Create algorithmic art using p5.js \u2014 generative art, flow fields, particle systems",
+      "source": "anthropic/skills",
+      "path": "skills/algorithmic-art/SKILL.md",
+      "tags": [
+        "web",
+        "creative"
+      ],
+      "category": "design"
+    },
+    {
+      "name": "canvas-design",
+      "description": "Create visual art in PNG and PDF formats using design philosophy",
+      "source": "anthropic/skills",
+      "path": "skills/canvas-design/SKILL.md",
+      "tags": [
+        "universal",
+        "creative"
+      ],
+      "category": "design"
+    },
+    {
+      "name": "theme-factory",
+      "description": "Style artifacts with themes \u2014 10 presets for slides, docs, landing pages",
+      "source": "anthropic/skills",
+      "path": "skills/theme-factory/SKILL.md",
+      "tags": [
+        "web",
+        "creative"
+      ],
+      "category": "design"
+    },
+    {
+      "name": "slack-gif-creator",
+      "description": "Create animated GIFs optimized for Slack's size constraints",
+      "source": "anthropic/skills",
+      "path": "skills/slack-gif-creator/SKILL.md",
+      "tags": [
+        "universal",
+        "creative"
+      ],
+      "category": "design"
+    },
+    {
+      "name": "brand-guidelines",
+      "description": "Apply Anthropic brand colors and typography to artifacts",
+      "source": "anthropic/skills",
+      "path": "skills/brand-guidelines/SKILL.md",
+      "tags": [
+        "universal",
+        "creative"
+      ],
+      "category": "design"
+    },
+    {
+      "name": "pdf",
+      "description": "Extract text, tables, and metadata from PDF files; merge and split documents",
+      "source": "anthropic/skills",
+      "path": "skills/pdf/SKILL.md",
+      "tags": [
+        "universal",
+        "documents"
+      ],
+      "category": "documents"
+    },
+    {
+      "name": "docx",
+      "description": "Create, edit, and analyze Word documents with tracked changes and comments",
+      "source": "anthropic/skills",
+      "path": "skills/docx/SKILL.md",
+      "tags": [
+        "universal",
+        "documents"
+      ],
+      "category": "documents"
+    },
+    {
+      "name": "pptx",
+      "description": "Read, generate, and adjust PowerPoint presentations with layouts and charts",
+      "source": "anthropic/skills",
+      "path": "skills/pptx/SKILL.md",
+      "tags": [
+        "universal",
+        "documents"
+      ],
+      "category": "documents"
+    },
+    {
+      "name": "xlsx",
+      "description": "Spreadsheet manipulation with formulas, charts, and data transforms",
+      "source": "anthropic/skills",
+      "path": "skills/xlsx/SKILL.md",
+      "tags": [
+        "universal",
+        "documents"
+      ],
+      "category": "documents"
+    },
+    {
+      "name": "internal-comms",
+      "description": "Write internal communications \u2014 status reports, newsletters, FAQs, incident reports",
+      "source": "anthropic/skills",
+      "path": "skills/internal-comms/SKILL.md",
+      "tags": [
+        "universal",
+        "documents"
+      ],
+      "category": "documents"
+    },
+    {
+      "name": "using-superpowers",
+      "description": "Introduction to the skills system \u2014 how to find and invoke skills",
+      "source": "obra/superpowers",
+      "path": "skills/using-superpowers/SKILL.md",
+      "tags": [
+        "universal"
+      ],
+      "category": "meta"
+    },
+    {
+      "name": "writing-skills",
+      "description": "Guide for creating new skills following the SKILL.md format",
+      "source": "obra/superpowers",
+      "path": "skills/writing-skills/SKILL.md",
+      "tags": [
+        "universal"
+      ],
+      "category": "meta"
+    },
+    {
+      "name": "skill-creator",
+      "description": "Interactive Q&A guide for building new skills with the Anthropic skill format",
+      "source": "anthropic/skills",
+      "path": "skills/skill-creator/SKILL.md",
+      "tags": [
+        "universal"
+      ],
+      "category": "meta"
+    }
+  ]
+}

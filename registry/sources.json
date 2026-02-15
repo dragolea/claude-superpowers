@@ -1,0 +1,34 @@
+{
+  "sources": {
+    "obra/superpowers": {
+      "name": "Superpowers by obra",
+      "base_url": "https://raw.githubusercontent.com/obra/superpowers/main",
+      "repo_url": "https://github.com/obra/superpowers",
+      "description": "Core development workflow skills — debugging, TDD, planning, code review"
+    },
+    "anthropic/skills": {
+      "name": "Anthropic Official Skills",
+      "base_url": "https://raw.githubusercontent.com/anthropics/skills/main",
+      "repo_url": "https://github.com/anthropics/skills",
+      "description": "Official Anthropic agent skills — documents, design, testing, MCP"
+    },
+    "jeffallan/claude-skills": {
+      "name": "Fullstack Dev Skills by jeffallan",
+      "base_url": "https://raw.githubusercontent.com/jeffallan/claude-skills/main",
+      "repo_url": "https://github.com/jeffallan/claude-skills",
+      "description": "66 framework and language expert skills — React, NestJS, Python, Go, DevOps"
+    },
+    "trailofbits/skills": {
+      "name": "Trail of Bits Security Skills",
+      "base_url": "https://raw.githubusercontent.com/trailofbits/skills/main",
+      "repo_url": "https://github.com/trailofbits/skills",
+      "description": "Security-focused skills — static analysis, vulnerability detection, auditing"
+    },
+    "agamm/claude-code-owasp": {
+      "name": "OWASP Security by agamm",
+      "base_url": "https://raw.githubusercontent.com/agamm/claude-code-owasp/main",
+      "repo_url": "https://github.com/agamm/claude-code-owasp",
+      "description": "OWASP Top 10:2025, ASVS 5.0, and Agentic AI security review"
+    }
+  }
+}
