@@ -671,6 +671,8 @@ select_agent_scope() {
 # ============================================================================
 
 # Global arrays populated by detect_project()
+DETECTION_DONE=false
+DETECTION_BANNER_SHOWN=false
 DETECTED_TECHS=()
 DETECTED_SKILL_CATS=()
 DETECTED_AGENT_CATS=()
@@ -705,6 +707,9 @@ _add_agent_cats() {
 }
 
 detect_project() {
+  # Skip if already run
+  $DETECTION_DONE && return 0
+
   DETECTED_TECHS=()
   DETECTED_SKILL_CATS=()
   DETECTED_AGENT_CATS=()
@@ -892,6 +897,8 @@ detect_project() {
     _add_skill_cats "core"
     _add_agent_cats "dev-experience"
   fi
+
+  DETECTION_DONE=true
 }
 
 cmd_scan() {
@@ -1589,7 +1596,7 @@ cmd_interactive() {
     "Skills|77 curated skill files (.claude/skills/)" \
     "Agents|83 plugins from 2 marketplaces (via claude plugin CLI)" \
     "Both|Install skills first, then agents" \
-    "Scan project|Detect tech stack & show recommended categories"
+    "Scan & install|Auto-detect tech stack, pick skills + agents"
 
   case $SELECTED_INDEX in
     1)
@@ -1603,7 +1610,25 @@ cmd_interactive() {
       return
       ;;
     3)
-      cmd_scan
+      # Scan, show results, then install both with detection pre-selections
+      detect_project
+      if [[ ${#DETECTED_TECHS[@]} -gt 0 ]]; then
+        local tech_list=""
+        for t in "${DETECTED_TECHS[@]}"; do
+          if [[ -n "$tech_list" ]]; then tech_list+=", "; fi
+          tech_list+="$t"
+        done
+        echo ""
+        echo -e "  ${GREEN}Detected:${NC} ${BOLD}${tech_list}${NC}"
+        DETECTION_BANNER_SHOWN=true
+      else
+        echo ""
+        echo -e "  ${YELLOW}No project signals detected.${NC} Falling back to manual selection."
+        echo ""
+      fi
+      load_registry
+      _run_skill_wizard
+      cmd_agents_interactive
       return
       ;;
   esac
@@ -1624,15 +1649,17 @@ _run_skill_wizard() {
     use_detection=true
     step=3
 
-    # Show detection banner
-    local tech_list=""
-    for t in "${DETECTED_TECHS[@]}"; do
-      if [[ -n "$tech_list" ]]; then tech_list+=", "; fi
-      tech_list+="$t"
-    done
-    echo ""
-    echo -e "  ${GREEN}Detected:${NC} ${BOLD}${tech_list}${NC}"
-    echo -e "  ${DIM}Pre-selecting relevant categories. Press Back to choose manually.${NC}"
+    # Show detection banner (skip if already shown by caller)
+    if ! $DETECTION_BANNER_SHOWN; then
+      local tech_list=""
+      for t in "${DETECTED_TECHS[@]}"; do
+        if [[ -n "$tech_list" ]]; then tech_list+=", "; fi
+        tech_list+="$t"
+      done
+      echo ""
+      echo -e "  ${GREEN}Detected:${NC} ${BOLD}${tech_list}${NC}"
+    fi
+    echo -e "  ${DIM}Pre-selecting relevant skill categories. Press Back to choose manually.${NC}"
   fi
 
   while true; do
@@ -2088,13 +2115,16 @@ cmd_agents_interactive() {
   if [[ ${#DETECTED_AGENT_CATS[@]} -gt 0 ]]; then
     use_agent_detection=true
 
-    local tech_list=""
-    for t in "${DETECTED_TECHS[@]}"; do
-      if [[ -n "$tech_list" ]]; then tech_list+=", "; fi
-      tech_list+="$t"
-    done
-    echo ""
-    echo -e "  ${GREEN}Detected:${NC} ${BOLD}${tech_list}${NC}"
+    # Show detection banner (skip if already shown by caller)
+    if ! $DETECTION_BANNER_SHOWN; then
+      local tech_list=""
+      for t in "${DETECTED_TECHS[@]}"; do
+        if [[ -n "$tech_list" ]]; then tech_list+=", "; fi
+        tech_list+="$t"
+      done
+      echo ""
+      echo -e "  ${GREEN}Detected:${NC} ${BOLD}${tech_list}${NC}"
+    fi
     echo -e "  ${DIM}Pre-selecting relevant plugin categories.${NC}"
   fi
 
