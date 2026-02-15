@@ -26,6 +26,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
 REGISTRY_URL="https://raw.githubusercontent.com/dragolea/claude-superpowers/main/registry"
 SKILLS_DIR=".claude/skills"
 AGENTS_DIR=".claude/agents"
+INSTALL_SCOPE="project"
+SCOPE_SET_BY_FLAG=false
 
 # Colors
 RED='\033[0;31m'
@@ -75,6 +77,11 @@ print_help() {
   echo "  ./install.sh --agents --update            Re-download installed agents"
   echo "  ./install.sh --agents --help              Agent help"
   echo ""
+  echo -e "${BOLD}SCOPE${NC}"
+  echo "  --scope project     .claude/ — shared with all collaborators (default)"
+  echo "  --scope user        ~/.claude/ — available in all your projects"
+  echo "  --scope local       .claude/ + .gitignore — this repo only, not committed"
+  echo ""
   echo -e "${BOLD}SKILL PRESETS${NC}"
   echo "  core           Debugging, TDD, verification (4 skills)"
   echo "  workflow        Core + planning & execution (10 skills)"
@@ -94,6 +101,59 @@ print_help() {
   echo "  ./install.sh --agents --preset fullstack"
   echo "  ./install.sh --agents --search kubernetes"
   echo ""
+}
+
+# Set install directories based on scope
+apply_scope() {
+  case "$INSTALL_SCOPE" in
+    user)
+      SKILLS_DIR="${HOME}/.claude/skills"
+      AGENTS_DIR="${HOME}/.claude/agents"
+      ;;
+    project|local)
+      SKILLS_DIR=".claude/skills"
+      AGENTS_DIR=".claude/agents"
+      ;;
+  esac
+}
+
+# Add path to .gitignore for local scope
+ensure_gitignored() {
+  local path="$1"
+  [[ "$INSTALL_SCOPE" != "local" ]] && return
+
+  local gitignore=".gitignore"
+
+  if [[ ! -f "$gitignore" ]]; then
+    touch "$gitignore"
+  fi
+
+  # Add header comment if not present
+  if ! grep -q "# Claude Superpowers (local scope)" "$gitignore"; then
+    echo "" >> "$gitignore"
+    echo "# Claude Superpowers (local scope)" >> "$gitignore"
+  fi
+
+  # Add path if not already listed
+  if ! grep -qxF "$path" "$gitignore"; then
+    echo "$path" >> "$gitignore"
+  fi
+}
+
+# Interactive scope selection menu
+select_scope() {
+  select_menu "Where should these be installed?" \
+    "Project scope|.claude/ — shared with all collaborators via git" \
+    "User scope|~/.claude/ — available in all your projects" \
+    "Local scope|.claude/ + .gitignore — this repo only, not committed"
+
+  case $SELECTED_INDEX in
+    0) INSTALL_SCOPE="project" ;;
+    1) INSTALL_SCOPE="user" ;;
+    2) INSTALL_SCOPE="local" ;;
+  esac
+
+  apply_scope
 }
 
 # Check for required tools
@@ -904,6 +964,7 @@ download_skill() {
   local url="${base_url}/${path}"
   if curl -sL --fail "$url" -o "${target_dir}/SKILL.md" 2>/dev/null; then
     echo -e "  ${GREEN}+${NC} ${skill_name}"
+    ensure_gitignored "${SKILLS_DIR}/${skill_name}/"
     return 0
   else
     echo -e "  ${RED}x${NC} ${skill_name} ${DIM}(download failed)${NC}"
@@ -940,7 +1001,11 @@ install_skills() {
   fi
   echo -e "${BOLD}────────────────────────────────────${NC}"
   echo ""
+  echo -e "  ${DIM}Scope:${NC}     ${INSTALL_SCOPE}"
   echo -e "Skills installed to: ${BOLD}${SKILLS_DIR}/${NC}"
+  if [[ "$INSTALL_SCOPE" == "local" ]]; then
+    echo -e "Entries added to ${BOLD}.gitignore${NC} ${DIM}(local scope)${NC}"
+  fi
   echo -e "Run ${DIM}./install.sh --update${NC} to refresh later."
   echo ""
 }
@@ -964,6 +1029,7 @@ download_agent() {
   local url="${base_url}/${path}"
   if curl -sL --fail "$url" -o "${AGENTS_DIR}/${agent_name}.md" 2>/dev/null; then
     echo -e "  ${GREEN}+${NC} ${agent_name}"
+    ensure_gitignored "${AGENTS_DIR}/${agent_name}.md"
     return 0
   else
     echo -e "  ${RED}x${NC} ${agent_name} ${DIM}(download failed)${NC}"
@@ -1000,7 +1066,11 @@ install_agents() {
   fi
   echo -e "${BOLD}────────────────────────────────────${NC}"
   echo ""
+  echo -e "  ${DIM}Scope:${NC}     ${INSTALL_SCOPE}"
   echo -e "Agents installed to: ${BOLD}${AGENTS_DIR}/${NC}"
+  if [[ "$INSTALL_SCOPE" == "local" ]]; then
+    echo -e "Entries added to ${BOLD}.gitignore${NC} ${DIM}(local scope)${NC}"
+  fi
   echo -e "Run ${DIM}./install.sh --agents --update${NC} to refresh later."
   echo ""
 }
@@ -1129,9 +1199,16 @@ cmd_search() {
       exit 0
     fi
 
+    # Scope selection (if not set via --scope flag)
+    if ! $SCOPE_SET_BY_FLAG; then
+      echo ""
+      select_scope
+    fi
+
     # Confirmation
     echo ""
     echo -e "${BOLD}Skills to install (${#SELECTED_SKILLS[@]}):${NC}"
+    echo -e "${DIM}  Scope: ${INSTALL_SCOPE} → ${SKILLS_DIR}/${NC}"
     echo ""
     for skill in "${SELECTED_SKILLS[@]}"; do
       local desc
@@ -1158,9 +1235,34 @@ cmd_search() {
 }
 
 cmd_interactive() {
-  load_registry
   print_banner
 
+  # Step 0: Choose what to install
+  echo ""
+  select_menu "What do you want to install?" \
+    "Skills|77 curated skill files (.claude/skills/)" \
+    "Agents|130 specialized AI agent personas (.claude/agents/)" \
+    "Both|Install skills first, then agents"
+
+  case $SELECTED_INDEX in
+    1)
+      cmd_agents_interactive
+      return
+      ;;
+    2)
+      load_registry
+      _run_skill_wizard
+      cmd_agents_interactive
+      return
+      ;;
+  esac
+
+  # Default: skills only
+  load_registry
+  _run_skill_wizard
+}
+
+_run_skill_wizard() {
   local step=1
   local project_label stack_label
 
@@ -1314,9 +1416,15 @@ cmd_interactive() {
           done <<< "$skills"
         done
 
-        # Step 4: Show summary and confirm
+        # Step 4: Scope selection + summary + confirm
+        if ! $SCOPE_SET_BY_FLAG; then
+          echo ""
+          select_scope
+        fi
+
         echo ""
         echo -e "${BOLD}Skills to install (${#skill_names[@]}):${NC}"
+        echo -e "${DIM}  Scope: ${INSTALL_SCOPE} → ${SKILLS_DIR}/${NC}"
         echo ""
         for skill in "${skill_names[@]}"; do
           local desc
@@ -1361,6 +1469,11 @@ print_agents_help() {
   echo "  ./install.sh --agents --search <term>     Pre-filtered search"
   echo "  ./install.sh --agents --update            Re-download installed agents"
   echo "  ./install.sh --agents --help              Show this help"
+  echo ""
+  echo -e "${BOLD}SCOPE${NC}"
+  echo "  --scope project     .claude/ — shared with all collaborators (default)"
+  echo "  --scope user        ~/.claude/ — available in all your projects"
+  echo "  --scope local       .claude/ + .gitignore — this repo only, not committed"
   echo ""
   echo -e "${BOLD}PRESETS${NC}"
   echo "  core-dev       Frontend, backend, fullstack, API, mobile (10 agents)"
@@ -1470,9 +1583,16 @@ cmd_agents_search() {
       exit 0
     fi
 
+    # Scope selection (if not set via --scope flag)
+    if ! $SCOPE_SET_BY_FLAG; then
+      echo ""
+      select_scope
+    fi
+
     # Confirmation
     echo ""
     echo -e "${BOLD}Agents to install (${#SELECTED_SKILLS[@]}):${NC}"
+    echo -e "${DIM}  Scope: ${INSTALL_SCOPE} → ${AGENTS_DIR}/${NC}"
     echo ""
     for agent in "${SELECTED_SKILLS[@]}"; do
       local desc
@@ -1581,9 +1701,15 @@ cmd_agents_interactive() {
     done <<< "$agents"
   done
 
-  # Show summary and confirm
+  # Scope selection + summary + confirm
+  if ! $SCOPE_SET_BY_FLAG; then
+    echo ""
+    select_scope
+  fi
+
   echo ""
   echo -e "${BOLD}Agents to install (${#agent_names[@]}):${NC}"
+  echo -e "${DIM}  Scope: ${INSTALL_SCOPE} → ${AGENTS_DIR}/${NC}"
   echo ""
   for agent in "${agent_names[@]}"; do
     local desc
@@ -1610,6 +1736,36 @@ cmd_agents_interactive() {
 
 main() {
   check_dependencies
+
+  # Extract --scope flag from anywhere in args
+  local -a remaining_args=()
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --scope)
+        if [[ -z "${2:-}" ]]; then
+          echo -e "${RED}Error: --scope requires a value (user, project, local)${NC}"
+          exit 1
+        fi
+        case "$2" in
+          user|project|local)
+            INSTALL_SCOPE="$2"
+            SCOPE_SET_BY_FLAG=true
+            apply_scope
+            ;;
+          *)
+            echo -e "${RED}Error: invalid scope '${2}'. Use: user, project, local${NC}"
+            exit 1
+            ;;
+        esac
+        shift 2
+        ;;
+      *)
+        remaining_args+=("$1")
+        shift
+        ;;
+    esac
+  done
+  set -- "${remaining_args[@]}"
 
   # Agent mode: --agents consumes first arg, dispatches remaining to agent commands
   if [[ "${1:-}" == "--agents" ]]; then
