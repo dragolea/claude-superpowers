@@ -25,7 +25,6 @@ VERSION="2.0.0"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
 REGISTRY_URL="https://raw.githubusercontent.com/dragolea/claude-superpowers/main/registry"
 SKILLS_DIR=".claude/skills"
-AGENTS_DIR=".claude/agents"
 INSTALL_SCOPE="project"
 SCOPE_SET_BY_FLAG=false
 
@@ -69,18 +68,18 @@ print_help() {
   echo "  ./install.sh --update            Re-download installed skills"
   echo "  ./install.sh --help              Show this help"
   echo ""
-  echo -e "${BOLD}USAGE — AGENTS${NC}"
+  echo -e "${BOLD}USAGE — AGENTS (via plugin marketplace)${NC}"
   echo "  ./install.sh --agents                     Interactive mode"
   echo "  ./install.sh --agents --preset <name>     Install a preset"
-  echo "  ./install.sh --agents --list              List all agents"
-  echo "  ./install.sh --agents --search [term]     Search & pick agents"
-  echo "  ./install.sh --agents --update            Re-download installed agents"
+  echo "  ./install.sh --agents --list              List all plugins"
+  echo "  ./install.sh --agents --search [term]     Search & pick plugins"
+  echo "  ./install.sh --agents --update            Update installed plugins"
   echo "  ./install.sh --agents --help              Agent help"
   echo ""
   echo -e "${BOLD}SCOPE${NC}"
   echo "  --scope project     .claude/ — shared with all collaborators (default)"
   echo "  --scope user        ~/.claude/ — available in all your projects"
-  echo "  --scope local       .claude/ + .gitignore — this repo only, not committed"
+  echo "  --scope local       .claude/ — this repo only, not committed"
   echo ""
   echo -e "${BOLD}SKILL PRESETS${NC}"
   echo "  core           Debugging, TDD, verification (4 skills)"
@@ -101,18 +100,19 @@ print_help() {
   echo "  ./install.sh --agents --preset fullstack"
   echo "  ./install.sh --agents --search kubernetes"
   echo ""
+  echo -e "${DIM}Note: Agent installation requires the Claude CLI (claude command).${NC}"
+  echo -e "${DIM}Skills are installed via curl (no CLI needed).${NC}"
+  echo ""
 }
 
-# Set install directories based on scope
+# Set install directories based on scope (skills only — agents use claude plugin CLI)
 apply_scope() {
   case "$INSTALL_SCOPE" in
     user)
       SKILLS_DIR="${HOME}/.claude/skills"
-      AGENTS_DIR="${HOME}/.claude/agents"
       ;;
     project|local)
       SKILLS_DIR=".claude/skills"
-      AGENTS_DIR=".claude/agents"
       ;;
   esac
 }
@@ -168,6 +168,140 @@ check_dependencies() {
   fi
 }
 
+# Check for Claude CLI (required for agent/plugin installation)
+check_claude_cli() {
+  if ! command -v claude &>/dev/null; then
+    echo ""
+    echo -e "${RED}Error: Claude CLI is required for agent/plugin installation.${NC}"
+    echo ""
+    echo -e "Install it from: ${BOLD}https://docs.anthropic.com/en/docs/claude-code/overview${NC}"
+    echo -e "  ${DIM}npm install -g @anthropic-ai/claude-code${NC}"
+    echo ""
+    echo -e "${DIM}Note: Skills can still be installed without the CLI (./install.sh without --agents).${NC}"
+    exit 1
+  fi
+}
+
+# Ensure a marketplace is added to the Claude CLI
+ensure_marketplace() {
+  local marketplace_id="$1"
+  local repo="$2"
+
+  # Check if marketplace already added
+  if claude plugin marketplace list 2>/dev/null | grep -q "$repo"; then
+    return 0
+  fi
+
+  echo -e "  ${DIM}Adding marketplace: ${repo}${NC}"
+  if claude plugin marketplace add "$repo" 2>/dev/null; then
+    return 0
+  else
+    echo -e "  ${YELLOW}Warning: Could not add marketplace ${repo}${NC}"
+    return 1
+  fi
+}
+
+# Ensure all required marketplaces are added
+ensure_all_marketplaces() {
+  local -a marketplace_ids=("$@")
+
+  echo -e "${DIM}Ensuring plugin marketplaces are configured...${NC}"
+
+  for mp_id in "${marketplace_ids[@]}"; do
+    local repo
+    repo=$(get_marketplace_repo "$mp_id")
+    ensure_marketplace "$mp_id" "$repo"
+  done
+  echo ""
+}
+
+# Get marketplace repo from marketplace ID
+get_marketplace_repo() {
+  local mp_id="$1"
+  if command -v jq &>/dev/null; then
+    echo "$AGENTS_JSON" | jq -r ".marketplaces[\"${mp_id}\"].repo"
+  else
+    echo "$AGENTS_JSON" | python3 -c "
+import sys, json
+data = json.load(sys.stdin)
+print(data['marketplaces']['${mp_id}']['repo'])
+"
+  fi
+}
+
+# Install a single plugin via Claude CLI
+install_plugin() {
+  local plugin_name="$1"
+  local marketplace="$2"
+  local agent_count="$3"
+
+  if claude plugin install "${plugin_name}@${marketplace}" --scope "$INSTALL_SCOPE" 2>/dev/null; then
+    echo -e "  ${GREEN}+${NC} ${plugin_name}@${marketplace} ${DIM}(${agent_count} agents)${NC}"
+    return 0
+  else
+    echo -e "  ${RED}x${NC} ${plugin_name}@${marketplace} ${DIM}(install failed)${NC}"
+    return 1
+  fi
+}
+
+# Install multiple plugins
+install_plugins() {
+  local -a plugin_names=("$@")
+  local success=0
+  local failed=0
+  local total=${#plugin_names[@]}
+  local total_agents=0
+
+  # Collect unique marketplaces
+  local -a unique_marketplaces=()
+  for plugin in "${plugin_names[@]}"; do
+    local mp
+    mp=$(get_plugin_info "$plugin" "marketplace")
+    local found=false
+    for existing in "${unique_marketplaces[@]+"${unique_marketplaces[@]}"}"; do
+      if [[ "$existing" == "$mp" ]]; then
+        found=true
+        break
+      fi
+    done
+    if ! $found; then
+      unique_marketplaces+=("$mp")
+    fi
+  done
+
+  # Ensure all marketplaces are configured
+  ensure_all_marketplaces "${unique_marketplaces[@]}"
+
+  echo ""
+  echo -e "${BOLD}Installing ${total} plugins (scope: ${INSTALL_SCOPE})${NC}"
+  echo ""
+
+  for plugin in "${plugin_names[@]}"; do
+    local marketplace
+    marketplace=$(get_plugin_info "$plugin" "marketplace")
+    local agent_count
+    agent_count=$(get_plugin_info "$plugin" "agent_count")
+    if install_plugin "$plugin" "$marketplace" "$agent_count"; then
+      ((success++))
+      ((total_agents += agent_count))
+    else
+      ((failed++))
+    fi
+  done
+
+  echo ""
+  echo -e "${BOLD}────────────────────────────────────${NC}"
+  echo -e "  ${GREEN}Installed:${NC} ${success} plugins (${total_agents} agents)"
+  if [[ $failed -gt 0 ]]; then
+    echo -e "  ${RED}Failed:${NC}    ${failed} plugins"
+  fi
+  echo -e "${BOLD}────────────────────────────────────${NC}"
+  echo ""
+  echo -e "  ${DIM}Scope:${NC}     ${INSTALL_SCOPE}"
+  echo -e "Run ${DIM}./install.sh --agents --update${NC} to update later."
+  echo ""
+}
+
 # JSON parsing — use jq if available, fall back to python3
 json_query() {
   local json="$1"
@@ -182,13 +316,13 @@ query = '''$query'''
 # Simple jq-compatible queries
 if query == '.skills | length':
     print(len(data['skills']))
-elif query == '.agents | length':
-    print(len(data['agents']))
-elif query.startswith('.agents['):
+elif query == '.plugins | length':
+    print(len(data['plugins']))
+elif query.startswith('.plugins['):
     import re
-    m = re.match(r'\.agents\[(\d+)\]\.(\w+)', query)
+    m = re.match(r'\.plugins\[(\d+)\]\.(\w+)', query)
     if m:
-        print(data['agents'][int(m.group(1))][m.group(2)])
+        print(data['plugins'][int(m.group(1))][m.group(2)])
 elif query.startswith('.skills['):
     import re
     m = re.match(r'\.skills\[(\d+)\]\.(\w+)', query)
@@ -251,27 +385,20 @@ load_registry() {
 
 load_agent_registry() {
   local agents_file=""
-  local sources_file=""
 
   # Try local registry first (when running from repo), then fetch from GitHub
   if [[ -f "${SCRIPT_DIR}/registry/agents.json" ]]; then
     agents_file="${SCRIPT_DIR}/registry/agents.json"
-    sources_file="${SCRIPT_DIR}/registry/sources.json"
     AGENTS_JSON=$(cat "$agents_file")
-    SOURCES_JSON=$(cat "$sources_file")
   else
-    echo -e "${DIM}Fetching agent registry from GitHub...${NC}"
+    echo -e "${DIM}Fetching plugin registry from GitHub...${NC}"
     AGENTS_JSON=$(curl -sL --fail "${REGISTRY_URL}/agents.json") || {
-      echo -e "${RED}Failed to fetch agent registry.${NC}"
-      exit 1
-    }
-    SOURCES_JSON=$(curl -sL --fail "${REGISTRY_URL}/sources.json") || {
-      echo -e "${RED}Failed to fetch source registry.${NC}"
+      echo -e "${RED}Failed to fetch plugin registry.${NC}"
       exit 1
     }
   fi
 
-  AGENT_COUNT=$(json_query "$AGENTS_JSON" '.agents | length')
+  PLUGIN_COUNT=$(json_query "$AGENTS_JSON" '.plugins | length')
 }
 
 # Get base URL for a source
@@ -406,18 +533,18 @@ for c in data['presets']['${preset_name}']['categories']:
 }
 
 # ============================================================================
-# Agent queries
+# Plugin queries (for agent marketplace)
 # ============================================================================
 
-# Get all agents matching given categories
-get_agents_by_categories() {
+# Get all plugins matching given categories (deduplicated)
+get_plugins_by_categories() {
   local categories=("$@")
   if command -v jq &>/dev/null; then
     local filter
     filter=$(printf '"%s",' "${categories[@]}")
     filter="[${filter%,}]"
     echo "$AGENTS_JSON" | jq -r --argjson cats "$filter" \
-      '.agents[] | select(.category as $c | $cats | index($c)) | .name'
+      '[.plugins[] | select(.category as $c | $cats | index($c)) | .name] | unique[]'
   else
     local cats_str
     cats_str=$(printf "'%s'," "${categories[@]}")
@@ -426,33 +553,35 @@ get_agents_by_categories() {
 import sys, json
 data = json.load(sys.stdin)
 cats = ${cats_str}
-for a in data['agents']:
-    if a['category'] in cats:
-        print(a['name'])
+seen = set()
+for p in data['plugins']:
+    if p['category'] in cats and p['name'] not in seen:
+        seen.add(p['name'])
+        print(p['name'])
 "
   fi
 }
 
-# Get agent info by name
-get_agent_info() {
-  local agent_name="$1"
+# Get plugin info by name
+get_plugin_info() {
+  local plugin_name="$1"
   local field="$2"
   if command -v jq &>/dev/null; then
-    echo "$AGENTS_JSON" | jq -r ".agents[] | select(.name == \"${agent_name}\") | .${field}"
+    echo "$AGENTS_JSON" | jq -r ".plugins[] | select(.name == \"${plugin_name}\") | .${field}"
   else
     echo "$AGENTS_JSON" | python3 -c "
 import sys, json
 data = json.load(sys.stdin)
-for a in data['agents']:
-    if a['name'] == '${agent_name}':
-        print(a['${field}'])
+for p in data['plugins']:
+    if p['name'] == '${plugin_name}':
+        print(p['${field}'])
         break
 "
   fi
 }
 
-# Get all unique agent categories
-get_all_agent_categories() {
+# Get all unique plugin categories
+get_all_plugin_categories() {
   if command -v jq &>/dev/null; then
     echo "$AGENTS_JSON" | jq -r '.categories | keys[]'
   else
@@ -465,8 +594,8 @@ for k in data['categories']:
   fi
 }
 
-# Get agent category display name
-get_agent_category_name() {
+# Get plugin category display name
+get_plugin_category_name() {
   local cat_id="$1"
   if command -v jq &>/dev/null; then
     echo "$AGENTS_JSON" | jq -r ".categories[\"${cat_id}\"].name"
@@ -479,8 +608,8 @@ print(data['categories']['${cat_id}']['name'])
   fi
 }
 
-# Get agent category description
-get_agent_category_desc() {
+# Get plugin category description
+get_plugin_category_desc() {
   local cat_id="$1"
   if command -v jq &>/dev/null; then
     echo "$AGENTS_JSON" | jq -r ".categories[\"${cat_id}\"].description"
@@ -493,8 +622,8 @@ print(data['categories']['${cat_id}']['description'])
   fi
 }
 
-# Check if agent category is recommended
-is_agent_category_recommended() {
+# Check if plugin category is recommended
+is_plugin_category_recommended() {
   local cat_id="$1"
   if command -v jq &>/dev/null; then
     echo "$AGENTS_JSON" | jq -r ".categories[\"${cat_id}\"].recommended"
@@ -507,8 +636,8 @@ print(str(data['categories']['${cat_id}'].get('recommended', False)).lower())
   fi
 }
 
-# Get agent preset categories
-get_agent_preset_categories() {
+# Get plugin preset categories
+get_plugin_preset_categories() {
   local preset_name="$1"
   if command -v jq &>/dev/null; then
     echo "$AGENTS_JSON" | jq -r ".presets[\"${preset_name}\"].categories[]"
@@ -520,6 +649,20 @@ for c in data['presets']['${preset_name}']['categories']:
     print(c)
 "
   fi
+}
+
+# Interactive scope selection for agents/plugins
+select_agent_scope() {
+  select_menu "Where should plugins be installed?" \
+    "Project scope|.claude/settings.json — shared with collaborators via git" \
+    "User scope|~/.claude/settings.json — available in all your projects" \
+    "Local scope|.claude/settings.local.json — this repo only, auto-gitignored"
+
+  case $SELECTED_INDEX in
+    0) INSTALL_SCOPE="project" ;;
+    1) INSTALL_SCOPE="user" ;;
+    2) INSTALL_SCOPE="local" ;;
+  esac
 }
 
 # ============================================================================
@@ -1011,71 +1154,6 @@ install_skills() {
 }
 
 # ============================================================================
-# Agent installation
-# ============================================================================
-
-download_agent() {
-  local agent_name="$1"
-  local source
-  local path
-  local base_url
-
-  source=$(get_agent_info "$agent_name" "source")
-  path=$(get_agent_info "$agent_name" "path")
-  base_url=$(get_source_url "$source")
-
-  mkdir -p "$AGENTS_DIR"
-
-  local url="${base_url}/${path}"
-  if curl -sL --fail "$url" -o "${AGENTS_DIR}/${agent_name}.md" 2>/dev/null; then
-    echo -e "  ${GREEN}+${NC} ${agent_name}"
-    ensure_gitignored "${AGENTS_DIR}/${agent_name}.md"
-    return 0
-  else
-    echo -e "  ${RED}x${NC} ${agent_name} ${DIM}(download failed)${NC}"
-    rm -f "${AGENTS_DIR}/${agent_name}.md"
-    return 1
-  fi
-}
-
-install_agents() {
-  local -a agent_names=("$@")
-  local success=0
-  local failed=0
-  local total=${#agent_names[@]}
-
-  echo ""
-  echo -e "${BOLD}Installing ${total} agents to ${AGENTS_DIR}/${NC}"
-  echo ""
-
-  mkdir -p "$AGENTS_DIR"
-
-  for agent in "${agent_names[@]}"; do
-    if download_agent "$agent"; then
-      ((success++))
-    else
-      ((failed++))
-    fi
-  done
-
-  echo ""
-  echo -e "${BOLD}────────────────────────────────────${NC}"
-  echo -e "  ${GREEN}Installed:${NC} ${success} agents"
-  if [[ $failed -gt 0 ]]; then
-    echo -e "  ${RED}Failed:${NC}    ${failed} agents"
-  fi
-  echo -e "${BOLD}────────────────────────────────────${NC}"
-  echo ""
-  echo -e "  ${DIM}Scope:${NC}     ${INSTALL_SCOPE}"
-  echo -e "Agents installed to: ${BOLD}${AGENTS_DIR}/${NC}"
-  if [[ "$INSTALL_SCOPE" == "local" ]]; then
-    echo -e "Entries added to ${BOLD}.gitignore${NC} ${DIM}(local scope)${NC}"
-  fi
-  echo -e "Run ${DIM}./install.sh --agents --update${NC} to refresh later."
-  echo ""
-}
-
-# ============================================================================
 # Commands
 # ============================================================================
 
@@ -1241,7 +1319,7 @@ cmd_interactive() {
   echo ""
   select_menu "What do you want to install?" \
     "Skills|77 curated skill files (.claude/skills/)" \
-    "Agents|130 specialized AI agent personas (.claude/agents/)" \
+    "Agents|83 plugins from 2 marketplaces (via claude plugin CLI)" \
     "Both|Install skills first, then agents"
 
   case $SELECTED_INDEX in
@@ -1459,83 +1537,88 @@ _run_skill_wizard() {
 
 print_agents_help() {
   print_banner
-  echo -e "${BOLD}AGENT INSTALLATION${NC}"
+  echo -e "${BOLD}AGENT INSTALLATION (via plugin marketplace)${NC}"
+  echo ""
+  echo -e "Agents are installed as plugins from two marketplaces:"
+  echo -e "  ${DIM}VoltAgent — 10 category bundles (~130 agents)${NC}"
+  echo -e "  ${DIM}Claude Code Workflows — 73 focused plugins (~112 agents)${NC}"
   echo ""
   echo -e "${BOLD}USAGE${NC}"
   echo "  ./install.sh --agents                     Interactive mode"
   echo "  ./install.sh --agents --preset <name>     Install a preset"
-  echo "  ./install.sh --agents --list              List all agents"
-  echo "  ./install.sh --agents --search            Search & pick agents"
-  echo "  ./install.sh --agents --search <term>     Pre-filtered search"
-  echo "  ./install.sh --agents --update            Re-download installed agents"
+  echo "  ./install.sh --agents --list              List all plugins"
+  echo "  ./install.sh --agents --search [term]     Search & pick plugins"
+  echo "  ./install.sh --agents --update            Update installed plugins"
   echo "  ./install.sh --agents --help              Show this help"
   echo ""
   echo -e "${BOLD}SCOPE${NC}"
-  echo "  --scope project     .claude/ — shared with all collaborators (default)"
-  echo "  --scope user        ~/.claude/ — available in all your projects"
-  echo "  --scope local       .claude/ + .gitignore — this repo only, not committed"
+  echo "  --scope project     .claude/settings.json — shared with collaborators (default)"
+  echo "  --scope user        ~/.claude/settings.json — available in all your projects"
+  echo "  --scope local       .claude/settings.local.json — this repo only, auto-gitignored"
   echo ""
   echo -e "${BOLD}PRESETS${NC}"
-  echo "  core-dev       Frontend, backend, fullstack, API, mobile (10 agents)"
-  echo "  web            Core + language specialists (36 agents)"
-  echo "  mobile         Core + language specialists (36 agents)"
-  echo "  backend        Core + languages + infrastructure (52 agents)"
-  echo "  fullstack      Core + languages + quality + DX (63 agents)"
-  echo "  devops         Infrastructure + quality + orchestration (40 agents)"
-  echo "  security       Quality/security + infrastructure (30 agents)"
-  echo "  full           Everything (130 agents)"
+  echo "  core-dev       Core development plugins (8 plugins)"
+  echo "  web            Core + language specialists (17 plugins)"
+  echo "  mobile         Core + language specialists (17 plugins)"
+  echo "  backend        Core + languages + infrastructure (23 plugins)"
+  echo "  fullstack      Core + languages + quality + DX (43 plugins)"
+  echo "  devops         Infrastructure + quality + orchestration (23 plugins)"
+  echo "  security       Quality/security + infrastructure (18 plugins)"
+  echo "  full           Everything (83 plugins)"
   echo ""
   echo -e "${BOLD}EXAMPLES${NC}"
   echo "  ./install.sh --agents --preset core-dev"
   echo "  ./install.sh --agents --search kubernetes"
   echo "  ./install.sh --agents --list"
   echo ""
+  echo -e "${DIM}Requires Claude CLI: npm install -g @anthropic-ai/claude-code${NC}"
+  echo ""
 }
 
 cmd_agents_list() {
   load_agent_registry
   echo ""
-  echo -e "${BOLD}Available Agents (${AGENT_COUNT} total)${NC}"
+  echo -e "${BOLD}Available Plugins (${PLUGIN_COUNT} total from 2 marketplaces)${NC}"
   echo ""
 
   local categories
-  categories=$(get_all_agent_categories)
+  categories=$(get_all_plugin_categories)
 
   while IFS= read -r cat_id; do
     local cat_name
-    cat_name=$(get_agent_category_name "$cat_id")
+    cat_name=$(get_plugin_category_name "$cat_id")
     local cat_desc
-    cat_desc=$(get_agent_category_desc "$cat_id")
+    cat_desc=$(get_plugin_category_desc "$cat_id")
     echo -e "  ${BOLD}${CYAN}${cat_name}${NC} ${DIM}— ${cat_desc}${NC}"
 
-    local agents
-    agents=$(get_agents_by_categories "$cat_id")
-    while IFS= read -r agent_name; do
-      [[ -z "$agent_name" ]] && continue
+    local plugins
+    plugins=$(get_plugins_by_categories "$cat_id")
+    while IFS= read -r plugin_name; do
+      [[ -z "$plugin_name" ]] && continue
       local desc
-      desc=$(get_agent_info "$agent_name" "description")
+      desc=$(get_plugin_info "$plugin_name" "description")
+      local marketplace
+      marketplace=$(get_plugin_info "$plugin_name" "marketplace")
+      local agent_count
+      agent_count=$(get_plugin_info "$plugin_name" "agent_count")
 
-      local installed=""
-      if [[ -f "${AGENTS_DIR}/${agent_name}.md" ]]; then
-        installed="${GREEN} (installed)${NC}"
-      fi
-
-      echo -e "    ${BOLD}${agent_name}${NC}${installed}"
+      echo -e "    ${BOLD}${plugin_name}${NC}@${marketplace} ${DIM}(${agent_count} agents)${NC}"
       echo -e "    ${DIM}${desc}${NC}"
       echo ""
-    done <<< "$agents"
+    done <<< "$plugins"
   done <<< "$categories"
 }
 
 cmd_agents_preset() {
   local preset_name="$1"
   load_agent_registry
+  check_claude_cli
 
   # Validate preset
   local valid_presets
   valid_presets=$(json_query "$AGENTS_JSON" '.presets | keys[]')
   if ! echo "$valid_presets" | grep -qx "$preset_name"; then
-    echo -e "${RED}Unknown agent preset: ${preset_name}${NC}"
+    echo -e "${RED}Unknown plugin preset: ${preset_name}${NC}"
     echo ""
     echo "Available presets:"
     while IFS= read -r p; do
@@ -1544,67 +1627,85 @@ cmd_agents_preset() {
     exit 1
   fi
 
-  echo -e "${BOLD}Installing agent preset: ${CYAN}${preset_name}${NC}"
+  echo -e "${BOLD}Installing plugin preset: ${CYAN}${preset_name}${NC}"
 
   local -a categories=()
   while IFS= read -r line; do
     [[ -n "$line" ]] && categories+=("$line")
-  done < <(get_agent_preset_categories "$preset_name")
+  done < <(get_plugin_preset_categories "$preset_name")
 
-  local -a agent_names=()
+  # Resolve categories to plugins (deduplicated)
+  local -a plugin_names=()
+  local -a seen=()
   for cat in "${categories[@]}"; do
-    local agents
-    agents=$(get_agents_by_categories "$cat")
+    local plugins
+    plugins=$(get_plugins_by_categories "$cat")
     while IFS= read -r name; do
-      [[ -n "$name" ]] && agent_names+=("$name")
-    done <<< "$agents"
+      [[ -z "$name" ]] && continue
+      local already=false
+      for s in "${seen[@]+"${seen[@]}"}"; do
+        if [[ "$s" == "$name" ]]; then
+          already=true
+          break
+        fi
+      done
+      if ! $already; then
+        plugin_names+=("$name")
+        seen+=("$name")
+      fi
+    done <<< "$plugins"
   done
 
-  install_agents "${agent_names[@]}"
+  install_plugins "${plugin_names[@]}"
 }
 
 cmd_agents_search() {
   local initial_filter="${1:-}"
   load_agent_registry
+  check_claude_cli
   print_banner
 
-  # Build parallel arrays of all agents
+  # Build parallel arrays of all plugins (search matches plugin names, descriptions, and tags)
   _SCM_NAMES=()
   _SCM_DESCS=()
-  for ((i = 0; i < AGENT_COUNT; i++)); do
-    _SCM_NAMES+=("$(json_query "$AGENTS_JSON" ".agents[$i].name")")
-    _SCM_DESCS+=("$(json_query "$AGENTS_JSON" ".agents[$i].description")")
+  for ((i = 0; i < PLUGIN_COUNT; i++)); do
+    _SCM_NAMES+=("$(json_query "$AGENTS_JSON" ".plugins[$i].name")")
+    _SCM_DESCS+=("$(json_query "$AGENTS_JSON" ".plugins[$i].description")")
   done
 
   echo ""
-  if search_checkbox_menu "Search agents (${AGENT_COUNT} available)" "$AGENT_COUNT" "$initial_filter"; then
+  if search_checkbox_menu "Search plugins (${PLUGIN_COUNT} available)" "$PLUGIN_COUNT" "$initial_filter"; then
     if [[ ${#SELECTED_SKILLS[@]} -eq 0 ]]; then
-      echo -e "${YELLOW}No agents selected. Exiting.${NC}"
+      echo -e "${YELLOW}No plugins selected. Exiting.${NC}"
       exit 0
     fi
 
     # Scope selection (if not set via --scope flag)
     if ! $SCOPE_SET_BY_FLAG; then
       echo ""
-      select_scope
+      select_agent_scope
     fi
 
     # Confirmation
     echo ""
-    echo -e "${BOLD}Agents to install (${#SELECTED_SKILLS[@]}):${NC}"
-    echo -e "${DIM}  Scope: ${INSTALL_SCOPE} → ${AGENTS_DIR}/${NC}"
+    echo -e "${BOLD}Plugins to install (${#SELECTED_SKILLS[@]}):${NC}"
+    echo -e "${DIM}  Scope: ${INSTALL_SCOPE}${NC}"
     echo ""
-    for agent in "${SELECTED_SKILLS[@]}"; do
+    for plugin in "${SELECTED_SKILLS[@]}"; do
       local desc
-      desc=$(get_agent_info "$agent" "description")
-      echo -e "  ${GREEN}+${NC} ${BOLD}${agent}${NC}  ${DIM}${desc}${NC}"
+      desc=$(get_plugin_info "$plugin" "description")
+      local marketplace
+      marketplace=$(get_plugin_info "$plugin" "marketplace")
+      local agent_count
+      agent_count=$(get_plugin_info "$plugin" "agent_count")
+      echo -e "  ${GREEN}+${NC} ${BOLD}${plugin}${NC}@${marketplace} ${DIM}(${agent_count} agents) ${desc}${NC}"
     done
     echo ""
 
-    read -rp "$(echo -e "${BOLD}Install these agents? ${NC}[Y/n] ")" confirm < /dev/tty
+    read -rp "$(echo -e "${BOLD}Install these plugins? ${NC}[Y/n] ")" confirm < /dev/tty
     case "${confirm:-y}" in
       [Yy]*|"")
-        install_agents "${SELECTED_SKILLS[@]}"
+        install_plugins "${SELECTED_SKILLS[@]}"
         ;;
       *)
         echo -e "${YELLOW}Installation cancelled.${NC}"
@@ -1620,32 +1721,60 @@ cmd_agents_search() {
 
 cmd_agents_update() {
   load_agent_registry
+  check_claude_cli
 
-  if [[ ! -d "$AGENTS_DIR" ]]; then
-    echo -e "${YELLOW}No agents installed yet. Run ./install.sh --agents first.${NC}"
-    exit 0
+  echo -e "${BOLD}Updating installed plugins...${NC}"
+  echo ""
+
+  # Collect all unique marketplaces from registry
+  local -a all_marketplaces=()
+  if command -v jq &>/dev/null; then
+    while IFS= read -r mp; do
+      [[ -n "$mp" ]] && all_marketplaces+=("$mp")
+    done < <(echo "$AGENTS_JSON" | jq -r '.marketplaces | keys[]')
+  else
+    while IFS= read -r mp; do
+      [[ -n "$mp" ]] && all_marketplaces+=("$mp")
+    done < <(echo "$AGENTS_JSON" | python3 -c "
+import sys, json
+data = json.load(sys.stdin)
+for k in data['marketplaces']:
+    print(k)
+")
   fi
 
-  echo -e "${BOLD}Updating installed agents...${NC}"
+  ensure_all_marketplaces "${all_marketplaces[@]}"
 
-  local -a installed=()
-  for file in "${AGENTS_DIR}"/*.md; do
-    [[ -f "$file" ]] || continue
-    local name
-    name=$(basename "$file" .md)
-    installed+=("$name")
+  local success=0
+  local failed=0
+
+  for ((i = 0; i < PLUGIN_COUNT; i++)); do
+    local plugin_name
+    plugin_name=$(json_query "$AGENTS_JSON" ".plugins[$i].name")
+    local marketplace
+    marketplace=$(json_query "$AGENTS_JSON" ".plugins[$i].marketplace")
+
+    if claude plugin update "${plugin_name}@${marketplace}" 2>/dev/null; then
+      echo -e "  ${GREEN}+${NC} ${plugin_name}@${marketplace} ${DIM}(updated)${NC}"
+      ((success++))
+    else
+      ((failed++))
+    fi
   done
 
-  if [[ ${#installed[@]} -eq 0 ]]; then
-    echo -e "${YELLOW}No agents found in ${AGENTS_DIR}/${NC}"
-    exit 0
+  echo ""
+  echo -e "${BOLD}────────────────────────────────────${NC}"
+  echo -e "  ${GREEN}Updated:${NC} ${success} plugins"
+  if [[ $failed -gt 0 ]]; then
+    echo -e "  ${DIM}Skipped:${NC} ${failed} plugins (not installed or unchanged)"
   fi
-
-  install_agents "${installed[@]}"
+  echo -e "${BOLD}────────────────────────────────────${NC}"
+  echo ""
 }
 
 cmd_agents_interactive() {
   load_agent_registry
+  check_claude_cli
   print_banner
 
   # Step 1: Category selection
@@ -1658,21 +1787,21 @@ cmd_agents_interactive() {
     [[ -z "$cat_id" ]] && continue
     cat_ids+=("$cat_id")
     local name
-    name=$(get_agent_category_name "$cat_id")
+    name=$(get_plugin_category_name "$cat_id")
     local desc
-    desc=$(get_agent_category_desc "$cat_id")
+    desc=$(get_plugin_category_desc "$cat_id")
     cat_options+=("${name}|${desc}")
 
     local rec
-    rec=$(is_agent_category_recommended "$cat_id")
+    rec=$(is_plugin_category_recommended "$cat_id")
     if [[ "$rec" == "true" ]]; then
       preselected+=("$idx")
     fi
     ((idx++))
-  done < <(get_all_agent_categories)
+  done < <(get_all_plugin_categories)
 
   echo ""
-  if ! checkbox_menu "Which agent categories do you want?" \
+  if ! checkbox_menu "Which plugin categories do you want?" \
     "${cat_options[@]}" \
     "__SEP__" \
     "${preselected[@]}"; then
@@ -1691,37 +1820,53 @@ cmd_agents_interactive() {
     exit 0
   fi
 
-  # Resolve agents
-  local -a agent_names=()
+  # Resolve categories to plugins (deduplicated)
+  local -a plugin_names=()
+  local -a seen=()
   for cat in "${selected_categories[@]}"; do
-    local agents
-    agents=$(get_agents_by_categories "$cat")
+    local plugins
+    plugins=$(get_plugins_by_categories "$cat")
     while IFS= read -r name; do
-      [[ -n "$name" ]] && agent_names+=("$name")
-    done <<< "$agents"
+      [[ -z "$name" ]] && continue
+      local already=false
+      for s in "${seen[@]+"${seen[@]}"}"; do
+        if [[ "$s" == "$name" ]]; then
+          already=true
+          break
+        fi
+      done
+      if ! $already; then
+        plugin_names+=("$name")
+        seen+=("$name")
+      fi
+    done <<< "$plugins"
   done
 
   # Scope selection + summary + confirm
   if ! $SCOPE_SET_BY_FLAG; then
     echo ""
-    select_scope
+    select_agent_scope
   fi
 
   echo ""
-  echo -e "${BOLD}Agents to install (${#agent_names[@]}):${NC}"
-  echo -e "${DIM}  Scope: ${INSTALL_SCOPE} → ${AGENTS_DIR}/${NC}"
+  echo -e "${BOLD}Plugins to install (${#plugin_names[@]}):${NC}"
+  echo -e "${DIM}  Scope: ${INSTALL_SCOPE}${NC}"
   echo ""
-  for agent in "${agent_names[@]}"; do
+  for plugin in "${plugin_names[@]}"; do
     local desc
-    desc=$(get_agent_info "$agent" "description")
-    echo -e "  ${GREEN}+${NC} ${BOLD}${agent}${NC}  ${DIM}${desc}${NC}"
+    desc=$(get_plugin_info "$plugin" "description")
+    local marketplace
+    marketplace=$(get_plugin_info "$plugin" "marketplace")
+    local agent_count
+    agent_count=$(get_plugin_info "$plugin" "agent_count")
+    echo -e "  ${GREEN}+${NC} ${BOLD}${plugin}${NC}@${marketplace} ${DIM}(${agent_count} agents) ${desc}${NC}"
   done
   echo ""
 
-  read -rp "$(echo -e "${BOLD}Install these agents? ${NC}[Y/n] ")" confirm < /dev/tty
+  read -rp "$(echo -e "${BOLD}Install these plugins? ${NC}[Y/n] ")" confirm < /dev/tty
   case "${confirm:-y}" in
     [Yy]*|"")
-      install_agents "${agent_names[@]}"
+      install_plugins "${plugin_names[@]}"
       ;;
     *)
       echo -e "${YELLOW}Installation cancelled.${NC}"
