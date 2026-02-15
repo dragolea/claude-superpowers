@@ -1765,7 +1765,7 @@ main() {
         ;;
     esac
   done
-  set -- "${remaining_args[@]}"
+  set -- ${remaining_args[@]+"${remaining_args[@]}"}
 
   # Agent mode: --agents consumes first arg, dispatches remaining to agent commands
   if [[ "${1:-}" == "--agents" ]]; then
