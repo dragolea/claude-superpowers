@@ -1585,10 +1585,11 @@ cmd_interactive() {
 
   # Step 0: Choose what to install
   echo ""
-  select_menu "What do you want to install?" \
+  select_menu "What do you want to do?" \
     "Skills|77 curated skill files (.claude/skills/)" \
     "Agents|83 plugins from 2 marketplaces (via claude plugin CLI)" \
-    "Both|Install skills first, then agents"
+    "Both|Install skills first, then agents" \
+    "Scan project|Detect tech stack & show recommended categories"
 
   case $SELECTED_INDEX in
     1)
@@ -1599,6 +1600,10 @@ cmd_interactive() {
       load_registry
       _run_skill_wizard
       cmd_agents_interactive
+      return
+      ;;
+    3)
+      cmd_scan
       return
       ;;
   esac
