@@ -515,6 +515,11 @@ export async function cmdInteractive(
   console.log("");
   const choice = await selectMenu("What do you want to do?", [
     {
+      label: "Scan & install (Recommended)",
+      description: "Auto-detect tech stack, pick skills + agents",
+      value: "scan",
+    },
+    {
       label: "Skills",
       description: "77 curated skill files (.claude/skills/)",
       value: "skills",
@@ -528,11 +533,6 @@ export async function cmdInteractive(
       label: "Both",
       description: "Install skills first, then agents",
       value: "both",
-    },
-    {
-      label: "Scan & install",
-      description: "Auto-detect tech stack, pick skills + agents",
-      value: "scan",
     },
   ]);
 

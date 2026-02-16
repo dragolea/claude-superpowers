@@ -5738,11 +5738,9 @@ async function checkboxMenu(title, options, opts) {
     label: o.description ? `${o.label.padEnd(maxLabelLen + 2)}${import_picocolors6.default.dim(`\u2014 ${o.description}`)}` : o.label,
     value: o.value
   }));
-  if (opts?.showBack) {
-    items.push({ label: import_picocolors6.default.dim("\u2190 Back"), value: "__back__" });
-  }
+  const hint = opts?.showBack ? "space to toggle \xB7 enter to confirm \xB7 esc to go back" : "space to toggle \xB7 enter to confirm";
   const result = await pe({
-    message: title,
+    message: `${title}  ${import_picocolors6.default.dim(hint)}`,
     options: items,
     initialValues: preselected,
     required: false
@@ -5750,14 +5748,10 @@ async function checkboxMenu(title, options, opts) {
   if (BD(result)) {
     return null;
   }
-  const selected = result;
-  if (selected.includes("__back__")) {
-    return null;
-  }
-  return selected;
+  return result;
 }
 
-// src/commands/interactive.ts
+// src/commands/preselect.ts
 function deriveTagsFromStack(stackLabel) {
   const map = {
     expo: {
@@ -5803,6 +5797,8 @@ function shouldPreselectSkill(skill, detectedTags) {
   if (specificTags.length === 0) return true;
   return specificTags.some((t) => detectedTags.includes(t));
 }
+
+// src/commands/interactive.ts
 async function runSkillWizard(skillsRegistry, sourcesRegistry, scope, scopeSetByFlag2, detection) {
   let step = detection && detection.skillCats.length > 0 ? 3 : 1;
   let useDetection = step === 3;
@@ -6179,6 +6175,11 @@ async function cmdInteractive(scope, scopeSetByFlag2) {
   console.log("");
   const choice = await selectMenu("What do you want to do?", [
     {
+      label: "Scan & install (Recommended)",
+      description: "Auto-detect tech stack, pick skills + agents",
+      value: "scan"
+    },
+    {
       label: "Skills",
       description: "77 curated skill files (.claude/skills/)",
       value: "skills"
@@ -6192,11 +6193,6 @@ async function cmdInteractive(scope, scopeSetByFlag2) {
       label: "Both",
       description: "Install skills first, then agents",
       value: "both"
-    },
-    {
-      label: "Scan & install",
-      description: "Auto-detect tech stack, pick skills + agents",
-      value: "scan"
     }
   ]);
   if (!choice) {

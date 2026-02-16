@@ -29,12 +29,12 @@ export async function checkboxMenu(
     value: o.value,
   }));
 
-  if (opts?.showBack) {
-    items.push({ label: pc.dim("← Back"), value: "__back__" });
-  }
+  const hint = opts?.showBack
+    ? "space to toggle · enter to confirm · esc to go back"
+    : "space to toggle · enter to confirm";
 
   const result = await p.multiselect({
-    message: title,
+    message: `${title}  ${pc.dim(hint)}`,
     options: items,
     initialValues: preselected,
     required: false,
@@ -44,10 +44,5 @@ export async function checkboxMenu(
     return null;
   }
 
-  const selected = result as string[];
-  if (selected.includes("__back__")) {
-    return null;
-  }
-
-  return selected;
+  return result as string[];
 }
