@@ -4,7 +4,7 @@ import {
   VALID_AGENT_CATS,
   VALID_SKILL_TAGS,
   VALID_AGENT_TAGS,
-} from "./ai.js";
+} from "../../src/detect/ai.js";
 
 // ---- Validation sets ----
 

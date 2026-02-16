@@ -2,8 +2,8 @@ import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { shouldPreselectSkill, deriveTagsFromStack } from "./preselect.js";
-import type { Skill, SkillsRegistry } from "../registry/types.js";
+import { shouldPreselectSkill, deriveTagsFromStack } from "../../src/commands/preselect.js";
+import type { Skill, SkillsRegistry } from "../../src/registry/types.js";
 
 // ---- Helpers ----
 

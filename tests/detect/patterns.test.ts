@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import type { DetectionResult } from "./patterns.js";
+import type { DetectionResult } from "../../src/detect/patterns.js";
 
 // We mock fs modules so detectProject() sees our fake file system.
 // The module uses both `existsSync` from "node:fs" and `readFile`/`readdir` from "node:fs/promises".
@@ -16,7 +16,7 @@ vi.mock("node:fs/promises", () => ({
 
 import { existsSync } from "node:fs";
 import { readFile, readdir } from "node:fs/promises";
-import { detectProject } from "./patterns.js";
+import { detectProject } from "../../src/detect/patterns.js";
 
 const mockExistsSync = vi.mocked(existsSync);
 const mockReadFile = vi.mocked(readFile);

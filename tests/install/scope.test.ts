@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { homedir } from "node:os";
-import { resolveSkillsDir, resolveClaudeMdPath } from "./scope.js";
+import { resolveSkillsDir, resolveClaudeMdPath } from "../../src/install/scope.js";
 
 describe("resolveSkillsDir", () => {
   it("returns user home path for user scope", () => {

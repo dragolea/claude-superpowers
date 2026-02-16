@@ -7,8 +7,8 @@ import {
   getPluginCategoryDesc,
   isPluginCategoryRecommended,
   getPluginPresetCategories,
-} from "./agents.js";
-import type { AgentsRegistry } from "./types.js";
+} from "../../src/registry/agents.js";
+import type { AgentsRegistry } from "../../src/registry/types.js";
 
 // ---- Test fixture ----
 

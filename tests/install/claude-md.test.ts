@@ -2,8 +2,8 @@ import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { generateClaudeMdSection } from "./claude-md.js";
-import type { SkillsRegistry } from "../registry/types.js";
+import { generateClaudeMdSection } from "../../src/install/claude-md.js";
+import type { SkillsRegistry } from "../../src/registry/types.js";
 
 // ---- Test fixture ----
 

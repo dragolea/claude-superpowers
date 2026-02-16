@@ -7,8 +7,8 @@ import {
   getCategoryDesc,
   isCategoryRecommended,
   getPresetCategories,
-} from "./skills.js";
-import type { SkillsRegistry } from "./types.js";
+} from "../../src/registry/skills.js";
+import type { SkillsRegistry } from "../../src/registry/types.js";
 
 // ---- Test fixture ----
 
