@@ -10,3 +10,14 @@ export function resolveSkillsDir(scope: InstallScope): string {
       return ".claude/skills";
   }
 }
+
+export function resolveClaudeMdPath(scope: InstallScope): string {
+  switch (scope) {
+    case "user":
+      return `${homedir()}/.claude/CLAUDE.md`;
+    case "project":
+      return "CLAUDE.md";
+    case "local":
+      return "CLAUDE.local.md";
+  }
+}
