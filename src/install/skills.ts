@@ -4,6 +4,7 @@ import * as p from "@clack/prompts";
 import { theme, formatInstallSummary } from "../ui/format.js";
 import { getSkillByName, getSourceUrl } from "../registry/skills.js";
 import { resolveSkillsDir } from "./scope.js";
+import { updateClaudeMd } from "./claude-md.js";
 import type {
   SkillsRegistry,
   SourcesRegistry,
@@ -89,4 +90,9 @@ export async function installSkills(
       skillsDir,
     }),
   );
+
+  // Generate/update CLAUDE.md with skill rules
+  if (success > 0) {
+    await updateClaudeMd(skillNames, skillsRegistry, scope);
+  }
 }
