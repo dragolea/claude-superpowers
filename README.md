@@ -7,32 +7,38 @@ Instead of installing every skill blindly, **pick only what fits your stack** �
 ## Quick Start
 
 ```bash
-npx superpower-installer
+curl -fsSL https://raw.githubusercontent.com/dragolea/claude-superpowers/main/install.sh | sh
 ```
 
-That's it. The interactive wizard walks you through project type, tech stack, and skill selection.
+That's it. The interactive wizard walks you through project type, tech stack, and skill selection. No cloning or npm install required — just Node.js 18+.
 
 ## Presets
 
 Skip the interactive wizard with `--preset`:
 
 ```bash
-npx superpower-installer --preset core          # Debugging, TDD, verification (4 skills)
-npx superpower-installer --preset workflow       # Core + planning & execution (10 skills)
-npx superpower-installer --preset web           # Web stack + frameworks + design (28 skills)
-npx superpower-installer --preset mobile        # Mobile frameworks + core (19 skills)
-npx superpower-installer --preset mobile-expo   # React Native/Expo focused (19 skills)
-npx superpower-installer --preset backend       # Server frameworks + databases (25 skills)
-npx superpower-installer --preset fullstack     # Web + backend + languages (46 skills)
-npx superpower-installer --preset devops        # Infrastructure + CI/CD (22 skills)
-npx superpower-installer --preset security      # OWASP, static analysis, auditing (17 skills)
-npx superpower-installer --preset documents     # PDF, Word, Excel, PowerPoint (5 skills)
-npx superpower-installer --preset full          # Everything (77 skills)
+curl -fsSL https://raw.githubusercontent.com/dragolea/claude-superpowers/main/install.sh | sh -s -- --preset core
 ```
+
+Available presets:
+
+| Preset | Skills | Description |
+|--------|--------|-------------|
+| `core` | 4 | Debugging, TDD, verification |
+| `workflow` | 10 | Core + planning & execution |
+| `web` | 28 | Web stack + frameworks + design |
+| `mobile` | 19 | Mobile frameworks + core |
+| `mobile-expo` | 19 | React Native/Expo focused |
+| `backend` | 25 | Server frameworks + databases |
+| `fullstack` | 46 | Web + backend + languages |
+| `devops` | 22 | Infrastructure + CI/CD |
+| `security` | 17 | OWASP, static analysis, auditing |
+| `documents` | 5 | PDF, Word, Excel, PowerPoint |
+| `full` | 77 | Everything |
 
 ## Interactive Mode
 
-Run `npx superpower-installer` without arguments for a guided experience:
+Run without arguments for a guided experience:
 
 1. **Project type** — Web, Mobile, Backend, CLI, or General
 2. **Tech stack** — Framework-specific (React, Expo, Node.js, etc.)
@@ -44,13 +50,15 @@ Skills are downloaded to `.claude/skills/` in your current directory.
 
 ## Other Commands
 
+Pass any flag via `sh -s -- <flags>`:
+
 ```bash
-npx superpower-installer --list      # Show all 77 skills with descriptions
-npx superpower-installer --search    # Searchable multi-select picker
-npx superpower-installer --search react  # Pre-filtered search
-npx superpower-installer --update    # Re-download already installed skills
-npx superpower-installer --scan      # Detect project tech stack
-npx superpower-installer --help      # Full usage info
+curl -fsSL .../install.sh | sh -s -- --list            # Show all 77 skills with descriptions
+curl -fsSL .../install.sh | sh -s -- --search          # Searchable multi-select picker
+curl -fsSL .../install.sh | sh -s -- --search react    # Pre-filtered search
+curl -fsSL .../install.sh | sh -s -- --update          # Re-download already installed skills
+curl -fsSL .../install.sh | sh -s -- --scan            # Detect project tech stack
+curl -fsSL .../install.sh | sh -s -- --help            # Full usage info
 ```
 
 ## Scope
@@ -58,9 +66,9 @@ npx superpower-installer --help      # Full usage info
 Control where skills are installed:
 
 ```bash
-npx superpower-installer --scope project   # .claude/ — shared with collaborators (default)
-npx superpower-installer --scope user      # ~/.claude/ — available in all your projects
-npx superpower-installer --scope local     # .claude/ + .gitignore — this repo only
+curl -fsSL .../install.sh | sh -s -- --scope project   # .claude/ — shared with collaborators (default)
+curl -fsSL .../install.sh | sh -s -- --scope user      # ~/.claude/ — available in all your projects
+curl -fsSL .../install.sh | sh -s -- --scope local     # .claude/ + .gitignore — this repo only
 ```
 
 ## Agent Installation
@@ -68,13 +76,13 @@ npx superpower-installer --scope local     # .claude/ + .gitignore — this repo
 Agents are installed as plugins from two marketplaces via the Claude CLI. **83 plugins** (~240 agents) from [VoltAgent](https://github.com/VoltAgent/awesome-claude-code-subagents) and [Claude Code Workflows](https://github.com/wshobson/agents).
 
 ```bash
-npx superpower-installer --agents                        # Interactive wizard
-npx superpower-installer --agents --preset core-dev      # Install a preset
-npx superpower-installer --agents --preset fullstack     # Core + languages + quality + DX
-npx superpower-installer --agents --search               # Search & pick individual plugins
-npx superpower-installer --agents --search kubernetes    # Pre-filtered search
-npx superpower-installer --agents --list                 # List all plugins by category
-npx superpower-installer --agents --update               # Update installed plugins
+curl -fsSL .../install.sh | sh -s -- --agents                        # Interactive wizard
+curl -fsSL .../install.sh | sh -s -- --agents --preset core-dev      # Install a preset
+curl -fsSL .../install.sh | sh -s -- --agents --preset fullstack     # Core + languages + quality + DX
+curl -fsSL .../install.sh | sh -s -- --agents --search               # Search & pick individual plugins
+curl -fsSL .../install.sh | sh -s -- --agents --search kubernetes    # Pre-filtered search
+curl -fsSL .../install.sh | sh -s -- --agents --list                 # List all plugins by category
+curl -fsSL .../install.sh | sh -s -- --agents --update               # Update installed plugins
 ```
 
 > **Note:** Agent installation requires the Claude CLI (`npm install -g @anthropic-ai/claude-code`).
@@ -82,13 +90,13 @@ npx superpower-installer --agents --update               # Update installed plug
 ### Agent Presets
 
 ```bash
-npx superpower-installer --agents --preset core-dev     # Frontend, backend, fullstack, API, mobile
-npx superpower-installer --agents --preset web          # Core + language specialists
-npx superpower-installer --agents --preset backend      # Core + languages + infrastructure
-npx superpower-installer --agents --preset fullstack    # Core + languages + quality + DX
-npx superpower-installer --agents --preset devops       # Infrastructure + quality + orchestration
-npx superpower-installer --agents --preset security     # Quality/security + infrastructure
-npx superpower-installer --agents --preset full         # Everything
+curl -fsSL .../install.sh | sh -s -- --agents --preset core-dev     # Frontend, backend, fullstack, API, mobile
+curl -fsSL .../install.sh | sh -s -- --agents --preset web          # Core + language specialists
+curl -fsSL .../install.sh | sh -s -- --agents --preset backend      # Core + languages + infrastructure
+curl -fsSL .../install.sh | sh -s -- --agents --preset fullstack    # Core + languages + quality + DX
+curl -fsSL .../install.sh | sh -s -- --agents --preset devops       # Infrastructure + quality + orchestration
+curl -fsSL .../install.sh | sh -s -- --agents --preset security     # Quality/security + infrastructure
+curl -fsSL .../install.sh | sh -s -- --agents --preset full         # Everything
 ```
 
 ### Agent Categories
@@ -134,6 +142,18 @@ Skills are fetched from their original repositories at install time:
 | [jeffallan/claude-skills](https://github.com/jeffallan/claude-skills) | 30 skills | Fullstack — frameworks, languages, DevOps |
 | [trailofbits/skills](https://github.com/trailofbits/skills) | 16 skills | Security — static analysis, vulnerability detection, auditing |
 | [agamm/claude-code-owasp](https://github.com/agamm/claude-code-owasp) | 1 skill | OWASP Top 10:2025, ASVS 5.0 |
+
+## Local Development
+
+If you want to contribute or run from source:
+
+```bash
+git clone https://github.com/dragolea/claude-superpowers.git
+cd claude-superpowers
+npm install
+npm run build
+node dist/bin.js          # Run the installer
+```
 
 ## Adding Skills
 
