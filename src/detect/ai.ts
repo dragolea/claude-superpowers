@@ -50,21 +50,21 @@ function spawnWithStdin(
 }
 
 // Valid values for validation
-const VALID_SKILL_CATS = new Set([
+export const VALID_SKILL_CATS = new Set([
   "core", "workflow", "git", "web", "mobile", "backend", "languages",
   "devops", "security", "design", "documents", "meta",
 ]);
-const VALID_AGENT_CATS = new Set([
+export const VALID_AGENT_CATS = new Set([
   "design", "data-ai", "specialized", "business", "operations",
   "research", "marketing",
 ]);
-const VALID_SKILL_TAGS = new Set([
+export const VALID_SKILL_TAGS = new Set([
   "universal", "web", "react", "nextjs", "vue", "angular", "mobile",
   "react-native", "expo", "flutter", "ios", "swift", "android", "kotlin",
   "backend", "nodejs", "python", "php", "ruby", "java", "cpp", "csharp",
   "go", "rust", "typescript", "devops", "creative", "documents", "web3",
 ]);
-const VALID_AGENT_TAGS = new Set([
+export const VALID_AGENT_TAGS = new Set([
   "design", "ui", "ux", "accessibility", "responsive",
   "llm", "langchain", "rag", "embeddings", "ai", "ml", "mlops",
   "data", "spark", "dbt", "airflow", "pipelines", "database", "migrations",

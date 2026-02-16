@@ -30,6 +30,7 @@ import { selectMenu } from "../prompts/select.js";
 import { checkboxMenu } from "../prompts/checkbox.js";
 import { selectScopeMenu, selectAgentScopeMenu } from "./search.js";
 import { runDetection } from "./scan.js";
+import { deriveTagsFromStack, shouldPreselectSkill } from "./preselect.js";
 import type {
   InstallScope,
   SkillsRegistry,
@@ -38,65 +39,6 @@ import type {
   Skill,
 } from "../registry/types.js";
 import type { DetectionResult } from "../detect/patterns.js";
-
-// ---- Tag derivation from wizard stack selection ----
-
-function deriveTagsFromStack(stackLabel: string): {
-  skillTags: string[];
-  agentTags: string[];
-} {
-  const map: Record<string, { skillTags: string[]; agentTags: string[] }> = {
-    expo: {
-      skillTags: ["typescript", "expo", "react-native"],
-      agentTags: ["typescript", "expo", "react-native"],
-    },
-    "react-native": {
-      skillTags: ["typescript", "react-native"],
-      agentTags: ["typescript", "react-native"],
-    },
-    flutter: { skillTags: ["flutter"], agentTags: ["flutter"] },
-    ios: { skillTags: ["swift", "ios"], agentTags: ["swift", "ios"] },
-    android: {
-      skillTags: ["kotlin", "java", "android"],
-      agentTags: ["kotlin", "java", "android"],
-    },
-    react: {
-      skillTags: ["typescript", "react"],
-      agentTags: ["typescript", "react"],
-    },
-    nextjs: {
-      skillTags: ["typescript", "nextjs", "react"],
-      agentTags: ["typescript", "nextjs", "react"],
-    },
-    vue: { skillTags: ["typescript", "vue"], agentTags: ["typescript", "vue"] },
-    angular: {
-      skillTags: ["typescript", "angular"],
-      agentTags: ["typescript", "angular"],
-    },
-    nodejs: {
-      skillTags: ["typescript", "nodejs"],
-      agentTags: ["typescript", "nodejs"],
-    },
-    python: { skillTags: ["python"], agentTags: ["python"] },
-    go: { skillTags: ["go"], agentTags: ["go"] },
-    rust: { skillTags: ["rust"], agentTags: ["rust"] },
-  };
-  return map[stackLabel] ?? { skillTags: [], agentTags: [] };
-}
-
-// ---- Pre-selection logic ----
-
-function shouldPreselectSkill(
-  skill: Skill,
-  detectedTags: string[],
-): boolean {
-  if (detectedTags.length === 0) return true; // No tags → select all
-
-  const specificTags = skill.tags.filter((t) => t !== "universal");
-  if (specificTags.length === 0) return true; // Pure universal → always select
-
-  return specificTags.some((t) => detectedTags.includes(t));
-}
 
 // ---- Skill Wizard ----
 

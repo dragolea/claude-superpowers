@@ -14,6 +14,8 @@
     "build": "tsup",
     "dev": "tsup --watch",
     "start": "node dist/bin.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
     "release": "tsup && echo 'Remember to commit dist/bin.js'"
   },
@@ -43,6 +45,7 @@
   "devDependencies": {
     "@types/node": "^22.13.4",
     "tsup": "^8.4.0",
-    "typescript": "^5.7.3"
+    "typescript": "^5.7.3",
+    "vitest": "^4.0.18"
   }
 }
