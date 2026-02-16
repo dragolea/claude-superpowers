@@ -14,7 +14,8 @@
     "build": "tsup",
     "dev": "tsup --watch",
     "start": "node dist/bin.js",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "release": "tsup && echo 'Remember to commit dist/bin.js'"
   },
   "engines": {
     "node": ">=18"
