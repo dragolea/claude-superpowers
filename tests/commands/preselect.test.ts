@@ -2,8 +2,8 @@ import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { shouldPreselectSkill, deriveTagsFromStack } from "../../src/commands/preselect.js";
-import type { Skill, SkillsRegistry } from "../../src/registry/types.js";
+import { shouldPreselectSkill, shouldPreselectPlugin, deriveTagsFromStack } from "../../src/commands/preselect.js";
+import type { Skill, Plugin, SkillsRegistry } from "../../src/registry/types.js";
 
 // ---- Helpers ----
 
@@ -139,6 +139,43 @@ describe("shouldPreselectSkill", () => {
   it("does NOT select mobile skill when only web tags detected", () => {
     const skill = makeSkill("rn-skill", ["mobile", "react-native", "expo"]);
     expect(shouldPreselectSkill(skill, ["web", "react", "typescript"])).toBe(false);
+  });
+});
+
+// ---- shouldPreselectPlugin ----
+
+function makePlugin(
+  name: string,
+  tags: string[],
+  category = "data-ai",
+): Plugin {
+  return { name, description: `${name} desc`, marketplace: "test", agent_count: 1, tags, category };
+}
+
+describe("shouldPreselectPlugin", () => {
+  it("returns false for all plugins when no detected tags", () => {
+    const plugin = makePlugin("db-plugin", ["database", "migrations"]);
+    expect(shouldPreselectPlugin(plugin, [])).toBe(false);
+  });
+
+  it("returns true when plugin tag matches detected tag", () => {
+    const plugin = makePlugin("db-plugin", ["database", "migrations"]);
+    expect(shouldPreselectPlugin(plugin, ["database", "ai"])).toBe(true);
+  });
+
+  it("returns false for plugin with no tags", () => {
+    const plugin = makePlugin("empty-plugin", []);
+    expect(shouldPreselectPlugin(plugin, ["database"])).toBe(false);
+  });
+
+  it("returns true for partial match (any tag matches)", () => {
+    const plugin = makePlugin("multi-plugin", ["ai", "ml", "pipelines"]);
+    expect(shouldPreselectPlugin(plugin, ["pipelines"])).toBe(true);
+  });
+
+  it("returns false when no plugin tags match detected tags", () => {
+    const plugin = makePlugin("blockchain-plugin", ["blockchain", "web3"]);
+    expect(shouldPreselectPlugin(plugin, ["database", "ai"])).toBe(false);
   });
 });
 

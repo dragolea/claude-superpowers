@@ -4,6 +4,7 @@ import {
   VALID_AGENT_CATS,
   VALID_SKILL_TAGS,
   VALID_AGENT_TAGS,
+  VALID_ARCHETYPES,
 } from "../../src/detect/ai.js";
 
 // ---- Validation sets ----
@@ -104,6 +105,33 @@ describe("VALID_AGENT_TAGS", () => {
   it("does not contain skill-only tags", () => {
     expect(VALID_AGENT_TAGS.has("universal")).toBe(false);
   });
+
+  it("contains authentication tag", () => {
+    expect(VALID_AGENT_TAGS.has("authentication")).toBe(true);
+  });
+});
+
+describe("VALID_ARCHETYPES", () => {
+  it("contains expected archetypes", () => {
+    expect(VALID_ARCHETYPES.has("fullstack-web")).toBe(true);
+    expect(VALID_ARCHETYPES.has("api-backend")).toBe(true);
+    expect(VALID_ARCHETYPES.has("mobile-app")).toBe(true);
+    expect(VALID_ARCHETYPES.has("data-pipeline")).toBe(true);
+    expect(VALID_ARCHETYPES.has("ml-platform")).toBe(true);
+    expect(VALID_ARCHETYPES.has("devops-infra")).toBe(true);
+    expect(VALID_ARCHETYPES.has("cli-tool")).toBe(true);
+    expect(VALID_ARCHETYPES.has("e-commerce")).toBe(true);
+    expect(VALID_ARCHETYPES.has("saas")).toBe(true);
+    expect(VALID_ARCHETYPES.has("monorepo")).toBe(true);
+    expect(VALID_ARCHETYPES.has("library")).toBe(true);
+    expect(VALID_ARCHETYPES.has("microservices")).toBe(true);
+  });
+
+  it("does not contain invalid archetypes", () => {
+    expect(VALID_ARCHETYPES.has("nonexistent")).toBe(false);
+    expect(VALID_ARCHETYPES.has("")).toBe(false);
+    expect(VALID_ARCHETYPES.has("web")).toBe(false);
+  });
 });
 
 // ---- Filtering simulation ----
@@ -131,5 +159,11 @@ describe("validation filtering", () => {
     const raw = ["llm", "ai", "universal", "blockchain"];
     const filtered = raw.filter((t) => VALID_AGENT_TAGS.has(t));
     expect(filtered).toEqual(["llm", "ai", "blockchain"]);
+  });
+
+  it("filters invalid archetypes", () => {
+    const raw = ["fullstack-web", "invalid", "api-backend", "fake"];
+    const filtered = raw.filter((a) => VALID_ARCHETYPES.has(a));
+    expect(filtered).toEqual(["fullstack-web", "api-backend"]);
   });
 });

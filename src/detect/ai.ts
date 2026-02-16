@@ -1,5 +1,6 @@
-import { readFile, readdir, access } from "node:fs/promises";
+import { readFile, readdir, stat } from "node:fs/promises";
 import { existsSync } from "node:fs";
+import { join } from "node:path";
 import { spawn } from "node:child_process";
 import * as p from "@clack/prompts";
 import { theme } from "../ui/format.js";
@@ -85,6 +86,13 @@ export const VALID_AGENT_TAGS = new Set([
   "reverse-engineering", "analysis",
   "research", "trends", "search",
   "content", "marketing", "seo", "writing", "technical", "monitoring",
+  "authentication",
+]);
+
+export const VALID_ARCHETYPES = new Set([
+  "fullstack-web", "api-backend", "mobile-app", "data-pipeline",
+  "ml-platform", "devops-infra", "cli-tool", "e-commerce",
+  "saas", "monorepo", "library", "microservices",
 ]);
 
 async function readFileSafe(path: string, maxLines: number): Promise<string> {
@@ -94,6 +102,64 @@ async function readFileSafe(path: string, maxLines: number): Promise<string> {
   } catch {
     return "";
   }
+}
+
+const SKIP_DIRS = new Set([
+  "node_modules", ".git", "dist", "build", ".next", "__pycache__",
+  ".venv", "vendor", "target", ".cache", "coverage", ".turbo",
+]);
+
+async function buildDirTree(dir: string, depth: number, maxEntries: number): Promise<string> {
+  const lines: string[] = [];
+  async function walk(d: string, indent: number, remaining: { count: number }): Promise<void> {
+    if (indent > depth || remaining.count <= 0) return;
+    try {
+      const entries = await readdir(d);
+      for (const entry of entries) {
+        if (remaining.count <= 0) break;
+        if (SKIP_DIRS.has(entry) || entry.startsWith(".")) continue;
+        const fullPath = join(d, entry);
+        try {
+          const s = await stat(fullPath);
+          if (s.isDirectory()) {
+            lines.push(`${"  ".repeat(indent)}${entry}/`);
+            remaining.count--;
+            await walk(fullPath, indent + 1, remaining);
+          }
+        } catch { /* skip inaccessible entries */ }
+      }
+    } catch { /* ignore */ }
+  }
+  await walk(dir, 0, { count: maxEntries });
+  return lines.join("\n");
+}
+
+async function sampleImports(dir: string): Promise<string> {
+  const extensions = [".ts", ".py", ".go"];
+  const searchDirs = [join(dir, "src"), dir];
+  const imports: string[] = [];
+  let filesScanned = 0;
+
+  for (const searchDir of searchDirs) {
+    if (filesScanned >= 5) break;
+    try {
+      const entries = await readdir(searchDir);
+      for (const entry of entries) {
+        if (filesScanned >= 5) break;
+        if (!extensions.some((ext) => entry.endsWith(ext))) continue;
+        const content = await readFileSafe(join(searchDir, entry), 30);
+        const importLines = content
+          .split("\n")
+          .filter((line) => /^(?:import |from |require\()/.test(line.trim()));
+        if (importLines.length > 0) {
+          imports.push(`--- ${entry} ---`);
+          imports.push(...importLines);
+          filesScanned++;
+        }
+      }
+    } catch { /* ignore */ }
+  }
+  return imports.join("\n");
 }
 
 export async function gatherProjectContext(): Promise<string> {
@@ -115,7 +181,12 @@ export async function gatherProjectContext(): Promise<string> {
     { file: "pyproject.toml", label: "pyproject.toml (first 40 lines)", lines: 40 },
     { file: "Pipfile", label: "Pipfile (first 40 lines)", lines: 40 },
     { file: "composer.json", label: "composer.json (first 60 lines)", lines: 60 },
-    { file: "README.md", label: "README.md (first 30 lines)", lines: 30 },
+    { file: "README.md", label: "README.md (first 80 lines)", lines: 80 },
+    { file: "CLAUDE.md", label: "CLAUDE.md (first 50 lines)", lines: 50 },
+    { file: ".claude/CLAUDE.md", label: ".claude/CLAUDE.md (first 50 lines)", lines: 50 },
+    { file: "Dockerfile", label: "Dockerfile (first 30 lines)", lines: 30 },
+    { file: "docker-compose.yml", label: "docker-compose.yml (first 50 lines)", lines: 50 },
+    { file: "docker-compose.yaml", label: "docker-compose.yaml (first 50 lines)", lines: 50 },
   ];
 
   for (const { file, label, lines } of fileChecks) {
@@ -135,9 +206,20 @@ export async function gatherProjectContext(): Promise<string> {
     }
   } catch { /* ignore */ }
 
-  // Infrastructure signals
+  // First CI/CD workflow file
+  try {
+    if (existsSync(".github/workflows")) {
+      const workflows = await readdir(".github/workflows");
+      const firstYml = workflows.find((f) => f.endsWith(".yml") || f.endsWith(".yaml"));
+      if (firstYml) {
+        const content = await readFileSafe(join(".github/workflows", firstYml), 40);
+        ctx += `=== .github/workflows/${firstYml} (first 40 lines) ===\n${content}\n`;
+      }
+    }
+  } catch { /* ignore */ }
+
+  // Infrastructure signals (existence-only checks for remaining infra files)
   const infraFiles = [
-    "Dockerfile", "docker-compose.yml", "docker-compose.yaml",
     ".github/workflows", ".gitlab-ci.yml", "Jenkinsfile",
     "terraform.tf", "main.tf", ".terraform",
     "k8s", "kubernetes", "Chart.yaml", "helmfile.yaml",
@@ -145,6 +227,7 @@ export async function gatherProjectContext(): Promise<string> {
     "eslint.config.js", "eslint.config.mjs",
     ".prettierrc", "prettier.config.js",
     ".env.example", ".env.local",
+    "prometheus.yml", "grafana",
   ];
 
   const infraSignals: string[] = [];
@@ -157,10 +240,26 @@ export async function gatherProjectContext(): Promise<string> {
     ctx += `=== Infrastructure / config signals ===\n${infraSignals.join("\n")}\n`;
   }
 
-  // Directory listing
+  // Directory listing (flat)
   try {
     const entries = await readdir(".");
     ctx += `=== Directory listing ===\n${entries.slice(0, 40).join("\n")}\n`;
+  } catch { /* ignore */ }
+
+  // Directory tree (depth 2) — reveals project architecture
+  try {
+    const tree = await buildDirTree(".", 2, 60);
+    if (tree) {
+      ctx += `=== Directory tree (depth 2) ===\n${tree}\n`;
+    }
+  } catch { /* ignore */ }
+
+  // Sample import analysis — reveals actual usage patterns
+  try {
+    const imports = await sampleImports(".");
+    if (imports) {
+      ctx += `=== Sample imports (first 5 source files) ===\n${imports}\n`;
+    }
   } catch { /* ignore */ }
 
   return ctx;
@@ -172,6 +271,8 @@ interface AiDetectionJson {
   agent_cats?: string[];
   skill_tags?: string[];
   agent_tags?: string[];
+  archetypes?: string[];
+  confidence?: Record<string, string>;
 }
 
 export async function detectProjectAI(): Promise<DetectionResult | null> {
@@ -184,7 +285,7 @@ export async function detectProjectAI(): Promise<DetectionResult | null> {
     return null;
   }
 
-  const prompt = `You are a strict project analyzer. Examine the project files below and detect ONLY technologies that are explicitly present as dependencies, config files, or source code.
+  const prompt = `You are a project analyzer. Examine the project files below and detect technologies that are explicitly present as dependencies, config files, or source code.
 
 Return ONLY a JSON object:
 {
@@ -192,7 +293,9 @@ Return ONLY a JSON object:
   "skill_cats": [...],
   "agent_cats": [...],
   "skill_tags": [...],
-  "agent_tags": [...]
+  "agent_tags": [...],
+  "archetypes": [...],
+  "confidence": { "TechName": "high"|"medium", ... }
 }
 
 FIELD DEFINITIONS:
@@ -201,15 +304,20 @@ FIELD DEFINITIONS:
 - agent_cats: Agent categories from VALID list that match detected technologies
 - skill_tags: Skill tags from VALID list that match detected technologies
 - agent_tags: Agent tags from VALID list that match detected technologies
+- archetypes: Project archetypes from VALID list that describe this project's nature
+- confidence: Object mapping each detected tech to a confidence level ("high" or "medium")
+  - "high": The technology is a primary/core part of the project
+  - "medium": The technology is a secondary dependency or utility
 
 VALID SKILL CATEGORIES: core, workflow, git, web, mobile, backend, languages, devops, security, design, documents, meta
 VALID AGENT CATEGORIES: design, data-ai, specialized, business, operations, research, marketing
 VALID SKILL TAGS: universal, web, react, nextjs, vue, angular, mobile, react-native, expo, flutter, ios, swift, android, kotlin, backend, nodejs, python, php, ruby, java, cpp, csharp, go, rust, typescript, devops, creative, documents, web3
-VALID AGENT TAGS: design, ui, ux, accessibility, responsive, llm, langchain, rag, embeddings, ai, ml, mlops, data, spark, dbt, airflow, pipelines, database, migrations, validation, quality, blockchain, web3, solidity, defi, nft, trading, finance, backtesting, risk, gamedev, unity, godot, architecture, c4, modeling, migration, modernization, frameworks, payments, stripe, paypal, billing, pci, analytics, kpi, dashboards, reporting, startup, business, financial-modeling, hr, legal, gdpr, compliance, crm, sales, automation, collaboration, communication, teams, incident-response, postmortem, runbooks, performance, profiling, optimization, dependencies, packages, security, reverse-engineering, analysis, research, trends, search, content, marketing, seo, writing, technical, monitoring
+VALID AGENT TAGS: design, ui, ux, accessibility, responsive, llm, langchain, rag, embeddings, ai, ml, mlops, data, spark, dbt, airflow, pipelines, database, migrations, validation, quality, blockchain, web3, solidity, defi, nft, trading, finance, backtesting, risk, gamedev, unity, godot, architecture, c4, modeling, migration, modernization, frameworks, payments, stripe, paypal, billing, pci, analytics, kpi, dashboards, reporting, startup, business, financial-modeling, hr, legal, gdpr, compliance, crm, sales, automation, collaboration, communication, teams, incident-response, postmortem, runbooks, performance, profiling, optimization, dependencies, packages, security, reverse-engineering, analysis, research, trends, search, content, marketing, seo, writing, technical, monitoring, authentication
+VALID ARCHETYPES: fullstack-web, api-backend, mobile-app, data-pipeline, ml-platform, devops-infra, cli-tool, e-commerce, saas, monorepo, library, microservices
 
 RULES:
-1. Always include "core" and "workflow" in skill_cats — these are universal. Do NOT auto-include any agent_cats.
-2. Be CONSERVATIVE. Only include a category/tag if there is concrete evidence in the project files.
+1. Always include "core" and "workflow" in skill_cats — these are universal.
+2. Only include a category/tag if there is concrete evidence in the project files.
 3. Skill category evidence requirements:
    - "devops": ONLY if Dockerfile, docker-compose, terraform, k8s manifests, CI/CD configs, or cloud SDK dependencies exist
    - "security": ONLY if auth/crypto/security libraries are dependencies (e.g. passport, helmet, bcrypt, jsonwebtoken, oauth) or security-focused tooling is configured
@@ -220,13 +328,15 @@ RULES:
    - "meta": ONLY if the project itself is a tool/framework for building developer tools or skills
    - "languages": Include when the project uses a language that has specific skill tags (e.g. TypeScript, Python, Go, Rust)
    - "backend": ONLY if server frameworks (Express, Fastify, Django, Rails, etc.), database drivers, or API frameworks are dependencies
-4. Agent category evidence requirements (agents are for niche delegation — most projects need NO agent categories):
-   - "data-ai": ONLY if AI/ML libraries (tensorflow, pytorch, langchain, openai, transformers) or data pipeline tools (spark, dbt, airflow) are dependencies
-   - "specialized": ONLY if blockchain/web3 (hardhat, ethers, solidity), game engines (unity, godot), or payment libraries (stripe) are dependencies
-   - "design": ONLY if this is primarily a design-system or accessibility-focused project
-   - "business"/"marketing"/"research": Almost never auto-suggest — these are opt-in by users
-   - "operations": ONLY if incident management or monitoring dependencies exist
-5. Do NOT speculatively include categories because "every project could use X". Match only what IS there, not what COULD be useful.
+4. Agent category guidance (include when evidence supports):
+   - "data-ai": Database ORMs, AI/ML libs, data pipeline tools, analytics libraries
+   - "design": UI component libraries, CSS frameworks, design systems, Storybook
+   - "specialized": Blockchain, game engines, payment processors, IoT
+   - "business": Analytics dashboards, financial modeling, CRM integrations
+   - "operations": Monitoring/APM, logging, incident management, CI/CD pipelines
+   - "research": Research tools, academic libraries, scientific computing
+   - "marketing": CMS, SEO tools, content management, email marketing
+5. Do NOT include "business", "marketing", or "research" agent categories UNLESS there is direct evidence (analytics libraries, CMS, research tools).
 6. Return ONLY the JSON object, no other text.
 
 PROJECT FILES:
@@ -237,9 +347,9 @@ ${projectContext}`;
   try {
     const { stdout } = await spawnWithStdin(
       "claude",
-      ["-p", "--model", "sonnet", "--output-format", "text", "--max-budget-usd", "0.02"],
+      ["-p", "--model", "sonnet", "--output-format", "text", "--max-budget-usd", "0.10"],
       prompt,
-      { env: { ...process.env, CLAUDECODE: "" }, timeout: 30000 },
+      { env: { ...process.env, CLAUDECODE: "" }, timeout: 45000 },
     );
 
     if (!stdout.trim()) {
@@ -265,18 +375,41 @@ ${projectContext}`;
 
     s.stop("AI scan complete");
 
-    return {
+    const result: DetectionResult = {
       techs: data.techs,
       skillCats: (data.skill_cats ?? []).filter((c) => VALID_SKILL_CATS.has(c)),
       agentCats: (data.agent_cats ?? []).filter((c) => VALID_AGENT_CATS.has(c)),
       skillTags: (data.skill_tags ?? []).filter((t) => VALID_SKILL_TAGS.has(t)),
       agentTags: (data.agent_tags ?? []).filter((t) => VALID_AGENT_TAGS.has(t)),
     };
+
+    // Parse archetypes
+    if (data.archetypes && Array.isArray(data.archetypes)) {
+      const validArchetypes = data.archetypes.filter((a) => VALID_ARCHETYPES.has(a));
+      if (validArchetypes.length > 0) {
+        result.archetypes = validArchetypes;
+      }
+    }
+
+    // Parse confidence
+    if (data.confidence && typeof data.confidence === "object") {
+      const validConfidence: Record<string, "high" | "medium"> = {};
+      for (const [tech, level] of Object.entries(data.confidence)) {
+        if (level === "high" || level === "medium") {
+          validConfidence[tech] = level;
+        }
+      }
+      if (Object.keys(validConfidence).length > 0) {
+        result.confidence = validConfidence;
+      }
+    }
+
+    return result;
   } catch (err: unknown) {
     const isTimeout =
       err instanceof Error && "killed" in err && (err as any).killed;
     const reason = isTimeout
-      ? "Claude CLI timed out (30s)"
+      ? "Claude CLI timed out (45s)"
       : "AI detection failed";
     s.stop(`AI detection failed: ${reason}`, 1);
     return null;

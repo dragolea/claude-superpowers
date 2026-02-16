@@ -1,4 +1,4 @@
-import type { Skill } from "../registry/types.js";
+import type { Skill, Plugin } from "../registry/types.js";
 
 /**
  * Derive skill and agent tags from a wizard stack selection label.
@@ -63,4 +63,20 @@ export function shouldPreselectSkill(
   if (specificTags.length === 0) return true; // Pure universal → always select
 
   return specificTags.some((t) => detectedTags.includes(t));
+}
+
+/**
+ * Determine whether an agent plugin should be pre-selected based on detected tags.
+ *
+ * - No detected tags → select NONE (not all)
+ * - Plugin with no tags → skip
+ * - Otherwise → select if any plugin tag matches a detected tag
+ */
+export function shouldPreselectPlugin(
+  plugin: Plugin,
+  detectedTags: string[],
+): boolean {
+  if (detectedTags.length === 0) return false;
+  if (plugin.tags.length === 0) return false;
+  return plugin.tags.some((t) => detectedTags.includes(t));
 }

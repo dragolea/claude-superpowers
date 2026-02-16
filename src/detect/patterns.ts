@@ -7,6 +7,8 @@ export interface DetectionResult {
   agentCats: string[];
   skillTags: string[];
   agentTags: string[];
+  archetypes?: string[];
+  confidence?: Record<string, "high" | "medium">;
 }
 
 function uniquePush(arr: string[], ...items: string[]): void {
@@ -142,6 +144,53 @@ export async function detectProject(): Promise<DetectionResult> {
       uniquePush(ac, "specialized");
       uniquePush(at, "payments", "stripe");
     }
+
+    // Database/ORM → data-ai agents
+    if (/\"(?:prisma|drizzle-orm|@drizzle-team|typeorm|sequelize|mongoose|knex|@mikro-orm|better-sqlite3|pg|mysql2|ioredis|redis)\"/.test(pkg)) {
+      uniquePush(t, "Database/ORM");
+      uniquePush(ac, "data-ai");
+      uniquePush(at, "database", "migrations", "data");
+    }
+
+    // Auth/Security → security skill tags
+    if (/\"(?:passport|@auth0|next-auth|@clerk|firebase|jsonwebtoken|bcrypt|helmet|@supabase\/auth-helpers)\"/.test(pkg)) {
+      uniquePush(t, "Auth/Security");
+      uniquePush(sc, "security");
+      uniquePush(at, "security");
+    }
+
+    // Monitoring/Observability → operations agents
+    if (/\"(?:@sentry\/node|@sentry\/react|@datadog|@opentelemetry|newrelic|pino|winston)\"/.test(pkg)) {
+      uniquePush(t, "Monitoring");
+      uniquePush(ac, "operations");
+      uniquePush(at, "monitoring", "incident-response", "performance");
+    }
+
+    // Analytics/Reporting → business agents
+    if (/\"(?:mixpanel|@amplitude|@segment\/analytics-node|posthog-node|chart\.js|d3|recharts)\"/.test(pkg)) {
+      uniquePush(t, "Analytics");
+      uniquePush(ac, "business");
+      uniquePush(at, "analytics", "dashboards", "reporting");
+    }
+
+    // Design System/UI → design agents
+    if (/\"(?:tailwindcss|@chakra-ui|@mui\/material|@radix-ui|styled-components|@emotion|storybook|@storybook)\"/.test(pkg)) {
+      uniquePush(t, "Design System");
+      uniquePush(ac, "design");
+      uniquePush(at, "design", "ui", "ux", "accessibility", "responsive");
+    }
+
+    // CMS/Content → marketing agents
+    if (/\"(?:contentful|@sanity|strapi|@keystonejs|ghost|@contentlayer)\"/.test(pkg)) {
+      uniquePush(t, "CMS");
+      uniquePush(ac, "marketing");
+      uniquePush(at, "content", "marketing", "seo");
+    }
+
+    // Testing/Quality → quality tags
+    if (/\"(?:@testing-library\/|cypress|playwright|puppeteer|@storybook\/test)/.test(pkg)) {
+      uniquePush(at, "quality", "validation");
+    }
   }
 
   // ---- TypeScript ----
@@ -193,6 +242,34 @@ export async function detectProject(): Promise<DetectionResult> {
       uniquePush(ac, "data-ai");
       uniquePush(at, "data", "pipelines");
     }
+
+    // Database/ORM (Python) → data-ai agents
+    if (/(?:sqlalchemy|peewee|tortoise-orm|psycopg2|pymongo|redis)/i.test(pydeps)) {
+      uniquePush(t, "Database/ORM");
+      uniquePush(ac, "data-ai");
+      uniquePush(at, "database", "migrations", "data");
+    }
+
+    // Auth/Security (Python) → security skill tags
+    if (/(?:authlib|python-jose|passlib|django-allauth)/i.test(pydeps)) {
+      uniquePush(t, "Auth/Security");
+      uniquePush(sc, "security");
+      uniquePush(at, "security");
+    }
+
+    // Monitoring (Python) → operations agents
+    if (/(?:sentry-sdk|datadog|opentelemetry-api)/i.test(pydeps)) {
+      uniquePush(t, "Monitoring");
+      uniquePush(ac, "operations");
+      uniquePush(at, "monitoring", "incident-response", "performance");
+    }
+
+    // Analytics (Python) → business agents
+    if (/(?:matplotlib|plotly|dash|streamlit|metabase)/i.test(pydeps)) {
+      uniquePush(t, "Analytics");
+      uniquePush(ac, "business");
+      uniquePush(at, "analytics", "dashboards", "reporting");
+    }
   }
 
   // ---- Go ----
@@ -200,6 +277,15 @@ export async function detectProject(): Promise<DetectionResult> {
     uniquePush(t, "Go");
     uniquePush(sc, "backend", "languages");
     uniquePush(st, "go", "backend");
+
+    const gomod = await readFileSafe("go.mod");
+
+    // Database/ORM (Go) → data-ai agents
+    if (/(?:gorm\.io|entgo\.io|github\.com\/jmoiron\/sqlx)/i.test(gomod)) {
+      uniquePush(t, "Database/ORM");
+      uniquePush(ac, "data-ai");
+      uniquePush(at, "database", "migrations", "data");
+    }
   }
 
   // ---- Rust ----
@@ -207,6 +293,15 @@ export async function detectProject(): Promise<DetectionResult> {
     uniquePush(t, "Rust");
     uniquePush(sc, "backend", "languages");
     uniquePush(st, "rust");
+
+    const cargo = await readFileSafe("Cargo.toml");
+
+    // Database/ORM (Rust) → data-ai agents
+    if (/(?:diesel|sqlx|sea-orm)/i.test(cargo)) {
+      uniquePush(t, "Database/ORM");
+      uniquePush(ac, "data-ai");
+      uniquePush(at, "database", "migrations", "data");
+    }
   }
 
   // ---- Ruby ----
@@ -332,5 +427,88 @@ export async function detectProject(): Promise<DetectionResult> {
     uniquePush(at, "blockchain", "web3", "solidity");
   }
 
+  // ---- Monitoring infra files → operations agents ----
+  if (fileExists("prometheus.yml") || fileExists("grafana")) {
+    uniquePush(t, "Monitoring");
+    uniquePush(ac, "operations");
+    uniquePush(at, "monitoring", "incident-response", "performance");
+  }
+
+  // ---- Archetype detection + enrichment ----
+  const archetypes = deriveArchetypes(result);
+  if (archetypes.length > 0) {
+    result.archetypes = archetypes;
+    enrichFromArchetypes(result, archetypes);
+  }
+
   return result;
+}
+
+function deriveArchetypes(result: DetectionResult): string[] {
+  const archetypes: string[] = [];
+  const hasFrontend = result.skillTags.some((t) =>
+    ["react", "vue", "angular", "nextjs"].includes(t),
+  );
+  const hasBackend = result.skillTags.includes("backend");
+  const hasDocker = result.techs.includes("Docker");
+  const hasK8sOrTerraform = result.techs.some((t) =>
+    ["Kubernetes", "Terraform"].includes(t),
+  );
+  const hasCICD = result.techs.includes("CI/CD");
+  const hasAI = result.agentTags.some((t) => ["ai", "ml", "llm"].includes(t));
+  const hasData = result.agentTags.some((t) =>
+    ["data", "pipelines", "database"].includes(t),
+  );
+  const hasPayments = result.agentTags.some((t) =>
+    ["payments", "stripe"].includes(t),
+  );
+  const hasMobile = result.skillTags.some((t) =>
+    ["mobile", "react-native", "flutter", "ios", "android"].includes(t),
+  );
+
+  if (hasFrontend && hasBackend) archetypes.push("fullstack-web");
+  if (!hasFrontend && hasBackend) archetypes.push("api-backend");
+  if (hasMobile) archetypes.push("mobile-app");
+  if (hasDocker && (hasK8sOrTerraform || hasCICD)) archetypes.push("devops-infra");
+  if (hasAI && hasData) archetypes.push("ml-platform");
+  if (hasAI && !hasData) archetypes.push("data-pipeline");
+  if (hasPayments && hasFrontend) archetypes.push("e-commerce");
+
+  return archetypes;
+}
+
+function enrichFromArchetypes(
+  result: DetectionResult,
+  archetypes: string[],
+): void {
+  const mapping: Record<string, { agentCats: string[]; agentTags: string[] }> = {
+    "fullstack-web": {
+      agentCats: ["design"],
+      agentTags: ["ui", "ux", "responsive"],
+    },
+    "devops-infra": {
+      agentCats: ["operations"],
+      agentTags: ["monitoring", "incident-response"],
+    },
+    "ml-platform": {
+      agentCats: ["data-ai"],
+      agentTags: ["ml", "mlops", "pipelines"],
+    },
+    "e-commerce": {
+      agentCats: ["specialized", "business"],
+      agentTags: ["payments", "analytics"],
+    },
+    saas: {
+      agentCats: ["business"],
+      agentTags: ["analytics", "dashboards"],
+    },
+  };
+
+  for (const arch of archetypes) {
+    const m = mapping[arch];
+    if (m) {
+      for (const c of m.agentCats) uniquePush(result.agentCats, c);
+      for (const t of m.agentTags) uniquePush(result.agentTags, t);
+    }
+  }
 }

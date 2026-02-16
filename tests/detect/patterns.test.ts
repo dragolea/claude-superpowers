@@ -573,6 +573,382 @@ describe("Blockchain detection", () => {
   });
 });
 
+// ---- Database/ORM (package.json) ----
+
+describe("Database/ORM detection (Node.js)", () => {
+  it("detects prisma → data-ai agent", async () => {
+    setExistingFiles(["package.json"]);
+    setFileContent({
+      "package.json": JSON.stringify({ dependencies: { "prisma": "^5.0.0" } }),
+    });
+
+    const result = await detectProject();
+    expect(result.techs).toContain("Database/ORM");
+    expect(result.agentCats).toContain("data-ai");
+    expect(result.agentTags).toContain("database");
+    expect(result.agentTags).toContain("migrations");
+    expect(result.agentTags).toContain("data");
+  });
+
+  it("detects mongoose → data-ai agent", async () => {
+    setExistingFiles(["package.json"]);
+    setFileContent({
+      "package.json": JSON.stringify({ dependencies: { "mongoose": "^8.0.0" } }),
+    });
+
+    const result = await detectProject();
+    expect(result.techs).toContain("Database/ORM");
+    expect(result.agentCats).toContain("data-ai");
+  });
+});
+
+// ---- Auth/Security (package.json) ----
+
+describe("Auth/Security detection (Node.js)", () => {
+  it("detects passport → security skill", async () => {
+    setExistingFiles(["package.json"]);
+    setFileContent({
+      "package.json": JSON.stringify({ dependencies: { "passport": "^0.7.0" } }),
+    });
+
+    const result = await detectProject();
+    expect(result.techs).toContain("Auth/Security");
+    expect(result.skillCats).toContain("security");
+    expect(result.agentTags).toContain("security");
+  });
+
+  it("detects next-auth → security skill", async () => {
+    setExistingFiles(["package.json"]);
+    setFileContent({
+      "package.json": JSON.stringify({ dependencies: { "next-auth": "^4.0.0" } }),
+    });
+
+    const result = await detectProject();
+    expect(result.techs).toContain("Auth/Security");
+    expect(result.skillCats).toContain("security");
+  });
+});
+
+// ---- Monitoring/Observability ----
+
+describe("Monitoring detection (Node.js)", () => {
+  it("detects @sentry/node → operations agent", async () => {
+    setExistingFiles(["package.json"]);
+    setFileContent({
+      "package.json": JSON.stringify({ dependencies: { "@sentry/node": "^7.0.0" } }),
+    });
+
+    const result = await detectProject();
+    expect(result.techs).toContain("Monitoring");
+    expect(result.agentCats).toContain("operations");
+    expect(result.agentTags).toContain("monitoring");
+    expect(result.agentTags).toContain("incident-response");
+    expect(result.agentTags).toContain("performance");
+  });
+
+  it("detects winston → operations agent", async () => {
+    setExistingFiles(["package.json"]);
+    setFileContent({
+      "package.json": JSON.stringify({ dependencies: { "winston": "^3.0.0" } }),
+    });
+
+    const result = await detectProject();
+    expect(result.techs).toContain("Monitoring");
+    expect(result.agentCats).toContain("operations");
+  });
+});
+
+// ---- Analytics/Reporting ----
+
+describe("Analytics detection (Node.js)", () => {
+  it("detects mixpanel → business agent", async () => {
+    setExistingFiles(["package.json"]);
+    setFileContent({
+      "package.json": JSON.stringify({ dependencies: { "mixpanel": "^0.18.0" } }),
+    });
+
+    const result = await detectProject();
+    expect(result.techs).toContain("Analytics");
+    expect(result.agentCats).toContain("business");
+    expect(result.agentTags).toContain("analytics");
+    expect(result.agentTags).toContain("dashboards");
+    expect(result.agentTags).toContain("reporting");
+  });
+});
+
+// ---- Design System/UI ----
+
+describe("Design System detection (Node.js)", () => {
+  it("detects tailwindcss → design agent", async () => {
+    setExistingFiles(["package.json"]);
+    setFileContent({
+      "package.json": JSON.stringify({ devDependencies: { "tailwindcss": "^3.0.0" } }),
+    });
+
+    const result = await detectProject();
+    expect(result.techs).toContain("Design System");
+    expect(result.agentCats).toContain("design");
+    expect(result.agentTags).toContain("design");
+    expect(result.agentTags).toContain("ui");
+  });
+
+  it("detects @mui/material → design agent", async () => {
+    setExistingFiles(["package.json"]);
+    setFileContent({
+      "package.json": JSON.stringify({ dependencies: { "@mui/material": "^5.0.0" } }),
+    });
+
+    const result = await detectProject();
+    expect(result.techs).toContain("Design System");
+    expect(result.agentCats).toContain("design");
+  });
+});
+
+// ---- CMS/Content ----
+
+describe("CMS detection (Node.js)", () => {
+  it("detects contentful → marketing agent", async () => {
+    setExistingFiles(["package.json"]);
+    setFileContent({
+      "package.json": JSON.stringify({ dependencies: { "contentful": "^10.0.0" } }),
+    });
+
+    const result = await detectProject();
+    expect(result.techs).toContain("CMS");
+    expect(result.agentCats).toContain("marketing");
+    expect(result.agentTags).toContain("content");
+    expect(result.agentTags).toContain("seo");
+  });
+});
+
+// ---- Testing/Quality ----
+
+describe("Testing/Quality detection (Node.js)", () => {
+  it("detects @testing-library → quality tags", async () => {
+    setExistingFiles(["package.json"]);
+    setFileContent({
+      "package.json": JSON.stringify({ devDependencies: { "@testing-library/react": "^14.0.0" } }),
+    });
+
+    const result = await detectProject();
+    expect(result.agentTags).toContain("quality");
+    expect(result.agentTags).toContain("validation");
+  });
+
+  it("detects playwright → quality tags", async () => {
+    setExistingFiles(["package.json"]);
+    setFileContent({
+      "package.json": JSON.stringify({ devDependencies: { "playwright": "^1.40.0" } }),
+    });
+
+    const result = await detectProject();
+    expect(result.agentTags).toContain("quality");
+  });
+});
+
+// ---- Python new agent patterns ----
+
+describe("Python agent patterns", () => {
+  it("detects sqlalchemy → data-ai agent", async () => {
+    setExistingFiles(["requirements.txt"]);
+    setFileContent({ "requirements.txt": "sqlalchemy\nflask\n" });
+
+    const result = await detectProject();
+    expect(result.techs).toContain("Database/ORM");
+    expect(result.agentCats).toContain("data-ai");
+    expect(result.agentTags).toContain("database");
+  });
+
+  it("detects authlib → security skill", async () => {
+    setExistingFiles(["requirements.txt"]);
+    setFileContent({ "requirements.txt": "authlib\nfastapi\n" });
+
+    const result = await detectProject();
+    expect(result.techs).toContain("Auth/Security");
+    expect(result.skillCats).toContain("security");
+    expect(result.agentTags).toContain("security");
+  });
+
+  it("detects sentry-sdk → operations agent", async () => {
+    setExistingFiles(["requirements.txt"]);
+    setFileContent({ "requirements.txt": "sentry-sdk\nflask\n" });
+
+    const result = await detectProject();
+    expect(result.techs).toContain("Monitoring");
+    expect(result.agentCats).toContain("operations");
+  });
+
+  it("detects plotly → business agent", async () => {
+    setExistingFiles(["requirements.txt"]);
+    setFileContent({ "requirements.txt": "plotly\npandas\n" });
+
+    const result = await detectProject();
+    expect(result.techs).toContain("Analytics");
+    expect(result.agentCats).toContain("business");
+    expect(result.agentTags).toContain("analytics");
+  });
+});
+
+// ---- Go agent patterns ----
+
+describe("Go agent patterns", () => {
+  it("detects gorm.io → data-ai agent", async () => {
+    setExistingFiles(["go.mod"]);
+    setFileContent({ "go.mod": "module myapp\nrequire gorm.io/gorm v1.25.0\n" });
+
+    const result = await detectProject();
+    expect(result.techs).toContain("Database/ORM");
+    expect(result.agentCats).toContain("data-ai");
+    expect(result.agentTags).toContain("database");
+  });
+});
+
+// ---- Rust agent patterns ----
+
+describe("Rust agent patterns", () => {
+  it("detects diesel → data-ai agent", async () => {
+    setExistingFiles(["Cargo.toml"]);
+    setFileContent({ "Cargo.toml": '[dependencies]\ndiesel = "2.1"\n' });
+
+    const result = await detectProject();
+    expect(result.techs).toContain("Database/ORM");
+    expect(result.agentCats).toContain("data-ai");
+    expect(result.agentTags).toContain("database");
+  });
+});
+
+// ---- Monitoring infra files ----
+
+describe("Monitoring infra detection", () => {
+  it("detects prometheus.yml → operations agent", async () => {
+    setExistingFiles(["prometheus.yml"]);
+
+    const result = await detectProject();
+    expect(result.techs).toContain("Monitoring");
+    expect(result.agentCats).toContain("operations");
+    expect(result.agentTags).toContain("monitoring");
+  });
+
+  it("detects grafana/ → operations agent", async () => {
+    setExistingFiles(["grafana"]);
+
+    const result = await detectProject();
+    expect(result.techs).toContain("Monitoring");
+    expect(result.agentCats).toContain("operations");
+  });
+});
+
+// ---- Archetype detection ----
+
+describe("archetype detection", () => {
+  it("detects fullstack-web archetype (React + Express)", async () => {
+    setExistingFiles(["package.json"]);
+    setFileContent({
+      "package.json": JSON.stringify({
+        dependencies: { "react": "^18.0.0", "express": "^4.0.0" },
+      }),
+    });
+
+    const result = await detectProject();
+    expect(result.archetypes).toContain("fullstack-web");
+  });
+
+  it("detects api-backend archetype (Express only, no frontend)", async () => {
+    setExistingFiles(["package.json"]);
+    setFileContent({
+      "package.json": JSON.stringify({
+        dependencies: { "express": "^4.0.0" },
+      }),
+    });
+
+    const result = await detectProject();
+    expect(result.archetypes).toContain("api-backend");
+    expect(result.archetypes).not.toContain("fullstack-web");
+  });
+
+  it("detects mobile-app archetype", async () => {
+    setExistingFiles(["package.json"]);
+    setFileContent({
+      "package.json": JSON.stringify({
+        dependencies: { "react-native": "^0.72.0", "react": "^18.0.0" },
+      }),
+    });
+
+    const result = await detectProject();
+    expect(result.archetypes).toContain("mobile-app");
+  });
+
+  it("detects devops-infra archetype (Docker + CI/CD)", async () => {
+    setExistingFiles(["Dockerfile", ".github/workflows"]);
+
+    const result = await detectProject();
+    expect(result.archetypes).toContain("devops-infra");
+  });
+
+  it("detects e-commerce archetype (frontend + payments)", async () => {
+    setExistingFiles(["package.json"]);
+    setFileContent({
+      "package.json": JSON.stringify({
+        dependencies: { "react": "^18.0.0", "stripe": "^14.0.0" },
+      }),
+    });
+
+    const result = await detectProject();
+    expect(result.archetypes).toContain("e-commerce");
+  });
+
+  it("returns no archetypes for empty project", async () => {
+    const result = await detectProject();
+    expect(result.archetypes).toBeUndefined();
+  });
+});
+
+// ---- Archetype enrichment ----
+
+describe("archetype enrichment", () => {
+  it("fullstack-web adds design agent category and tags", async () => {
+    setExistingFiles(["package.json"]);
+    setFileContent({
+      "package.json": JSON.stringify({
+        dependencies: { "react": "^18.0.0", "express": "^4.0.0" },
+      }),
+    });
+
+    const result = await detectProject();
+    expect(result.archetypes).toContain("fullstack-web");
+    expect(result.agentCats).toContain("design");
+    expect(result.agentTags).toContain("ui");
+    expect(result.agentTags).toContain("ux");
+    expect(result.agentTags).toContain("responsive");
+  });
+
+  it("devops-infra adds operations agent category", async () => {
+    setExistingFiles(["Dockerfile", ".github/workflows"]);
+
+    const result = await detectProject();
+    expect(result.archetypes).toContain("devops-infra");
+    expect(result.agentCats).toContain("operations");
+    expect(result.agentTags).toContain("monitoring");
+    expect(result.agentTags).toContain("incident-response");
+  });
+
+  it("e-commerce adds specialized and business agent categories", async () => {
+    setExistingFiles(["package.json"]);
+    setFileContent({
+      "package.json": JSON.stringify({
+        dependencies: { "react": "^18.0.0", "stripe": "^14.0.0" },
+      }),
+    });
+
+    const result = await detectProject();
+    expect(result.archetypes).toContain("e-commerce");
+    expect(result.agentCats).toContain("specialized");
+    expect(result.agentCats).toContain("business");
+    expect(result.agentTags).toContain("payments");
+    expect(result.agentTags).toContain("analytics");
+  });
+});
+
 // ---- Multi-tech project (uniquePush dedup) ----
 
 describe("multi-tech deduplication", () => {

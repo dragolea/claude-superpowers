@@ -30,7 +30,7 @@ import { selectMenu } from "../prompts/select.js";
 import { checkboxMenu } from "../prompts/checkbox.js";
 import { selectScopeMenu, selectAgentScopeMenu } from "./search.js";
 import { runDetection } from "./scan.js";
-import { deriveTagsFromStack, shouldPreselectSkill } from "./preselect.js";
+import { deriveTagsFromStack, shouldPreselectSkill, shouldPreselectPlugin } from "./preselect.js";
 import type {
   InstallScope,
   SkillsRegistry,
@@ -345,13 +345,17 @@ async function runAgentWizard(
   printBanner();
 
   const useDetection =
-    detection !== null && detection.agentCats.length > 0;
+    detection !== null &&
+    (detection.agentCats.length > 0 || detection.agentTags.length > 0);
 
   if (useDetection) {
     if (detection!.techs.length > 0) {
       console.log(
         `  ${theme.success("Detected:")} ${theme.bold(detection!.techs.join(", "))}`,
       );
+    }
+    if (detection!.archetypes?.length) {
+      console.log(`  ${theme.dim("Project type:")} ${detection!.archetypes.join(", ")}`);
     }
     console.log(theme.dim("  Pre-selecting relevant plugin categories."));
   }
@@ -426,18 +430,9 @@ async function runAgentWizard(
           value: p.name,
         }));
 
-        const preselected: string[] = [];
-        if (detectedAgentTags.length === 0) {
-          preselected.push(...plugins.map((p) => p.name));
-        } else {
-          for (const plugin of plugins) {
-            if (plugin.tags.length === 0) {
-              preselected.push(plugin.name);
-            } else if (plugin.tags.some((t) => detectedAgentTags.includes(t))) {
-              preselected.push(plugin.name);
-            }
-          }
-        }
+        const preselected = plugins
+          .filter((p) => shouldPreselectPlugin(p, detectedAgentTags))
+          .map((p) => p.name);
 
         const result = await checkboxMenu("Select plugins to install", options, {
           preselected,
@@ -559,6 +554,9 @@ export async function cmdInteractive(
       console.log(
         `  ${theme.success("Detected:")} ${theme.bold(detection.techs.join(", "))}`,
       );
+      if (detection.archetypes?.length) {
+        console.log(`  ${theme.dim("Project type:")} ${detection.archetypes.join(", ")}`);
+      }
     } else {
       console.log("");
       console.log(
