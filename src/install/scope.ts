@@ -1,5 +1,5 @@
 import { homedir } from "node:os";
-import type { InstallScope } from "../registry/types.js";
+import type { InstallScope } from "../types.js";
 
 export function resolveSkillsDir(scope: InstallScope): string {
   switch (scope) {
