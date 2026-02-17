@@ -28,6 +28,8 @@ function makeSkill(overrides: Partial<DiscoveredSkill> = {}): DiscoveredSkill {
     sourceUrl: "https://skills.sh/org-repo-test-skill",
     relevance: 1,
     matchedTags: ["tag"],
+    installs: 100,
+    isDefault: false,
     ...overrides,
   };
 }
