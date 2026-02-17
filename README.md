@@ -2,7 +2,7 @@
 
 Smart skill installer for [Claude Code](https://claude.ai/code). Powered by the [skills.sh](https://skills.sh) ecosystem.
 
-Scans your project, detects your tech stack, discovers relevant skills from the open ecosystem, and installs them — all in one interactive flow. No manual browsing or guessing what you need.
+Scans your project, detects your tech stack, discovers relevant skills from the open ecosystem, and installs them — all in one interactive flow. Includes [obra/superpowers](https://skills.sh/?q=obra%2Fsuperpowers) as recommended defaults (brainstorming, TDD, debugging, code review, and more).
 
 ## Quick Start
 
@@ -14,9 +14,10 @@ The interactive wizard:
 
 1. **Scans** your project (pattern-based + optional AI detection)
 2. **Discovers** matching skills from the [skills.sh](https://skills.sh) ecosystem
-3. **Presents** results ranked by relevance — pre-checks the best matches
-4. **Installs** selected skills via [`npx skills`](https://www.npmjs.com/package/skills)
-5. **Generates** CLAUDE.md rules so Claude knows when to use each skill
+3. **Recommends** [obra/superpowers](https://skills.sh/?q=obra%2Fsuperpowers) as pre-checked defaults
+4. **Deduplicates** cross-source skills by name, keeping the most-installed variant
+5. **Installs** selected skills via [`npx skills`](https://www.npmjs.com/package/skills)
+6. **Generates** CLAUDE.md rules so Claude knows when to use each skill
 
 ## Commands
 
@@ -50,9 +51,14 @@ The scanner detects your tech stack through two methods:
 
 Detection produces a set of **tags** (e.g., `react`, `typescript`, `backend`, `devops`) that drive skill discovery.
 
-### Discovery
+### Discovery & Defaults
 
-Tags are searched against the [skills.sh](https://skills.sh) directory — the open leaderboard for AI agent skills. Skills that match multiple tags rank higher (more relevant to your project).
+Tags are searched against the [skills.sh](https://skills.sh) directory. The discovery pipeline:
+
+- **Fetches defaults** — the 14 [obra/superpowers](https://skills.sh/?q=obra%2Fsuperpowers) workflow skills (brainstorming, TDD, systematic debugging, code review, etc.) are always included as pre-checked recommendations
+- **Searches by tags** — each detected tag is searched against skills.sh, returning project-specific skills
+- **Deduplicates by name** — when multiple sources publish the same skill (e.g., `typescript-pro` from 3+ publishers), keeps the variant with the most installs
+- **Pre-selects all matches** — both defaults and scan-matched skills are pre-checked; users uncheck what they don't need
 
 ### Installation
 
