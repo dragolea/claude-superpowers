@@ -1,14 +1,13 @@
 {
   "name": "superpower-installer",
   "version": "1.0.0",
-  "description": "Interactive installer for Claude Code skills and agent plugins",
+  "description": "Smart skill installer for Claude Code — scans your project, discovers skills",
   "type": "module",
   "bin": {
     "superpower-installer": "./dist/bin.js"
   },
   "files": [
-    "dist",
-    "registry"
+    "dist"
   ],
   "scripts": {
     "build": "tsup",

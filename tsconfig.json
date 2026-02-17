@@ -11,7 +11,9 @@
     "rootDir": "src",
     "declaration": false,
     "sourceMap": false,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "noEmit": true,
+    "allowImportingTsExtensions": true
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "dist"]

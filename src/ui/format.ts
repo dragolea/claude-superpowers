@@ -22,43 +22,25 @@ export function formatSkillLine(
   return `    ${theme.bold(name)}${tag}\n    ${theme.dim(description)}`;
 }
 
-export function formatPluginLine(
-  name: string,
-  marketplace: string,
-  agentCount: number,
-  description: string,
-): string {
-  return `    ${theme.bold(name)}@${marketplace} ${theme.dim(`(${agentCount} agents)`)}\n    ${theme.dim(description)}`;
-}
-
 export function formatInstallSummary(opts: {
-  type: "skills" | "plugins";
   success: number;
   failed: number;
   scope: string;
   skillsDir?: string;
-  totalAgents?: number;
 }): string {
   const lines: string[] = ["", theme.separator()];
 
-  if (opts.type === "skills") {
-    lines.push(`  ${theme.success("Installed:")} ${opts.success} skills`);
-  } else {
-    const agentNote = opts.totalAgents ? ` (${opts.totalAgents} agents)` : "";
-    lines.push(
-      `  ${theme.success("Installed:")} ${opts.success} plugins${agentNote}`,
-    );
-  }
+  lines.push(`  ${theme.success("Installed:")} ${opts.success} skills`);
 
   if (opts.failed > 0) {
-    lines.push(`  ${theme.error("Failed:")}    ${opts.failed} ${opts.type}`);
+    lines.push(`  ${theme.error("Failed:")}    ${opts.failed} skills`);
   }
 
   lines.push(theme.separator());
   lines.push("");
   lines.push(`  ${theme.dim("Scope:")}     ${opts.scope}`);
 
-  if (opts.type === "skills" && opts.skillsDir) {
+  if (opts.skillsDir) {
     lines.push(`Skills installed to: ${theme.bold(opts.skillsDir + "/")}`);
     if (opts.scope === "local") {
       lines.push(
@@ -67,10 +49,6 @@ export function formatInstallSummary(opts: {
     }
     lines.push(
       `Run ${theme.dim("npx superpower-installer --update")} to refresh later.`,
-    );
-  } else {
-    lines.push(
-      `Run ${theme.dim("npx superpower-installer --agents --update")} to update later.`,
     );
   }
 
