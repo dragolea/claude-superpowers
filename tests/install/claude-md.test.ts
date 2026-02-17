@@ -1,227 +1,158 @@
-import { describe, it, expect } from "vitest";
-import { readFileSync } from "node:fs";
-import { join, dirname } from "node:path";
-import { fileURLToPath } from "node:url";
-import { generateClaudeMdSection } from "../../src/install/claude-md.js";
-import type { SkillsRegistry } from "../../src/registry/types.js";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+import { generateClaudeMdSection, updateClaudeMd } from "../../src/install/claude-md.js";
+import type { SkillMetadata } from "../../src/types.js";
 
-// ---- Test fixture ----
+vi.mock("node:fs/promises", () => ({
+  readFile: vi.fn(),
+  writeFile: vi.fn(),
+  mkdir: vi.fn(),
+}));
 
-const registry: SkillsRegistry = {
-  version: "1.0.0",
-  categories: {
-    core: {
-      name: "Core",
-      description: "Essential skills",
-      recommended: true,
-    },
-    workflow: {
-      name: "Workflow",
-      description: "Planning and execution",
-      recommended: true,
-    },
-    web: {
-      name: "Web Development",
-      description: "Frontend frameworks",
-      recommended: false,
-    },
-    security: {
-      name: "Security",
-      description: "Security skills",
-      recommended: false,
-    },
-    languages: {
-      name: "Languages",
-      description: "Language-specific skills",
-      recommended: false,
-    },
+vi.mock("../../src/install/scope.js", () => ({
+  resolveClaudeMdPath: vi.fn(() => "/fake/CLAUDE.md"),
+}));
+
+vi.mock("../../src/ui/format.js", () => ({
+  theme: {
+    success: (s: string) => s,
+    warn: (s: string) => s,
+    bold: (s: string) => s,
+    dim: (s: string) => s,
   },
-  presets: {},
-  skills: [
-    {
-      name: "debugging",
-      description: "Four-phase root cause analysis",
-      source: "test",
-      path: "debug",
-      tags: ["universal"],
-      category: "core",
-    },
-    {
-      name: "tdd",
-      description: "RED-GREEN-REFACTOR cycle",
-      source: "test",
-      path: "tdd",
-      tags: ["universal"],
-      category: "core",
-    },
-    {
-      name: "brainstorming",
-      description: "Collaborative design exploration",
-      source: "test",
-      path: "brainstorm",
-      tags: ["universal"],
-      category: "workflow",
-    },
-    {
-      name: "react-skill",
-      description: "React component patterns",
-      source: "test",
-      path: "react",
-      tags: ["web", "react"],
-      category: "web",
-    },
-    {
-      name: "security-reviewer",
-      description: "Security audits and SAST scans",
-      source: "test",
-      path: "security",
-      tags: ["universal"],
-      category: "security",
-    },
-    {
-      name: "typescript-pro",
-      description: "Advanced TypeScript patterns",
-      source: "test",
-      path: "ts",
-      tags: ["universal", "typescript"],
-      category: "languages",
-    },
-  ],
-};
+}));
 
-// ---- Tests ----
+import { readFile, writeFile, mkdir } from "node:fs/promises";
+
+const mockReadFile = vi.mocked(readFile);
+const mockWriteFile = vi.mocked(writeFile);
+const mockMkdir = vi.mocked(mkdir);
+
+beforeEach(() => {
+  vi.clearAllMocks();
+  mockMkdir.mockResolvedValue(undefined);
+  mockWriteFile.mockResolvedValue(undefined);
+});
+
+// ---- generateClaudeMdSection ----
 
 describe("generateClaudeMdSection", () => {
-  it("generates ALWAYS use format for core skills", () => {
-    const output = generateClaudeMdSection(["debugging"], registry);
-    expect(output).toContain("ALWAYS use debugging");
-    expect(output).toContain("Four-phase root cause analysis");
-  });
-
-  it("generates Use X for format for workflow skills", () => {
-    const output = generateClaudeMdSection(["brainstorming"], registry);
-    expect(output).toContain("Use brainstorming for");
-    expect(output).toContain("collaborative design exploration");
-  });
-
-  it("generates web skill format", () => {
-    const output = generateClaudeMdSection(["react-skill"], registry);
-    expect(output).toContain("Use react-skill when working on web projects");
-  });
-
-  it("generates security skill format", () => {
-    const output = generateClaudeMdSection(["security-reviewer"], registry);
-    expect(output).toContain("Use security-reviewer for security analysis");
-  });
-
-  it("generates language skill format", () => {
-    const output = generateClaudeMdSection(["typescript-pro"], registry);
-    expect(output).toContain("Use typescript-pro");
-    expect(output).toContain("Advanced TypeScript patterns");
-  });
-
-  it("groups skills by category with proper headers", () => {
-    const output = generateClaudeMdSection(
-      ["debugging", "brainstorming", "react-skill"],
-      registry,
-    );
-
-    expect(output).toContain("## Core");
-    expect(output).toContain("## Workflow");
-    expect(output).toContain("## Web Development");
-  });
-
-  it("maintains registry category order", () => {
-    const output = generateClaudeMdSection(
-      ["react-skill", "debugging", "brainstorming"],
-      registry,
-    );
-
-    const coreIdx = output.indexOf("## Core");
-    const workflowIdx = output.indexOf("## Workflow");
-    const webIdx = output.indexOf("## Web Development");
-
-    expect(coreIdx).toBeLessThan(workflowIdx);
-    expect(workflowIdx).toBeLessThan(webIdx);
-  });
-
   it("returns empty string for empty input", () => {
-    const output = generateClaudeMdSection([], registry);
+    const output = generateClaudeMdSection([]);
     expect(output).toBe("");
   });
 
-  it("skips unknown skill names", () => {
-    const output = generateClaudeMdSection(["nonexistent"], registry);
-    expect(output).toBe("");
-  });
+  it("generates section with markers, heading, and skill entries", () => {
+    const skills: SkillMetadata[] = [
+      { name: "foo", description: "bar", path: "/skills/foo/SKILL.md" },
+    ];
+    const output = generateClaudeMdSection(skills);
 
-  it("skips unknown skills while keeping valid ones", () => {
-    const output = generateClaudeMdSection(
-      ["debugging", "nonexistent"],
-      registry,
-    );
-    expect(output).toContain("debugging");
-    expect(output).not.toContain("nonexistent");
-  });
-
-  it("includes HTML markers in output", () => {
-    const output = generateClaudeMdSection(["debugging"], registry);
     expect(output).toContain("<!-- superpower-skills-start -->");
     expect(output).toContain("<!-- superpower-skills-end -->");
+    expect(output).toContain("# Superpowers Skills");
+    expect(output).toContain("ALWAYS check if a superpowers skill applies before starting any task.");
+    expect(output).toContain("- Use foo — bar");
   });
 
-  it("includes header text", () => {
-    const output = generateClaudeMdSection(["debugging"], registry);
-    expect(output).toContain("# Superpowers Skills");
-    expect(output).toContain(
-      "ALWAYS check if a superpowers skill applies before starting any task.",
-    );
+  it("generates multiple skill entries", () => {
+    const skills: SkillMetadata[] = [
+      { name: "debugging", description: "Four-phase root cause analysis", path: "/a" },
+      { name: "tdd", description: "RED-GREEN-REFACTOR cycle", path: "/b" },
+      { name: "brainstorming", description: "Collaborative design exploration", path: "/c" },
+    ];
+    const output = generateClaudeMdSection(skills);
+
+    expect(output).toContain("- Use debugging — Four-phase root cause analysis");
+    expect(output).toContain("- Use tdd — RED-GREEN-REFACTOR cycle");
+    expect(output).toContain("- Use brainstorming — Collaborative design exploration");
+  });
+
+  it("starts with marker and ends with marker", () => {
+    const skills: SkillMetadata[] = [
+      { name: "foo", description: "bar", path: "/a" },
+    ];
+    const output = generateClaudeMdSection(skills);
+
+    expect(output.startsWith("<!-- superpower-skills-start -->")).toBe(true);
+    expect(output.endsWith("<!-- superpower-skills-end -->")).toBe(true);
   });
 });
 
-// ---- Integration with real registry ----
+// ---- updateClaudeMd ----
 
-describe("integration with real skills.json", () => {
-  function loadRealRegistry(): SkillsRegistry {
-    const __dirname = dirname(fileURLToPath(import.meta.url));
-    const registryPath = join(__dirname, "..", "..", "registry", "skills.json");
-    return JSON.parse(readFileSync(registryPath, "utf-8"));
-  }
-
-  const realRegistry = loadRealRegistry();
-
-  it("generates valid output for real core skills", () => {
-    const coreSkillNames = realRegistry.skills
-      .filter((s) => s.category === "core")
-      .map((s) => s.name);
-
-    const output = generateClaudeMdSection(coreSkillNames, realRegistry);
-
-    expect(output).toContain("## Core");
-    expect(output).toContain("<!-- superpower-skills-start -->");
-    for (const name of coreSkillNames) {
-      expect(output).toContain(name);
-    }
+describe("updateClaudeMd", () => {
+  it("does nothing for empty skills array", async () => {
+    await updateClaudeMd([], "project");
+    expect(mockWriteFile).not.toHaveBeenCalled();
   });
 
-  it("generates valid output for all skills in registry", () => {
-    const allNames = realRegistry.skills.map((s) => s.name);
-    const output = generateClaudeMdSection(allNames, realRegistry);
+  it("replaces existing section between markers", async () => {
+    const existing =
+      "# My Project\n\nSome content.\n\n" +
+      "<!-- superpower-skills-start -->\nold content\n<!-- superpower-skills-end -->" +
+      "\n\n# Footer\n";
 
-    expect(output.length).toBeGreaterThan(0);
-    expect(output).toContain("<!-- superpower-skills-start -->");
-    expect(output).toContain("<!-- superpower-skills-end -->");
+    mockReadFile.mockResolvedValue(existing as any);
 
-    // Should have categories from registry
-    const expectedCategories = Object.keys(realRegistry.categories);
-    for (const catId of expectedCategories) {
-      const catSkills = realRegistry.skills.filter(
-        (s) => s.category === catId,
-      );
-      if (catSkills.length > 0) {
-        const catName = realRegistry.categories[catId].name;
-        expect(output).toContain(`## ${catName}`);
-      }
-    }
+    const skills: SkillMetadata[] = [
+      { name: "new-skill", description: "New description", path: "/a" },
+    ];
+
+    await updateClaudeMd(skills, "project");
+
+    expect(mockWriteFile).toHaveBeenCalledTimes(1);
+    const written = mockWriteFile.mock.calls[0][1] as string;
+    expect(written).toContain("# My Project");
+    expect(written).toContain("- Use new-skill — New description");
+    expect(written).toContain("# Footer");
+    expect(written).not.toContain("old content");
+  });
+
+  it("appends to existing file without markers", async () => {
+    mockReadFile.mockResolvedValue("# Existing content\n\nSome stuff." as any);
+
+    const skills: SkillMetadata[] = [
+      { name: "foo", description: "bar", path: "/a" },
+    ];
+
+    await updateClaudeMd(skills, "project");
+
+    expect(mockWriteFile).toHaveBeenCalledTimes(1);
+    const written = mockWriteFile.mock.calls[0][1] as string;
+    expect(written).toContain("# Existing content");
+    expect(written).toContain("<!-- superpower-skills-start -->");
+    expect(written).toContain("- Use foo — bar");
+  });
+
+  it("creates new file when none exists", async () => {
+    mockReadFile.mockRejectedValue(new Error("ENOENT"));
+
+    const skills: SkillMetadata[] = [
+      { name: "foo", description: "bar", path: "/a" },
+    ];
+
+    await updateClaudeMd(skills, "project");
+
+    expect(mockWriteFile).toHaveBeenCalledTimes(1);
+    const written = mockWriteFile.mock.calls[0][1] as string;
+    expect(written).toContain("<!-- superpower-skills-start -->");
+    expect(written).toContain("- Use foo — bar");
+    expect(written).toContain("<!-- superpower-skills-end -->");
+    expect(written.endsWith("\n")).toBe(true);
+  });
+
+  it("creates parent directory before writing", async () => {
+    mockReadFile.mockRejectedValue(new Error("ENOENT"));
+
+    const skills: SkillMetadata[] = [
+      { name: "foo", description: "bar", path: "/a" },
+    ];
+
+    await updateClaudeMd(skills, "user");
+
+    expect(mockMkdir).toHaveBeenCalledWith(
+      expect.any(String),
+      { recursive: true },
+    );
   });
 });
