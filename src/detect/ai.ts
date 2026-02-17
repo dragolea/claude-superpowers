@@ -51,42 +51,11 @@ function spawnWithStdin(
 }
 
 // Valid values for validation
-export const VALID_SKILL_CATS = new Set([
-  "core", "workflow", "git", "web", "mobile", "backend", "languages",
-  "devops", "security", "design", "documents", "meta",
-]);
-export const VALID_AGENT_CATS = new Set([
-  "design", "data-ai", "specialized", "business", "operations",
-  "research", "marketing",
-]);
 export const VALID_SKILL_TAGS = new Set([
   "universal", "web", "react", "nextjs", "vue", "angular", "mobile",
   "react-native", "expo", "flutter", "ios", "swift", "android", "kotlin",
   "backend", "nodejs", "python", "php", "ruby", "java", "cpp", "csharp",
-  "go", "rust", "typescript", "devops", "creative", "documents", "web3",
-]);
-export const VALID_AGENT_TAGS = new Set([
-  "design", "ui", "ux", "accessibility", "responsive",
-  "llm", "langchain", "rag", "embeddings", "ai", "ml", "mlops",
-  "data", "spark", "dbt", "airflow", "pipelines", "database", "migrations",
-  "validation", "quality",
-  "blockchain", "web3", "solidity", "defi", "nft",
-  "trading", "finance", "backtesting", "risk",
-  "gamedev", "unity", "godot",
-  "architecture", "c4", "modeling", "migration", "modernization", "frameworks",
-  "payments", "stripe", "paypal", "billing", "pci",
-  "analytics", "kpi", "dashboards", "reporting",
-  "startup", "business", "financial-modeling",
-  "hr", "legal", "gdpr", "compliance",
-  "crm", "sales", "automation",
-  "collaboration", "communication", "teams",
-  "incident-response", "postmortem", "runbooks",
-  "performance", "profiling", "optimization",
-  "dependencies", "packages", "security",
-  "reverse-engineering", "analysis",
-  "research", "trends", "search",
-  "content", "marketing", "seo", "writing", "technical", "monitoring",
-  "authentication",
+  "go", "rust", "typescript", "devops", "creative", "documents", "web3", "ai",
 ]);
 
 export const VALID_ARCHETYPES = new Set([
@@ -267,10 +236,7 @@ export async function gatherProjectContext(): Promise<string> {
 
 interface AiDetectionJson {
   techs?: string[];
-  skill_cats?: string[];
-  agent_cats?: string[];
   skill_tags?: string[];
-  agent_tags?: string[];
   archetypes?: string[];
   confidence?: Record<string, string>;
 }
@@ -290,54 +256,32 @@ export async function detectProjectAI(): Promise<DetectionResult | null> {
 Return ONLY a JSON object:
 {
   "techs": [...],
-  "skill_cats": [...],
-  "agent_cats": [...],
   "skill_tags": [...],
-  "agent_tags": [...],
   "archetypes": [...],
   "confidence": { "TechName": "high"|"medium", ... }
 }
 
 FIELD DEFINITIONS:
 - techs: Human-readable names of technologies explicitly found (e.g. "React", "TypeScript", "Docker")
-- skill_cats: Skill categories from VALID list that match detected technologies
-- agent_cats: Agent categories from VALID list that match detected technologies
 - skill_tags: Skill tags from VALID list that match detected technologies
-- agent_tags: Agent tags from VALID list that match detected technologies
 - archetypes: Project archetypes from VALID list that describe this project's nature
 - confidence: Object mapping each detected tech to a confidence level ("high" or "medium")
   - "high": The technology is a primary/core part of the project
   - "medium": The technology is a secondary dependency or utility
 
-VALID SKILL CATEGORIES: core, workflow, git, web, mobile, backend, languages, devops, security, design, documents, meta
-VALID AGENT CATEGORIES: design, data-ai, specialized, business, operations, research, marketing
-VALID SKILL TAGS: universal, web, react, nextjs, vue, angular, mobile, react-native, expo, flutter, ios, swift, android, kotlin, backend, nodejs, python, php, ruby, java, cpp, csharp, go, rust, typescript, devops, creative, documents, web3
-VALID AGENT TAGS: design, ui, ux, accessibility, responsive, llm, langchain, rag, embeddings, ai, ml, mlops, data, spark, dbt, airflow, pipelines, database, migrations, validation, quality, blockchain, web3, solidity, defi, nft, trading, finance, backtesting, risk, gamedev, unity, godot, architecture, c4, modeling, migration, modernization, frameworks, payments, stripe, paypal, billing, pci, analytics, kpi, dashboards, reporting, startup, business, financial-modeling, hr, legal, gdpr, compliance, crm, sales, automation, collaboration, communication, teams, incident-response, postmortem, runbooks, performance, profiling, optimization, dependencies, packages, security, reverse-engineering, analysis, research, trends, search, content, marketing, seo, writing, technical, monitoring, authentication
+VALID SKILL TAGS: universal, web, react, nextjs, vue, angular, mobile, react-native, expo, flutter, ios, swift, android, kotlin, backend, nodejs, python, php, ruby, java, cpp, csharp, go, rust, typescript, devops, creative, documents, web3, ai
 VALID ARCHETYPES: fullstack-web, api-backend, mobile-app, data-pipeline, ml-platform, devops-infra, cli-tool, e-commerce, saas, monorepo, library, microservices
 
 RULES:
-1. Always include "core" and "workflow" in skill_cats — these are universal.
-2. Only include a category/tag if there is concrete evidence in the project files.
-3. Skill category evidence requirements:
+1. Only include a tag if there is concrete evidence in the project files.
+2. Tag evidence requirements:
    - "devops": ONLY if Dockerfile, docker-compose, terraform, k8s manifests, CI/CD configs, or cloud SDK dependencies exist
-   - "security": ONLY if auth/crypto/security libraries are dependencies (e.g. passport, helmet, bcrypt, jsonwebtoken, oauth) or security-focused tooling is configured
-   - "documents": ONLY if PDF/Office processing libraries are dependencies (e.g. pdfkit, docx, exceljs, sharp)
    - "web": ONLY if frontend framework dependencies exist (React, Vue, Angular, Svelte) or HTML/CSS tooling is present
    - "mobile": ONLY if React Native, Flutter, Swift, Kotlin, or mobile SDK dependencies exist
-   - "design": ONLY if design/theming/CSS-in-JS libraries are dependencies
-   - "meta": ONLY if the project itself is a tool/framework for building developer tools or skills
-   - "languages": Include when the project uses a language that has specific skill tags (e.g. TypeScript, Python, Go, Rust)
    - "backend": ONLY if server frameworks (Express, Fastify, Django, Rails, etc.), database drivers, or API frameworks are dependencies
-4. Agent category guidance (include when evidence supports):
-   - "data-ai": Database ORMs, AI/ML libs, data pipeline tools, analytics libraries
-   - "design": UI component libraries, CSS frameworks, design systems, Storybook
-   - "specialized": Blockchain, game engines, payment processors, IoT
-   - "business": Analytics dashboards, financial modeling, CRM integrations
-   - "operations": Monitoring/APM, logging, incident management, CI/CD pipelines
-   - "research": Research tools, academic libraries, scientific computing
-   - "marketing": CMS, SEO tools, content management, email marketing
-5. Do NOT include "business", "marketing", or "research" agent categories UNLESS there is direct evidence (analytics libraries, CMS, research tools).
-6. Return ONLY the JSON object, no other text.
+   - "ai": ONLY if AI/ML libraries are dependencies (e.g. langchain, openai, torch, transformers)
+   - "web3": ONLY if blockchain/web3 libraries are dependencies (e.g. ethers, hardhat, foundry)
+3. Return ONLY the JSON object, no other text.
 
 PROJECT FILES:
 ${projectContext}`;
@@ -377,10 +321,7 @@ ${projectContext}`;
 
     const result: DetectionResult = {
       techs: data.techs,
-      skillCats: (data.skill_cats ?? []).filter((c) => VALID_SKILL_CATS.has(c)),
-      agentCats: (data.agent_cats ?? []).filter((c) => VALID_AGENT_CATS.has(c)),
       skillTags: (data.skill_tags ?? []).filter((t) => VALID_SKILL_TAGS.has(t)),
-      agentTags: (data.agent_tags ?? []).filter((t) => VALID_AGENT_TAGS.has(t)),
     };
 
     // Parse archetypes
