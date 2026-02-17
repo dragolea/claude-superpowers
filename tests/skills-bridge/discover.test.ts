@@ -229,7 +229,7 @@ describe("fetchDefaultSkills", () => {
 
     await fetchDefaultSkills();
 
-    expect(mockSearchSkillsAPI).toHaveBeenCalledWith("obra/superpowers");
+    expect(mockSearchSkillsAPI).toHaveBeenCalledWith("obra/superpowers", 50);
   });
 });
 

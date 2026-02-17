@@ -15,7 +15,7 @@ const DEFAULT_SOURCE = "obra/superpowers";
  * Searches for "obra/superpowers" and filters to that source.
  */
 export async function fetchDefaultSkills(): Promise<DiscoveredSkill[]> {
-  const results = await searchSkillsAPI("obra/superpowers");
+  const results = await searchSkillsAPI("obra/superpowers", 50);
 
   return results
     .filter((r) => r.source === DEFAULT_SOURCE)

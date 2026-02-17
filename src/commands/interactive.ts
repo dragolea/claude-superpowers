@@ -54,7 +54,7 @@ export async function cmdInteractive(
     description: `${s.installName}${s.isDefault ? " [recommended]" : ""}${s.description ? " — " + s.description : ""}`,
     value: s.name,
   }));
-  const preselected = discovered.filter((s) => s.isDefault || s.relevance >= 2).map((s) => s.name);
+  const preselected = discovered.filter((s) => s.isDefault || s.relevance >= 1).map((s) => s.name);
 
   console.log("");
   const selectedNames = await checkboxMenu("Select skills to install", options, { preselected });
