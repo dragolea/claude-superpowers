@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import type { SearchSkill } from "skills/src/find.ts";
+import type { SearchResult } from "../../src/skills-bridge/search-api.js";
 
-vi.mock("skills/src/find.ts", () => ({
+vi.mock("../../src/skills-bridge/search-api.js", () => ({
   searchSkillsAPI: vi.fn(async () => []),
 }));
 
-import { searchSkillsAPI } from "skills/src/find.ts";
+import { searchSkillsAPI } from "../../src/skills-bridge/search-api.js";
 import { discoverSkillsForTags } from "../../src/skills-bridge/discover.js";
 
 const mockSearchSkillsAPI = vi.mocked(searchSkillsAPI);
@@ -16,7 +16,7 @@ beforeEach(() => {
 
 // ---- Helpers ----
 
-function makeSearchSkill(overrides: Partial<SearchSkill> = {}): SearchSkill {
+function makeSearchResult(overrides: Partial<SearchResult> = {}): SearchResult {
   return {
     name: "test-skill",
     slug: "owner-repo-test-skill",
@@ -37,7 +37,7 @@ describe("discoverSkillsForTags", () => {
 
   it("returns mapped skills for a single tag", async () => {
     mockSearchSkillsAPI.mockResolvedValueOnce([
-      makeSearchSkill({
+      makeSearchResult({
         name: "frontend-design",
         slug: "vercel-labs-agent-skills-frontend-design",
         source: "vercel-labs/agent-skills",
@@ -55,11 +55,13 @@ describe("discoverSkillsForTags", () => {
       sourceUrl: "https://skills.sh/vercel-labs-agent-skills-frontend-design",
       relevance: 1,
       matchedTags: ["react"],
+      installs: 5000,
+      isDefault: false,
     });
   });
 
   it("deduplicates skills that appear across multiple tags", async () => {
-    const sharedSkill = makeSearchSkill({
+    const sharedSkill = makeSearchResult({
       name: "typescript-pro",
       slug: "acme-ts-pro",
       source: "acme/ts",
@@ -78,12 +80,12 @@ describe("discoverSkillsForTags", () => {
   });
 
   it("ranks multi-tag matches higher than single-tag matches", async () => {
-    const popular = makeSearchSkill({
+    const popular = makeSearchResult({
       name: "popular-skill",
       slug: "org-popular",
       source: "org/popular",
     });
-    const niche = makeSearchSkill({
+    const niche = makeSearchResult({
       name: "niche-skill",
       slug: "org-niche",
       source: "org/niche",
@@ -106,9 +108,9 @@ describe("discoverSkillsForTags", () => {
 
   it("sorts alphabetically when relevance is equal", async () => {
     mockSearchSkillsAPI.mockResolvedValueOnce([
-      makeSearchSkill({ name: "zeta-skill", slug: "z-slug", source: "org/z" }),
-      makeSearchSkill({ name: "alpha-skill", slug: "a-slug", source: "org/a" }),
-      makeSearchSkill({ name: "mid-skill", slug: "m-slug", source: "org/m" }),
+      makeSearchResult({ name: "zeta-skill", slug: "z-slug", source: "org/z" }),
+      makeSearchResult({ name: "alpha-skill", slug: "a-slug", source: "org/a" }),
+      makeSearchResult({ name: "mid-skill", slug: "m-slug", source: "org/m" }),
     ]);
 
     const result = await discoverSkillsForTags(["tag"]);
@@ -125,7 +127,7 @@ describe("discoverSkillsForTags", () => {
     mockSearchSkillsAPI
       .mockResolvedValueOnce([]) // first tag returns nothing (API error)
       .mockResolvedValueOnce([
-        makeSearchSkill({ name: "ok-skill", slug: "ok-slug", source: "org/ok" }),
+        makeSearchResult({ name: "ok-skill", slug: "ok-slug", source: "org/ok" }),
       ]);
 
     const result = await discoverSkillsForTags(["broken-tag", "good-tag"]);
@@ -135,7 +137,7 @@ describe("discoverSkillsForTags", () => {
   });
 
   it("does not duplicate matched tags when same tag produces same skill", async () => {
-    const skill = makeSearchSkill({
+    const skill = makeSearchResult({
       name: "dupe-check",
       slug: "dupe-slug",
       source: "org/dupe",
@@ -161,5 +163,40 @@ describe("discoverSkillsForTags", () => {
     expect(mockSearchSkillsAPI).toHaveBeenCalledWith("a");
     expect(mockSearchSkillsAPI).toHaveBeenCalledWith("b");
     expect(mockSearchSkillsAPI).toHaveBeenCalledWith("c");
+  });
+
+  it("deduplicates same-name skills across sources, keeping highest installs", async () => {
+    const highInstalls = makeSearchResult({
+      name: "typescript-pro",
+      slug: "jeff-ts-pro",
+      source: "jeffallan/claude-skills",
+      installs: 428,
+    });
+    const lowInstalls = makeSearchResult({
+      name: "typescript-pro",
+      slug: "sickn33-ts-pro",
+      source: "sickn33/antigravity-awesome-skills",
+      installs: 78,
+    });
+
+    mockSearchSkillsAPI.mockResolvedValueOnce([lowInstalls, highInstalls]);
+
+    const result = await discoverSkillsForTags(["typescript"]);
+
+    expect(result).toHaveLength(1);
+    expect(result[0]!.name).toBe("typescript-pro");
+    expect(result[0]!.installName).toBe("jeffallan/claude-skills");
+    expect(result[0]!.installs).toBe(428);
+  });
+
+  it("includes installs and isDefault fields in results", async () => {
+    mockSearchSkillsAPI.mockResolvedValueOnce([
+      makeSearchResult({ name: "my-skill", slug: "slug", source: "org/repo", installs: 999 }),
+    ]);
+
+    const result = await discoverSkillsForTags(["tag"]);
+
+    expect(result[0]!.installs).toBe(999);
+    expect(result[0]!.isDefault).toBe(false);
   });
 });

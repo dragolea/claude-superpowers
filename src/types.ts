@@ -21,6 +21,10 @@ export interface DiscoveredSkill {
   relevance: number;
   /** The tags that matched */
   matchedTags: string[];
+  /** Install count from skills.sh API — used for dedup ranking */
+  installs: number;
+  /** Whether this is a default/recommended skill (obra/superpowers) */
+  isDefault: boolean;
 }
 
 /**
