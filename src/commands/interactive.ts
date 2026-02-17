@@ -1,7 +1,7 @@
 import * as p from "@clack/prompts";
 import { theme } from "../ui/format.js";
 import { printBanner } from "../ui/banner.js";
-import { discoverSkillsForTags } from "../skills-bridge/discover.js";
+import { discoverSkills } from "../skills-bridge/discover.js";
 import { installDiscoveredSkills } from "../skills-bridge/install.js";
 import { getInstalledSkillMetadata } from "../skills-bridge/installed.js";
 import { updateClaudeMd } from "../install/claude-md.js";
@@ -35,7 +35,7 @@ export async function cmdInteractive(
   discoverSpinner.start("Discovering skills from ecosystem...");
   let discovered;
   try {
-    discovered = await discoverSkillsForTags(tags);
+    discovered = await discoverSkills(tags);
   } catch {
     discoverSpinner.stop("Discovery failed");
     console.log(theme.warn("Could not reach skills.sh. Check your internet connection."));
@@ -51,10 +51,10 @@ export async function cmdInteractive(
   // Step 3: Review & Select
   const options = discovered.map((s) => ({
     label: s.name,
-    description: `${s.installName}${s.description ? " — " + s.description : ""}`,
+    description: `${s.installName}${s.isDefault ? " [recommended]" : ""}${s.description ? " — " + s.description : ""}`,
     value: s.name,
   }));
-  const preselected = discovered.filter((s) => s.relevance >= 2).map((s) => s.name);
+  const preselected = discovered.filter((s) => s.isDefault || s.relevance >= 2).map((s) => s.name);
 
   console.log("");
   const selectedNames = await checkboxMenu("Select skills to install", options, { preselected });
