@@ -6,8 +6,10 @@ Scans your project, detects your tech stack, discovers relevant skills from the 
 
 ## Quick Start
 
+Run directly from GitHub (no npm install needed):
+
 ```bash
-npx superpower-installer
+npx github:dragolea/claude-superpowers
 ```
 
 The interactive wizard:
@@ -21,13 +23,15 @@ The interactive wizard:
 
 ## Commands
 
+All commands use `npx github:dragolea/claude-superpowers` (aliased as `superpowers` below for brevity):
+
 ```bash
-npx superpower-installer                    # Interactive wizard (scan + discover + install)
-npx superpower-installer --scan             # Detect project tech stack
-npx superpower-installer --search react     # Search skills ecosystem by keyword
-npx superpower-installer --list             # List installed skills
-npx superpower-installer --update           # Update installed skills
-npx superpower-installer --help             # Full usage info
+superpowers                    # Interactive wizard (scan + discover + install)
+superpowers --scan             # Detect project tech stack
+superpowers --search react     # Search skills ecosystem by keyword
+superpowers --list             # List installed skills
+superpowers --update           # Update installed skills
+superpowers --help             # Full usage info
 ```
 
 ## Scope
@@ -35,9 +39,9 @@ npx superpower-installer --help             # Full usage info
 Control where skills are installed:
 
 ```bash
-npx superpower-installer --scope project   # .claude/ — shared with collaborators (default)
-npx superpower-installer --scope user      # ~/.claude/ — available in all your projects
-npx superpower-installer --scope local     # .claude/ + .gitignore — this repo only
+superpowers --scope project   # .claude/ — shared with collaborators (default)
+superpowers --scope user      # ~/.claude/ — available in all your projects
+superpowers --scope local     # .claude/ + .gitignore — this repo only
 ```
 
 ## How It Works
