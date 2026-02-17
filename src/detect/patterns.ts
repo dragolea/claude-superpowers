@@ -3,10 +3,7 @@ import { existsSync } from "node:fs";
 
 export interface DetectionResult {
   techs: string[];
-  skillCats: string[];
-  agentCats: string[];
   skillTags: string[];
-  agentTags: string[];
   archetypes?: string[];
   confidence?: Record<string, "high" | "medium">;
 }
@@ -41,162 +38,122 @@ async function readFileSafe(path: string): Promise<string> {
 export async function detectProject(): Promise<DetectionResult> {
   const result: DetectionResult = {
     techs: [],
-    skillCats: [],
-    agentCats: [],
     skillTags: [],
-    agentTags: [],
   };
 
   const t = result.techs;
-  const sc = result.skillCats;
-  const ac = result.agentCats;
   const st = result.skillTags;
-  const at = result.agentTags;
 
   // ---- Node.js / package.json ----
   if (fileExists("package.json")) {
     uniquePush(t, "Node.js");
-    uniquePush(sc, "core", "workflow");
 
     const pkg = await readFileSafe("package.json");
 
     if (pkg.includes('"react-native"')) {
       uniquePush(t, "React Native");
-      uniquePush(sc, "mobile", "languages");
       uniquePush(st, "react-native", "mobile", "typescript");
     } else if (pkg.includes('"react"')) {
       uniquePush(t, "React");
-      uniquePush(sc, "web", "languages");
       uniquePush(st, "react", "web", "typescript");
     }
 
     if (pkg.includes('"vue"')) {
       uniquePush(t, "Vue");
-      uniquePush(sc, "web", "languages");
       uniquePush(st, "vue", "web", "typescript");
     }
 
     if (pkg.includes('"@angular/core"')) {
       uniquePush(t, "Angular");
-      uniquePush(sc, "web", "languages");
       uniquePush(st, "angular", "web", "typescript");
     }
 
     if (pkg.includes('"next"')) {
       uniquePush(t, "Next.js");
-      uniquePush(sc, "web", "backend", "languages");
       uniquePush(st, "nextjs", "react", "web", "typescript");
     }
 
     if (pkg.includes('"nuxt"')) {
       uniquePush(t, "Nuxt");
-      uniquePush(sc, "web", "backend", "languages");
       uniquePush(st, "vue", "web", "typescript");
     }
 
     if (pkg.includes('"express"')) {
       uniquePush(t, "Express");
-      uniquePush(sc, "backend", "languages");
       uniquePush(st, "nodejs", "backend", "typescript");
     }
 
     if (pkg.includes('"@nestjs/core"')) {
       uniquePush(t, "NestJS");
-      uniquePush(sc, "backend", "languages");
       uniquePush(st, "nodejs", "backend", "typescript");
     }
 
     if (pkg.includes('"fastify"')) {
       uniquePush(t, "Fastify");
-      uniquePush(sc, "backend", "languages");
       uniquePush(st, "nodejs", "backend", "typescript");
     }
 
     if (pkg.includes('"expo"')) {
       uniquePush(t, "Expo");
-      uniquePush(sc, "mobile", "languages");
       uniquePush(st, "expo", "mobile", "react-native", "typescript");
     }
 
     if (/\"(jest|vitest|mocha|cypress|playwright)\"/.test(pkg)) {
       uniquePush(t, "Testing");
-      uniquePush(sc, "core");
       uniquePush(st, "universal");
     }
 
-    // AI/ML libraries → data-ai agents
+    // AI/ML libraries
     if (pkg.includes('"langchain"') || pkg.includes('"@langchain/')) {
       uniquePush(t, "LangChain");
-      uniquePush(ac, "data-ai");
-      uniquePush(at, "llm", "langchain", "ai");
+      uniquePush(st, "ai");
     }
 
-    // Blockchain/Web3 → specialized agents
+    // Blockchain/Web3
     if (pkg.includes('"ethers"') || pkg.includes('"web3"') || pkg.includes('"hardhat"')) {
       uniquePush(t, "Web3");
-      uniquePush(ac, "specialized");
-      uniquePush(at, "blockchain", "web3");
+      uniquePush(st, "web3");
     }
 
-    // Payment processing → specialized agents
+    // Payment processing
     if (pkg.includes('"stripe"') || pkg.includes('"@stripe/')) {
       uniquePush(t, "Stripe");
-      uniquePush(ac, "specialized");
-      uniquePush(at, "payments", "stripe");
     }
 
-    // Database/ORM → data-ai agents
+    // Database/ORM
     if (/\"(?:prisma|drizzle-orm|@drizzle-team|typeorm|sequelize|mongoose|knex|@mikro-orm|better-sqlite3|pg|mysql2|ioredis|redis)\"/.test(pkg)) {
       uniquePush(t, "Database/ORM");
-      uniquePush(ac, "data-ai");
-      uniquePush(at, "database", "migrations", "data");
     }
 
-    // Auth/Security → security skill tags
+    // Auth/Security
     if (/\"(?:passport|@auth0|next-auth|@clerk|firebase|jsonwebtoken|bcrypt|helmet|@supabase\/auth-helpers)\"/.test(pkg)) {
       uniquePush(t, "Auth/Security");
-      uniquePush(sc, "security");
-      uniquePush(at, "security");
     }
 
-    // Monitoring/Observability → operations agents
+    // Monitoring/Observability
     if (/\"(?:@sentry\/node|@sentry\/react|@datadog|@opentelemetry|newrelic|pino|winston)\"/.test(pkg)) {
       uniquePush(t, "Monitoring");
-      uniquePush(ac, "operations");
-      uniquePush(at, "monitoring", "incident-response", "performance");
     }
 
-    // Analytics/Reporting → business agents
+    // Analytics/Reporting
     if (/\"(?:mixpanel|@amplitude|@segment\/analytics-node|posthog-node|chart\.js|d3|recharts)\"/.test(pkg)) {
       uniquePush(t, "Analytics");
-      uniquePush(ac, "business");
-      uniquePush(at, "analytics", "dashboards", "reporting");
     }
 
-    // Design System/UI → design agents
+    // Design System/UI
     if (/\"(?:tailwindcss|@chakra-ui|@mui\/material|@radix-ui|styled-components|@emotion|storybook|@storybook)\"/.test(pkg)) {
       uniquePush(t, "Design System");
-      uniquePush(ac, "design");
-      uniquePush(at, "design", "ui", "ux", "accessibility", "responsive");
     }
 
-    // CMS/Content → marketing agents
+    // CMS/Content
     if (/\"(?:contentful|@sanity|strapi|@keystonejs|ghost|@contentlayer)\"/.test(pkg)) {
       uniquePush(t, "CMS");
-      uniquePush(ac, "marketing");
-      uniquePush(at, "content", "marketing", "seo");
-    }
-
-    // Testing/Quality → quality tags
-    if (/\"(?:@testing-library\/|cypress|playwright|puppeteer|@storybook\/test)/.test(pkg)) {
-      uniquePush(at, "quality", "validation");
     }
   }
 
   // ---- TypeScript ----
   if (fileExists("tsconfig.json")) {
     uniquePush(t, "TypeScript");
-    uniquePush(sc, "languages");
     uniquePush(st, "typescript");
   }
 
@@ -208,7 +165,6 @@ export async function detectProject(): Promise<DetectionResult> {
     fileExists("Pipfile")
   ) {
     uniquePush(t, "Python");
-    uniquePush(sc, "backend", "languages");
     uniquePush(st, "python", "backend");
 
     let pydeps = "";
@@ -229,85 +185,67 @@ export async function detectProject(): Promise<DetectionResult> {
       uniquePush(st, "python", "backend");
     }
 
-    // AI/ML libraries → data-ai agents
+    // AI/ML libraries
     if (/(?:tensorflow|torch|langchain|openai|anthropic|transformers)/i.test(pydeps)) {
       uniquePush(t, "AI/ML");
-      uniquePush(ac, "data-ai");
-      uniquePush(at, "ai", "ml", "llm");
+      uniquePush(st, "ai");
     }
 
-    // Data engineering → data-ai agents
+    // Data engineering
     if (/(?:pyspark|dbt|airflow|pandas|polars)/i.test(pydeps)) {
       uniquePush(t, "Data Engineering");
-      uniquePush(ac, "data-ai");
-      uniquePush(at, "data", "pipelines");
     }
 
-    // Database/ORM (Python) → data-ai agents
+    // Database/ORM (Python)
     if (/(?:sqlalchemy|peewee|tortoise-orm|psycopg2|pymongo|redis)/i.test(pydeps)) {
       uniquePush(t, "Database/ORM");
-      uniquePush(ac, "data-ai");
-      uniquePush(at, "database", "migrations", "data");
     }
 
-    // Auth/Security (Python) → security skill tags
+    // Auth/Security (Python)
     if (/(?:authlib|python-jose|passlib|django-allauth)/i.test(pydeps)) {
       uniquePush(t, "Auth/Security");
-      uniquePush(sc, "security");
-      uniquePush(at, "security");
     }
 
-    // Monitoring (Python) → operations agents
+    // Monitoring (Python)
     if (/(?:sentry-sdk|datadog|opentelemetry-api)/i.test(pydeps)) {
       uniquePush(t, "Monitoring");
-      uniquePush(ac, "operations");
-      uniquePush(at, "monitoring", "incident-response", "performance");
     }
 
-    // Analytics (Python) → business agents
+    // Analytics (Python)
     if (/(?:matplotlib|plotly|dash|streamlit|metabase)/i.test(pydeps)) {
       uniquePush(t, "Analytics");
-      uniquePush(ac, "business");
-      uniquePush(at, "analytics", "dashboards", "reporting");
     }
   }
 
   // ---- Go ----
   if (fileExists("go.mod")) {
     uniquePush(t, "Go");
-    uniquePush(sc, "backend", "languages");
     uniquePush(st, "go", "backend");
 
     const gomod = await readFileSafe("go.mod");
 
-    // Database/ORM (Go) → data-ai agents
+    // Database/ORM (Go)
     if (/(?:gorm\.io|entgo\.io|github\.com\/jmoiron\/sqlx)/i.test(gomod)) {
       uniquePush(t, "Database/ORM");
-      uniquePush(ac, "data-ai");
-      uniquePush(at, "database", "migrations", "data");
     }
   }
 
   // ---- Rust ----
   if (fileExists("Cargo.toml")) {
     uniquePush(t, "Rust");
-    uniquePush(sc, "backend", "languages");
     uniquePush(st, "rust");
 
     const cargo = await readFileSafe("Cargo.toml");
 
-    // Database/ORM (Rust) → data-ai agents
+    // Database/ORM (Rust)
     if (/(?:diesel|sqlx|sea-orm)/i.test(cargo)) {
       uniquePush(t, "Database/ORM");
-      uniquePush(ac, "data-ai");
-      uniquePush(at, "database", "migrations", "data");
     }
   }
 
   // ---- Ruby ----
   if (fileExists("Gemfile")) {
     uniquePush(t, "Ruby");
-    uniquePush(sc, "backend", "languages");
     uniquePush(st, "ruby", "backend");
 
     const gemfile = await readFileSafe("Gemfile");
@@ -324,35 +262,30 @@ export async function detectProject(): Promise<DetectionResult> {
     fileExists("build.gradle.kts")
   ) {
     uniquePush(t, "Java/Kotlin");
-    uniquePush(sc, "backend", "languages");
     uniquePush(st, "java", "kotlin");
   }
 
   // ---- iOS ----
   if (fileExists("Podfile") || (await hasGlob("\\.xcodeproj$"))) {
     uniquePush(t, "iOS");
-    uniquePush(sc, "mobile");
     uniquePush(st, "ios", "swift", "mobile");
   }
 
   // ---- Flutter ----
   if (fileExists("pubspec.yaml")) {
     uniquePush(t, "Flutter");
-    uniquePush(sc, "mobile");
     uniquePush(st, "flutter", "mobile");
   }
 
   // ---- C# / .NET ----
   if (await hasGlob("\\.csproj$")) {
     uniquePush(t, "C#/.NET");
-    uniquePush(sc, "backend", "languages");
     uniquePush(st, "csharp");
   }
 
   // ---- PHP ----
   if (fileExists("composer.json")) {
     uniquePush(t, "PHP");
-    uniquePush(sc, "backend", "languages");
     uniquePush(st, "php", "backend");
 
     const composer = await readFileSafe("composer.json");
@@ -371,21 +304,18 @@ export async function detectProject(): Promise<DetectionResult> {
     fileExists("compose.yaml")
   ) {
     uniquePush(t, "Docker");
-    uniquePush(sc, "devops");
     uniquePush(st, "devops");
   }
 
   // ---- Kubernetes ----
   if (fileExists("k8s") || fileExists("kubernetes")) {
     uniquePush(t, "Kubernetes");
-    uniquePush(sc, "devops");
     uniquePush(st, "devops");
   }
 
   // ---- Terraform ----
   if ((await hasGlob("\\.tf$")) || fileExists("terraform")) {
     uniquePush(t, "Terraform");
-    uniquePush(sc, "devops");
     uniquePush(st, "devops");
   }
 
@@ -396,7 +326,6 @@ export async function detectProject(): Promise<DetectionResult> {
     fileExists("Jenkinsfile")
   ) {
     uniquePush(t, "CI/CD");
-    uniquePush(sc, "devops");
     uniquePush(st, "devops");
   }
 
@@ -416,29 +345,24 @@ export async function detectProject(): Promise<DetectionResult> {
   ];
   if (lintFiles.some(fileExists)) {
     uniquePush(t, "Linting");
-    uniquePush(sc, "core");
     uniquePush(st, "universal");
   }
 
   // ---- Solidity / Blockchain ----
   if (fileExists("hardhat.config.ts") || fileExists("hardhat.config.js") || fileExists("foundry.toml")) {
     uniquePush(t, "Blockchain");
-    uniquePush(ac, "specialized");
-    uniquePush(at, "blockchain", "web3", "solidity");
+    uniquePush(st, "web3");
   }
 
-  // ---- Monitoring infra files → operations agents ----
+  // ---- Monitoring infra files ----
   if (fileExists("prometheus.yml") || fileExists("grafana")) {
     uniquePush(t, "Monitoring");
-    uniquePush(ac, "operations");
-    uniquePush(at, "monitoring", "incident-response", "performance");
   }
 
-  // ---- Archetype detection + enrichment ----
+  // ---- Archetype detection ----
   const archetypes = deriveArchetypes(result);
   if (archetypes.length > 0) {
     result.archetypes = archetypes;
-    enrichFromArchetypes(result, archetypes);
   }
 
   return result;
@@ -455,13 +379,13 @@ function deriveArchetypes(result: DetectionResult): string[] {
     ["Kubernetes", "Terraform"].includes(t),
   );
   const hasCICD = result.techs.includes("CI/CD");
-  const hasAI = result.agentTags.some((t) => ["ai", "ml", "llm"].includes(t));
-  const hasData = result.agentTags.some((t) =>
-    ["data", "pipelines", "database"].includes(t),
+  const hasAI = result.techs.some((t) =>
+    ["AI/ML", "LangChain"].includes(t),
+  ) || result.skillTags.includes("ai");
+  const hasData = result.techs.some((t) =>
+    ["Data Engineering", "Database/ORM"].includes(t),
   );
-  const hasPayments = result.agentTags.some((t) =>
-    ["payments", "stripe"].includes(t),
-  );
+  const hasPayments = result.techs.includes("Stripe");
   const hasMobile = result.skillTags.some((t) =>
     ["mobile", "react-native", "flutter", "ios", "android"].includes(t),
   );
@@ -475,40 +399,4 @@ function deriveArchetypes(result: DetectionResult): string[] {
   if (hasPayments && hasFrontend) archetypes.push("e-commerce");
 
   return archetypes;
-}
-
-function enrichFromArchetypes(
-  result: DetectionResult,
-  archetypes: string[],
-): void {
-  const mapping: Record<string, { agentCats: string[]; agentTags: string[] }> = {
-    "fullstack-web": {
-      agentCats: ["design"],
-      agentTags: ["ui", "ux", "responsive"],
-    },
-    "devops-infra": {
-      agentCats: ["operations"],
-      agentTags: ["monitoring", "incident-response"],
-    },
-    "ml-platform": {
-      agentCats: ["data-ai"],
-      agentTags: ["ml", "mlops", "pipelines"],
-    },
-    "e-commerce": {
-      agentCats: ["specialized", "business"],
-      agentTags: ["payments", "analytics"],
-    },
-    saas: {
-      agentCats: ["business"],
-      agentTags: ["analytics", "dashboards"],
-    },
-  };
-
-  for (const arch of archetypes) {
-    const m = mapping[arch];
-    if (m) {
-      for (const c of m.agentCats) uniquePush(result.agentCats, c);
-      for (const t of m.agentTags) uniquePush(result.agentTags, t);
-    }
-  }
 }

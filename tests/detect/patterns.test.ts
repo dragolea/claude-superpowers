@@ -51,10 +51,7 @@ describe("empty directory", () => {
   it("returns empty result when no project files exist", async () => {
     const result = await detectProject();
     expect(result.techs).toEqual([]);
-    expect(result.skillCats).toEqual([]);
-    expect(result.agentCats).toEqual([]);
     expect(result.skillTags).toEqual([]);
-    expect(result.agentTags).toEqual([]);
   });
 });
 
@@ -67,8 +64,6 @@ describe("Node.js detection", () => {
 
     const result = await detectProject();
     expect(result.techs).toContain("Node.js");
-    expect(result.skillCats).toContain("core");
-    expect(result.skillCats).toContain("workflow");
   });
 
   it("detects React project", async () => {
@@ -79,7 +74,6 @@ describe("Node.js detection", () => {
 
     const result = await detectProject();
     expect(result.techs).toContain("React");
-    expect(result.skillCats).toContain("web");
     expect(result.skillTags).toContain("react");
     expect(result.skillTags).toContain("typescript");
   });
@@ -95,7 +89,6 @@ describe("Node.js detection", () => {
     const result = await detectProject();
     expect(result.techs).toContain("React Native");
     expect(result.techs).not.toContain("React");
-    expect(result.skillCats).toContain("mobile");
     expect(result.skillTags).toContain("react-native");
   });
 
@@ -119,7 +112,6 @@ describe("Node.js detection", () => {
 
     const result = await detectProject();
     expect(result.techs).toContain("Vue");
-    expect(result.skillCats).toContain("web");
     expect(result.skillTags).toContain("vue");
   });
 
@@ -144,7 +136,6 @@ describe("Node.js detection", () => {
 
     const result = await detectProject();
     expect(result.techs).toContain("Express");
-    expect(result.skillCats).toContain("backend");
     expect(result.skillTags).toContain("nodejs");
   });
 
@@ -169,7 +160,6 @@ describe("Node.js detection", () => {
 
     const result = await detectProject();
     expect(result.techs).toContain("Expo");
-    expect(result.skillCats).toContain("mobile");
     expect(result.skillTags).toContain("expo");
     expect(result.skillTags).toContain("react-native");
   });
@@ -194,8 +184,7 @@ describe("Node.js detection", () => {
 
     const result = await detectProject();
     expect(result.techs).toContain("Web3");
-    expect(result.agentCats).toContain("specialized");
-    expect(result.agentTags).toContain("blockchain");
+    expect(result.skillTags).toContain("web3");
   });
 
   it("detects LangChain AI in package.json", async () => {
@@ -208,8 +197,7 @@ describe("Node.js detection", () => {
 
     const result = await detectProject();
     expect(result.techs).toContain("LangChain");
-    expect(result.agentCats).toContain("data-ai");
-    expect(result.agentTags).toContain("ai");
+    expect(result.skillTags).toContain("ai");
   });
 
   it("detects Stripe payments in package.json", async () => {
@@ -220,8 +208,6 @@ describe("Node.js detection", () => {
 
     const result = await detectProject();
     expect(result.techs).toContain("Stripe");
-    expect(result.agentCats).toContain("specialized");
-    expect(result.agentTags).toContain("payments");
   });
 });
 
@@ -233,7 +219,6 @@ describe("TypeScript detection", () => {
 
     const result = await detectProject();
     expect(result.techs).toContain("TypeScript");
-    expect(result.skillCats).toContain("languages");
     expect(result.skillTags).toContain("typescript");
   });
 });
@@ -248,7 +233,6 @@ describe("Python detection", () => {
     const result = await detectProject();
     expect(result.techs).toContain("Python");
     expect(result.techs).toContain("Flask");
-    expect(result.skillCats).toContain("backend");
     expect(result.skillTags).toContain("python");
   });
 
@@ -276,24 +260,21 @@ describe("Python detection", () => {
     expect(result.techs).toContain("FastAPI");
   });
 
-  it("detects AI/ML libraries → data-ai agent category", async () => {
+  it("detects AI/ML libraries", async () => {
     setExistingFiles(["requirements.txt"]);
     setFileContent({ "requirements.txt": "torch\ntransformers\n" });
 
     const result = await detectProject();
     expect(result.techs).toContain("AI/ML");
-    expect(result.agentCats).toContain("data-ai");
-    expect(result.agentTags).toContain("ai");
+    expect(result.skillTags).toContain("ai");
   });
 
-  it("detects data engineering → data-ai agent category", async () => {
+  it("detects data engineering", async () => {
     setExistingFiles(["requirements.txt"]);
     setFileContent({ "requirements.txt": "pandas\nairflow\n" });
 
     const result = await detectProject();
     expect(result.techs).toContain("Data Engineering");
-    expect(result.agentCats).toContain("data-ai");
-    expect(result.agentTags).toContain("data");
   });
 });
 
@@ -305,7 +286,6 @@ describe("Go detection", () => {
 
     const result = await detectProject();
     expect(result.techs).toContain("Go");
-    expect(result.skillCats).toContain("backend");
     expect(result.skillTags).toContain("go");
   });
 });
@@ -378,7 +358,6 @@ describe("iOS detection", () => {
 
     const result = await detectProject();
     expect(result.techs).toContain("iOS");
-    expect(result.skillCats).toContain("mobile");
     expect(result.skillTags).toContain("ios");
     expect(result.skillTags).toContain("swift");
   });
@@ -400,7 +379,6 @@ describe("Flutter detection", () => {
 
     const result = await detectProject();
     expect(result.techs).toContain("Flutter");
-    expect(result.skillCats).toContain("mobile");
     expect(result.skillTags).toContain("flutter");
   });
 });
@@ -450,7 +428,6 @@ describe("Docker detection", () => {
 
     const result = await detectProject();
     expect(result.techs).toContain("Docker");
-    expect(result.skillCats).toContain("devops");
     expect(result.skillTags).toContain("devops");
   });
 
@@ -477,7 +454,7 @@ describe("Kubernetes detection", () => {
 
     const result = await detectProject();
     expect(result.techs).toContain("Kubernetes");
-    expect(result.skillCats).toContain("devops");
+    expect(result.skillTags).toContain("devops");
   });
 });
 
@@ -489,7 +466,7 @@ describe("Terraform detection", () => {
 
     const result = await detectProject();
     expect(result.techs).toContain("Terraform");
-    expect(result.skillCats).toContain("devops");
+    expect(result.skillTags).toContain("devops");
   });
 
   it("detects terraform directory", async () => {
@@ -508,7 +485,7 @@ describe("CI/CD detection", () => {
 
     const result = await detectProject();
     expect(result.techs).toContain("CI/CD");
-    expect(result.skillCats).toContain("devops");
+    expect(result.skillTags).toContain("devops");
   });
 
   it("detects .gitlab-ci.yml", async () => {
@@ -534,7 +511,6 @@ describe("Linting detection", () => {
 
     const result = await detectProject();
     expect(result.techs).toContain("Linting");
-    expect(result.skillCats).toContain("core");
   });
 
   it("detects biome.json", async () => {
@@ -560,9 +536,7 @@ describe("Blockchain detection", () => {
 
     const result = await detectProject();
     expect(result.techs).toContain("Blockchain");
-    expect(result.agentCats).toContain("specialized");
-    expect(result.agentTags).toContain("blockchain");
-    expect(result.agentTags).toContain("solidity");
+    expect(result.skillTags).toContain("web3");
   });
 
   it("detects foundry.toml", async () => {
@@ -576,7 +550,7 @@ describe("Blockchain detection", () => {
 // ---- Database/ORM (package.json) ----
 
 describe("Database/ORM detection (Node.js)", () => {
-  it("detects prisma → data-ai agent", async () => {
+  it("detects prisma", async () => {
     setExistingFiles(["package.json"]);
     setFileContent({
       "package.json": JSON.stringify({ dependencies: { "prisma": "^5.0.0" } }),
@@ -584,13 +558,9 @@ describe("Database/ORM detection (Node.js)", () => {
 
     const result = await detectProject();
     expect(result.techs).toContain("Database/ORM");
-    expect(result.agentCats).toContain("data-ai");
-    expect(result.agentTags).toContain("database");
-    expect(result.agentTags).toContain("migrations");
-    expect(result.agentTags).toContain("data");
   });
 
-  it("detects mongoose → data-ai agent", async () => {
+  it("detects mongoose", async () => {
     setExistingFiles(["package.json"]);
     setFileContent({
       "package.json": JSON.stringify({ dependencies: { "mongoose": "^8.0.0" } }),
@@ -598,14 +568,13 @@ describe("Database/ORM detection (Node.js)", () => {
 
     const result = await detectProject();
     expect(result.techs).toContain("Database/ORM");
-    expect(result.agentCats).toContain("data-ai");
   });
 });
 
 // ---- Auth/Security (package.json) ----
 
 describe("Auth/Security detection (Node.js)", () => {
-  it("detects passport → security skill", async () => {
+  it("detects passport", async () => {
     setExistingFiles(["package.json"]);
     setFileContent({
       "package.json": JSON.stringify({ dependencies: { "passport": "^0.7.0" } }),
@@ -613,11 +582,9 @@ describe("Auth/Security detection (Node.js)", () => {
 
     const result = await detectProject();
     expect(result.techs).toContain("Auth/Security");
-    expect(result.skillCats).toContain("security");
-    expect(result.agentTags).toContain("security");
   });
 
-  it("detects next-auth → security skill", async () => {
+  it("detects next-auth", async () => {
     setExistingFiles(["package.json"]);
     setFileContent({
       "package.json": JSON.stringify({ dependencies: { "next-auth": "^4.0.0" } }),
@@ -625,14 +592,13 @@ describe("Auth/Security detection (Node.js)", () => {
 
     const result = await detectProject();
     expect(result.techs).toContain("Auth/Security");
-    expect(result.skillCats).toContain("security");
   });
 });
 
 // ---- Monitoring/Observability ----
 
 describe("Monitoring detection (Node.js)", () => {
-  it("detects @sentry/node → operations agent", async () => {
+  it("detects @sentry/node", async () => {
     setExistingFiles(["package.json"]);
     setFileContent({
       "package.json": JSON.stringify({ dependencies: { "@sentry/node": "^7.0.0" } }),
@@ -640,13 +606,9 @@ describe("Monitoring detection (Node.js)", () => {
 
     const result = await detectProject();
     expect(result.techs).toContain("Monitoring");
-    expect(result.agentCats).toContain("operations");
-    expect(result.agentTags).toContain("monitoring");
-    expect(result.agentTags).toContain("incident-response");
-    expect(result.agentTags).toContain("performance");
   });
 
-  it("detects winston → operations agent", async () => {
+  it("detects winston", async () => {
     setExistingFiles(["package.json"]);
     setFileContent({
       "package.json": JSON.stringify({ dependencies: { "winston": "^3.0.0" } }),
@@ -654,14 +616,13 @@ describe("Monitoring detection (Node.js)", () => {
 
     const result = await detectProject();
     expect(result.techs).toContain("Monitoring");
-    expect(result.agentCats).toContain("operations");
   });
 });
 
 // ---- Analytics/Reporting ----
 
 describe("Analytics detection (Node.js)", () => {
-  it("detects mixpanel → business agent", async () => {
+  it("detects mixpanel", async () => {
     setExistingFiles(["package.json"]);
     setFileContent({
       "package.json": JSON.stringify({ dependencies: { "mixpanel": "^0.18.0" } }),
@@ -669,17 +630,13 @@ describe("Analytics detection (Node.js)", () => {
 
     const result = await detectProject();
     expect(result.techs).toContain("Analytics");
-    expect(result.agentCats).toContain("business");
-    expect(result.agentTags).toContain("analytics");
-    expect(result.agentTags).toContain("dashboards");
-    expect(result.agentTags).toContain("reporting");
   });
 });
 
 // ---- Design System/UI ----
 
 describe("Design System detection (Node.js)", () => {
-  it("detects tailwindcss → design agent", async () => {
+  it("detects tailwindcss", async () => {
     setExistingFiles(["package.json"]);
     setFileContent({
       "package.json": JSON.stringify({ devDependencies: { "tailwindcss": "^3.0.0" } }),
@@ -687,12 +644,9 @@ describe("Design System detection (Node.js)", () => {
 
     const result = await detectProject();
     expect(result.techs).toContain("Design System");
-    expect(result.agentCats).toContain("design");
-    expect(result.agentTags).toContain("design");
-    expect(result.agentTags).toContain("ui");
   });
 
-  it("detects @mui/material → design agent", async () => {
+  it("detects @mui/material", async () => {
     setExistingFiles(["package.json"]);
     setFileContent({
       "package.json": JSON.stringify({ dependencies: { "@mui/material": "^5.0.0" } }),
@@ -700,14 +654,13 @@ describe("Design System detection (Node.js)", () => {
 
     const result = await detectProject();
     expect(result.techs).toContain("Design System");
-    expect(result.agentCats).toContain("design");
   });
 });
 
 // ---- CMS/Content ----
 
 describe("CMS detection (Node.js)", () => {
-  it("detects contentful → marketing agent", async () => {
+  it("detects contentful", async () => {
     setExistingFiles(["package.json"]);
     setFileContent({
       "package.json": JSON.stringify({ dependencies: { "contentful": "^10.0.0" } }),
@@ -715,126 +668,84 @@ describe("CMS detection (Node.js)", () => {
 
     const result = await detectProject();
     expect(result.techs).toContain("CMS");
-    expect(result.agentCats).toContain("marketing");
-    expect(result.agentTags).toContain("content");
-    expect(result.agentTags).toContain("seo");
   });
 });
 
-// ---- Testing/Quality ----
+// ---- Python agent patterns ----
 
-describe("Testing/Quality detection (Node.js)", () => {
-  it("detects @testing-library → quality tags", async () => {
-    setExistingFiles(["package.json"]);
-    setFileContent({
-      "package.json": JSON.stringify({ devDependencies: { "@testing-library/react": "^14.0.0" } }),
-    });
-
-    const result = await detectProject();
-    expect(result.agentTags).toContain("quality");
-    expect(result.agentTags).toContain("validation");
-  });
-
-  it("detects playwright → quality tags", async () => {
-    setExistingFiles(["package.json"]);
-    setFileContent({
-      "package.json": JSON.stringify({ devDependencies: { "playwright": "^1.40.0" } }),
-    });
-
-    const result = await detectProject();
-    expect(result.agentTags).toContain("quality");
-  });
-});
-
-// ---- Python new agent patterns ----
-
-describe("Python agent patterns", () => {
-  it("detects sqlalchemy → data-ai agent", async () => {
+describe("Python detection patterns", () => {
+  it("detects sqlalchemy", async () => {
     setExistingFiles(["requirements.txt"]);
     setFileContent({ "requirements.txt": "sqlalchemy\nflask\n" });
 
     const result = await detectProject();
     expect(result.techs).toContain("Database/ORM");
-    expect(result.agentCats).toContain("data-ai");
-    expect(result.agentTags).toContain("database");
   });
 
-  it("detects authlib → security skill", async () => {
+  it("detects authlib", async () => {
     setExistingFiles(["requirements.txt"]);
     setFileContent({ "requirements.txt": "authlib\nfastapi\n" });
 
     const result = await detectProject();
     expect(result.techs).toContain("Auth/Security");
-    expect(result.skillCats).toContain("security");
-    expect(result.agentTags).toContain("security");
   });
 
-  it("detects sentry-sdk → operations agent", async () => {
+  it("detects sentry-sdk", async () => {
     setExistingFiles(["requirements.txt"]);
     setFileContent({ "requirements.txt": "sentry-sdk\nflask\n" });
 
     const result = await detectProject();
     expect(result.techs).toContain("Monitoring");
-    expect(result.agentCats).toContain("operations");
   });
 
-  it("detects plotly → business agent", async () => {
+  it("detects plotly", async () => {
     setExistingFiles(["requirements.txt"]);
     setFileContent({ "requirements.txt": "plotly\npandas\n" });
 
     const result = await detectProject();
     expect(result.techs).toContain("Analytics");
-    expect(result.agentCats).toContain("business");
-    expect(result.agentTags).toContain("analytics");
   });
 });
 
-// ---- Go agent patterns ----
+// ---- Go patterns ----
 
-describe("Go agent patterns", () => {
-  it("detects gorm.io → data-ai agent", async () => {
+describe("Go detection patterns", () => {
+  it("detects gorm.io", async () => {
     setExistingFiles(["go.mod"]);
     setFileContent({ "go.mod": "module myapp\nrequire gorm.io/gorm v1.25.0\n" });
 
     const result = await detectProject();
     expect(result.techs).toContain("Database/ORM");
-    expect(result.agentCats).toContain("data-ai");
-    expect(result.agentTags).toContain("database");
   });
 });
 
-// ---- Rust agent patterns ----
+// ---- Rust patterns ----
 
-describe("Rust agent patterns", () => {
-  it("detects diesel → data-ai agent", async () => {
+describe("Rust detection patterns", () => {
+  it("detects diesel", async () => {
     setExistingFiles(["Cargo.toml"]);
     setFileContent({ "Cargo.toml": '[dependencies]\ndiesel = "2.1"\n' });
 
     const result = await detectProject();
     expect(result.techs).toContain("Database/ORM");
-    expect(result.agentCats).toContain("data-ai");
-    expect(result.agentTags).toContain("database");
   });
 });
 
 // ---- Monitoring infra files ----
 
 describe("Monitoring infra detection", () => {
-  it("detects prometheus.yml → operations agent", async () => {
+  it("detects prometheus.yml", async () => {
     setExistingFiles(["prometheus.yml"]);
 
     const result = await detectProject();
     expect(result.techs).toContain("Monitoring");
-    expect(result.agentCats).toContain("operations");
-    expect(result.agentTags).toContain("monitoring");
   });
 
-  it("detects grafana/ → operations agent", async () => {
+  it("detects grafana/", async () => {
     setExistingFiles(["grafana"]);
 
     const result = await detectProject();
     expect(result.techs).toContain("Monitoring");
-    expect(result.agentCats).toContain("operations");
   });
 });
 
@@ -903,56 +814,10 @@ describe("archetype detection", () => {
   });
 });
 
-// ---- Archetype enrichment ----
-
-describe("archetype enrichment", () => {
-  it("fullstack-web adds design agent category and tags", async () => {
-    setExistingFiles(["package.json"]);
-    setFileContent({
-      "package.json": JSON.stringify({
-        dependencies: { "react": "^18.0.0", "express": "^4.0.0" },
-      }),
-    });
-
-    const result = await detectProject();
-    expect(result.archetypes).toContain("fullstack-web");
-    expect(result.agentCats).toContain("design");
-    expect(result.agentTags).toContain("ui");
-    expect(result.agentTags).toContain("ux");
-    expect(result.agentTags).toContain("responsive");
-  });
-
-  it("devops-infra adds operations agent category", async () => {
-    setExistingFiles(["Dockerfile", ".github/workflows"]);
-
-    const result = await detectProject();
-    expect(result.archetypes).toContain("devops-infra");
-    expect(result.agentCats).toContain("operations");
-    expect(result.agentTags).toContain("monitoring");
-    expect(result.agentTags).toContain("incident-response");
-  });
-
-  it("e-commerce adds specialized and business agent categories", async () => {
-    setExistingFiles(["package.json"]);
-    setFileContent({
-      "package.json": JSON.stringify({
-        dependencies: { "react": "^18.0.0", "stripe": "^14.0.0" },
-      }),
-    });
-
-    const result = await detectProject();
-    expect(result.archetypes).toContain("e-commerce");
-    expect(result.agentCats).toContain("specialized");
-    expect(result.agentCats).toContain("business");
-    expect(result.agentTags).toContain("payments");
-    expect(result.agentTags).toContain("analytics");
-  });
-});
-
 // ---- Multi-tech project (uniquePush dedup) ----
 
 describe("multi-tech deduplication", () => {
-  it("deduplicates techs and categories across multiple detections", async () => {
+  it("deduplicates techs and tags across multiple detections", async () => {
     setExistingFiles([
       "package.json",
       "tsconfig.json",
@@ -969,7 +834,6 @@ describe("multi-tech deduplication", () => {
 
     // Check no duplicates in any array
     expect(result.techs).toEqual([...new Set(result.techs)]);
-    expect(result.skillCats).toEqual([...new Set(result.skillCats)]);
     expect(result.skillTags).toEqual([...new Set(result.skillTags)]);
 
     // Verify expected techs detected
