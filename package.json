@@ -39,11 +39,7 @@
     "@clack/core": "^0.4.1",
     "@clack/prompts": "^0.9.1",
     "commander": "^13.1.0",
-    "gray-matter": "^4.0.3",
-    "picocolors": "^1.1.1",
-    "simple-git": "^3.31.1",
-    "skills": "https://github.com/vercel-labs/skills/tarball/main",
-    "xdg-basedir": "^5.1.0"
+    "picocolors": "^1.1.1"
   },
   "devDependencies": {
     "@types/node": "^22.13.4",

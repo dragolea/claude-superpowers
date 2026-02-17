@@ -1,12 +1,65 @@
 /**
- * Query installed skills via the `skills` package.
+ * Scan installed skills from the filesystem.
  *
- * Wraps `listInstalledSkills` and maps the result to our
- * lighter `SkillMetadata` type used for CLAUDE.md generation.
+ * Reads `.claude/skills/` subdirectories and parses SKILL.md frontmatter
+ * to extract skill metadata. Replaces the `listInstalledSkills` function
+ * from the `skills` package with a minimal implementation.
  */
 
-import { listInstalledSkills } from "skills/src/installer.ts";
+import { readdir, readFile } from "node:fs/promises";
+import { join } from "node:path";
+
 import type { SkillMetadata } from "../types.js";
+
+/**
+ * Parse YAML frontmatter from a SKILL.md file content.
+ * Extracts simple key: value pairs between `---` delimiters.
+ */
+function parseFrontmatter(content: string): Record<string, string> {
+  const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+  if (!match?.[1]) return {};
+
+  const result: Record<string, string> = {};
+  for (const line of match[1].split("\n")) {
+    const colonIdx = line.indexOf(":");
+    if (colonIdx === -1) continue;
+    const key = line.slice(0, colonIdx).trim();
+    const value = line.slice(colonIdx + 1).trim();
+    if (key) result[key] = value;
+  }
+  return result;
+}
+
+/**
+ * Scan a directory for skill subdirectories containing SKILL.md files.
+ */
+async function scanSkillsDir(dir: string): Promise<SkillMetadata[]> {
+  let entries: string[];
+  try {
+    entries = await readdir(dir);
+  } catch {
+    return [];
+  }
+
+  const skills: SkillMetadata[] = [];
+
+  for (const entry of entries) {
+    const skillMdPath = join(dir, entry, "SKILL.md");
+    try {
+      const content = await readFile(skillMdPath, "utf-8");
+      const fm = parseFrontmatter(content);
+      skills.push({
+        name: fm.name || entry,
+        description: fm.description || "",
+        path: skillMdPath,
+      });
+    } catch {
+      // Skip entries without a readable SKILL.md
+    }
+  }
+
+  return skills;
+}
 
 /**
  * Retrieve metadata for all skills installed in the given directory.
@@ -17,10 +70,6 @@ import type { SkillMetadata } from "../types.js";
 export async function getInstalledSkillMetadata(
   cwd: string,
 ): Promise<SkillMetadata[]> {
-  const installed = await listInstalledSkills({ cwd });
-  return installed.map((skill) => ({
-    name: skill.name,
-    description: skill.description,
-    path: skill.path,
-  }));
+  const skillsDir = join(cwd, ".claude", "skills");
+  return scanSkillsDir(skillsDir);
 }
