@@ -6,7 +6,7 @@ vi.mock("../../src/skills-bridge/search-api.js", () => ({
 }));
 
 import { searchSkillsAPI } from "../../src/skills-bridge/search-api.js";
-import { discoverSkillsForTags } from "../../src/skills-bridge/discover.js";
+import { discoverSkillsForTags, fetchDefaultSkills, discoverSkills } from "../../src/skills-bridge/discover.js";
 
 const mockSearchSkillsAPI = vi.mocked(searchSkillsAPI);
 
@@ -198,5 +198,89 @@ describe("discoverSkillsForTags", () => {
 
     expect(result[0]!.installs).toBe(999);
     expect(result[0]!.isDefault).toBe(false);
+  });
+});
+
+describe("fetchDefaultSkills", () => {
+  it("returns only obra/superpowers skills", async () => {
+    mockSearchSkillsAPI.mockResolvedValueOnce([
+      makeSearchResult({ name: "brainstorming", slug: "obra/superpowers/brainstorming", source: "obra/superpowers", installs: 21645 }),
+      makeSearchResult({ name: "cobrapy", slug: "davila7/claude-code-templates/cobrapy", source: "davila7/claude-code-templates", installs: 91 }),
+    ]);
+
+    const result = await fetchDefaultSkills();
+
+    expect(result).toHaveLength(1);
+    expect(result[0]!.name).toBe("brainstorming");
+    expect(result[0]!.isDefault).toBe(true);
+    expect(result[0]!.installName).toBe("obra/superpowers");
+  });
+
+  it("returns empty array when API fails", async () => {
+    mockSearchSkillsAPI.mockResolvedValueOnce([]);
+
+    const result = await fetchDefaultSkills();
+
+    expect(result).toEqual([]);
+  });
+
+  it("searches for 'obra/superpowers'", async () => {
+    mockSearchSkillsAPI.mockResolvedValueOnce([]);
+
+    await fetchDefaultSkills();
+
+    expect(mockSearchSkillsAPI).toHaveBeenCalledWith("obra/superpowers");
+  });
+});
+
+describe("discoverSkills", () => {
+  it("merges defaults with tag results", async () => {
+    // First call: fetchDefaultSkills ("obra/superpowers")
+    mockSearchSkillsAPI.mockResolvedValueOnce([
+      makeSearchResult({ name: "brainstorming", slug: "obra/superpowers/brainstorming", source: "obra/superpowers", installs: 21645 }),
+    ]);
+    // Second call: discoverSkillsForTags (["react"])
+    mockSearchSkillsAPI.mockResolvedValueOnce([
+      makeSearchResult({ name: "frontend-design", slug: "vercel-labs/frontend-design", source: "vercel-labs/agent-skills", installs: 5000 }),
+    ]);
+
+    const result = await discoverSkills(["react"]);
+
+    expect(result).toHaveLength(2);
+    // defaults come first
+    expect(result[0]!.name).toBe("brainstorming");
+    expect(result[0]!.isDefault).toBe(true);
+    expect(result[1]!.name).toBe("frontend-design");
+    expect(result[1]!.isDefault).toBe(false);
+  });
+
+  it("deduplicates when tag result matches a default skill", async () => {
+    // Default: brainstorming from obra
+    mockSearchSkillsAPI.mockResolvedValueOnce([
+      makeSearchResult({ name: "brainstorming", slug: "obra/superpowers/brainstorming", source: "obra/superpowers", installs: 21645 }),
+    ]);
+    // Tag result also finds brainstorming (from a fork)
+    mockSearchSkillsAPI.mockResolvedValueOnce([
+      makeSearchResult({ name: "brainstorming", slug: "wln/obra-superpowers/brainstorming", source: "wln/obra-superpowers", installs: 3 }),
+    ]);
+
+    const result = await discoverSkills(["workflow"]);
+
+    expect(result).toHaveLength(1);
+    expect(result[0]!.name).toBe("brainstorming");
+    expect(result[0]!.isDefault).toBe(true);
+    expect(result[0]!.installs).toBe(21645); // kept the higher one
+    expect(result[0]!.matchedTags).toEqual(["workflow"]);
+  });
+
+  it("fetches defaults even with empty tags", async () => {
+    mockSearchSkillsAPI.mockResolvedValueOnce([
+      makeSearchResult({ name: "debugging", slug: "obra/superpowers/debugging", source: "obra/superpowers", installs: 11989 }),
+    ]);
+
+    const result = await discoverSkills([]);
+
+    expect(result).toHaveLength(1);
+    expect(result[0]!.isDefault).toBe(true);
   });
 });
