@@ -7,7 +7,7 @@
  *   import { discoverSkillsForTags, installDiscoveredSkill } from "./skills-bridge/index.js";
  */
 
-export { discoverSkillsForTags } from "./discover.js";
+export { discoverSkillsForTags, fetchDefaultSkills, discoverSkills } from "./discover.js";
 export {
   installDiscoveredSkill,
   installDiscoveredSkills,
